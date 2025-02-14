@@ -25,6 +25,8 @@ import {
 } from "@/components/ui/sidebar";
 import { useRouter } from "next/navigation";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuItem } from "@radix-ui/react-dropdown-menu";
+import Image from 'next/image';
+
 
 const menuItems = [
   {
@@ -206,13 +208,13 @@ export function AppSidebar() {
         <div className="mt-auto p-4 border-t flex items-center bg-white w-full">
           <DropdownMenu>
             <DropdownMenuTrigger className="flex items-center space-x-3 w-full cursor-pointer">
-              <img
+              <Image
                 src="https://github.com/shadcn.png"
                 alt="User"
                 className="w-10 h-10 rounded-full"
               />
               <div className="flex flex-col">
-                <span className="font-medium text-sm">shadcn</span>
+                <span className="font-medium text-sm">Profile</span>
                 <span className="text-xs text-gray-500">m@example.com</span>
               </div>
             </DropdownMenuTrigger>
