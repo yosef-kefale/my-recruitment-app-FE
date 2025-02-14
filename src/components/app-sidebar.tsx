@@ -24,9 +24,15 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { useRouter } from "next/navigation";
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuItem } from "@radix-ui/react-dropdown-menu";
-import Image from 'next/image';
-
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuItem,
+} from "@radix-ui/react-dropdown-menu";
+import Image from "next/image";
 
 const menuItems = [
   {
@@ -204,50 +210,52 @@ export function AppSidebar() {
       </SidebarContent>
 
       {/* User Profile & Logout (Fixed at Bottom) */}
-        {/* User Profile Section (Fixed to Bottom) */}
-        <div className="mt-auto p-4 border-t flex items-center bg-white w-full">
-          <DropdownMenu>
-            <DropdownMenuTrigger className="flex items-center space-x-3 w-full cursor-pointer">
-              <Image
-                src="https://github.com/shadcn.png"
-                alt="User"
-                className="w-10 h-10 rounded-full"
-              />
-              <div className="flex flex-col">
-                <span className="font-medium text-sm">Profile</span>
-                <span className="text-xs text-gray-500">m@example.com</span>
-              </div>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="end"
-              className="w-48 shadow-lg rounded-lg bg-white border border-gray-200"
+      {/* User Profile Section (Fixed to Bottom) */}
+      <div className="mt-auto p-4 border-t flex items-center bg-white w-full">
+        <DropdownMenu>
+          <DropdownMenuTrigger className="flex items-center space-x-3 w-full cursor-pointer">
+            <Image
+              src="/profile.avif" 
+              alt="GitHub Avatar"
+              width={100}
+              height={100}
+            />
+
+            <div className="flex flex-col">
+              <span className="font-medium text-sm">Profile</span>
+              <span className="text-xs text-gray-500">m@example.com</span>
+            </div>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            align="end"
+            className="w-48 shadow-lg rounded-lg bg-white border border-gray-200"
+          >
+            <DropdownMenuLabel className="px-4 py-2 font-semibold text-gray-700">
+              My Account
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md transition-all">
+              Profile
+            </DropdownMenuItem>
+            <DropdownMenuItem className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md transition-all">
+              Billing
+            </DropdownMenuItem>
+            <DropdownMenuItem className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md transition-all">
+              Team
+            </DropdownMenuItem>
+            <DropdownMenuItem className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md transition-all">
+              Subscription
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={handleLogout}
+              className="px-4 py-2 text-red-500 hover:bg-red-50 rounded-md transition-all"
             >
-              <DropdownMenuLabel className="px-4 py-2 font-semibold text-gray-700">
-                My Account
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md transition-all">
-                Profile
-              </DropdownMenuItem>
-              <DropdownMenuItem className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md transition-all">
-                Billing
-              </DropdownMenuItem>
-              <DropdownMenuItem className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md transition-all">
-                Team
-              </DropdownMenuItem>
-              <DropdownMenuItem className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md transition-all">
-                Subscription
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={handleLogout}
-                className="px-4 py-2 text-red-500 hover:bg-red-50 rounded-md transition-all"
-              >
-                Logout
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+              Logout
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     </Sidebar>
   );
 }
