@@ -32,8 +32,8 @@ export default function RootLayout({
         {isLoggedIn ? (
           <SidebarProvider>
             <AppSidebar />
-            <main>
-              <SidebarTrigger />
+            <main className="p-6 w-full">
+              <SidebarTrigger/>
               {children}
               <Toaster />
             </main>
