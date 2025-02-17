@@ -1,4 +1,4 @@
-export const API_URL = "https://talent-hub-n6o6.onrender.com/api";
+export const API_URL = "http://196.188.249.24:3010/api";
 
 export const loginUser = async (username: string, password: string) => {
   const res = await fetch(`${API_URL}/auth/login`, {

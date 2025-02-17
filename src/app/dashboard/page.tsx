@@ -2,18 +2,18 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 
-import { Download } from "lucide-react";
-// import { Calendar } from "@/components/ui/calendar";
+import { CalendarIcon, Download } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
-// import {
-//   Popover,
-//   PopoverTrigger,
-//   PopoverContent,
-//} from "@radix-ui/react-popover";
-// import { cn } from "../../lib/utils";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@radix-ui/react-popover";
+import { cn } from "../../lib/utils";
 import React from "react";
-// import { DateRange } from "react-day-picker";
-// import { addDays, format } from "date-fns";
+import { DateRange } from "react-day-picker";
+import { addDays, format } from "date-fns";
 import {
   ChartContainer,
   ChartTooltip,
@@ -77,17 +77,17 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 export default function Dashboard() {
-//   const [date, setDate] = React.useState<DateRange | undefined>({
-//     from: new Date(2022, 0, 20),
-//     to: addDays(new Date(2022, 0, 20), 20),
-//   });
+  const [date, setDate] = React.useState<DateRange | undefined>({
+    from: new Date(2022, 0, 20),
+    to: addDays(new Date(2022, 0, 20), 20),
+  });
 
   return (
     <div className="w-full p-6 space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-semibold">Recruitment Dashboard</h2>
         <div className="flex items-center space-x-2">
-          {/* <Popover>
+          <Popover>
             <PopoverTrigger asChild>
               <Button
                 id="date"
@@ -125,7 +125,7 @@ export default function Dashboard() {
                 numberOfMonths={2}
               />
             </PopoverContent>
-          </Popover> */}
+          </Popover>
           <Button>
             <Download className="h-5 w-5 mr-2" /> Download Report
           </Button>

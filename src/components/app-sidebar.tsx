@@ -5,13 +5,13 @@ import {
   ChevronDown,
   Home,
   Inbox,
-  LayoutDashboard,
   Search,
   Settings,
   Users,
   FileText,
   MessageSquare,
   Briefcase,
+  PlusCircle,
 } from "lucide-react";
 import { useState } from "react";
 import {
@@ -33,6 +33,16 @@ import {
   DropdownMenuItem,
 } from "@radix-ui/react-dropdown-menu";
 import Image from "next/image";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
+import Link from "next/link";
 
 const menuItems = [
   {
@@ -44,8 +54,8 @@ const menuItems = [
     title: "Job Postings",
     icon: Inbox,
     submenus: [
-      { title: "View All", url: "/jobs/all" },
-      { title: "Post New Job", url: "/jobs/new" },
+      { title: "View All", url: "/jobs/view-all" },
+      { title: "Post New Job", url: "/jobs/create" },
       { title: "Analytics", url: "/jobs/analytics" },
     ],
   },
@@ -125,9 +135,19 @@ const menuItems = [
   },
 ];
 
+const companies = [
+  { id: "company1", name: "Company 1", logo: "/company-logo.png" },
+  { id: "company2", name: "Company 2", logo: "/company-logo.png" },
+  { id: "company3", name: "Company 3", logo: "/company-logo.png" },
+  { id: "company4", name: "Company 4", logo: "/company-logo.png" },
+  { id: "company5", name: "Company 5", logo: "/company-logo.png" },
+];
+
 export function AppSidebar() {
   const [openMenus, setOpenMenus] = useState<{ [key: string]: boolean }>({});
   const router = useRouter();
+
+  const [selectedCompany, setSelectedCompany] = useState(companies[0].id); // Default to first company
 
   const toggleMenu = (title: string) => {
     setOpenMenus((prev) => ({ ...prev, [title]: !prev[title] }));
@@ -138,19 +158,58 @@ export function AppSidebar() {
     router.push("/login");
   };
 
+  const handleSelectChange = (value: string) => {
+    if (value === "create-new") {
+      console.log("Trigger company creation modal");
+      return;
+    }
+    setSelectedCompany(value);
+  };
+
   return (
     <Sidebar className="h-screen flex flex-col bg-gray-900 text-white w-64">
       <SidebarContent className="flex-1 overflow-y-auto">
         {/* Company Section */}
-        <div className="flex items-center p-4 border-b border-gray-700">
-          <div className="bg-white text-black rounded-full p-2">
-            <LayoutDashboard size={24} />
-          </div>
-          <div className="flex flex-col ml-3">
-            <span className="font-medium">Acme Inc</span>
-            <span className="text-sm text-gray-400">Enterprise</span>
-          </div>
-          <ChevronDown className="ml-auto cursor-pointer" />
+        <div className="text-sky-800 w-full p-4">
+          <Select onValueChange={handleSelectChange} value={selectedCompany}>
+            <SelectTrigger className="w-[220px] h-[50px] flex items-center">
+              {selectedCompany !== "create-new" ? (
+                <>
+                  <SelectValue placeholder="Select a company" />
+                </>
+              ) : (
+                <SelectValue placeholder="Select a company" />
+              )}
+            </SelectTrigger>
+
+            <SelectContent>
+              <SelectGroup>
+                <SelectLabel>Companies</SelectLabel>
+                {companies.map((company) => (
+                  <SelectItem key={company.id} value={company.id}>
+                    <div className="flex items-center gap-2">
+                      <Image
+                        src={company.logo}
+                        alt={company.name}
+                        width={8}
+                        height={8}
+                        className="w-10 h-10 rounded-full"
+                      />
+                      {company.name}
+                    </div>
+                  </SelectItem>
+                ))}
+                <SelectItem
+                  value="create-new"
+                  className="text-blue-500 font-semibold"
+                >
+                  <div className="flex items-center gap-2">
+                    <PlusCircle size={18} /> Create New Company
+                  </div>
+                </SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Navigation Menu */}
@@ -180,10 +239,10 @@ export function AppSidebar() {
                         />
                       </div>
                     ) : (
-                      <a href={item.url} className="flex items-center w-full">
+                      <Link href={item.url} className="flex items-center w-full">
                         <item.icon className="w-5 h-5 mr-3" />
                         <span>{item.title}</span>
-                      </a>
+                      </Link>
                     )}
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -197,7 +256,7 @@ export function AppSidebar() {
                           asChild
                           className="px-6 py-2 text-cyan-900 hover:text-white hover:bg-gray-800 transition-all w-full"
                         >
-                          <a href={sub.url}>{sub.title}</a>
+                          <Link href={sub.url}>{sub.title}</Link>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
                     ))}
@@ -210,15 +269,14 @@ export function AppSidebar() {
       </SidebarContent>
 
       {/* User Profile & Logout (Fixed at Bottom) */}
-      {/* User Profile Section (Fixed to Bottom) */}
       <div className="mt-auto p-4 border-t flex items-center bg-white w-full">
         <DropdownMenu>
           <DropdownMenuTrigger className="flex items-center space-x-3 w-full cursor-pointer">
             <Image
-              src="/profile.avif" 
+              src="/profile.avif"
               alt="GitHub Avatar"
-              width={100}
-              height={100}
+              width={60}
+              height={60}
             />
 
             <div className="flex flex-col">
