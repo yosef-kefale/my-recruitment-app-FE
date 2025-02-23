@@ -1,3 +1,6 @@
+import { Card } from "../ui/card";
+import { Badge } from "../ui/badge";
+import { formatDistanceToNow } from "date-fns";
 import { useState } from "react";
 
 interface JobCardProps {
@@ -5,56 +8,78 @@ interface JobCardProps {
   job: any;
 }
 
-const JobCard: React.FC<JobCardProps> = ({ job}) => {
-  const [isActive, setIsActive] = useState(job.active);
+const JobCard: React.FC<JobCardProps> = ({ job }) => {
+  // Calculate the time difference dynamically
+  const timeAgo = job.createdAt
+    ? formatDistanceToNow(new Date(job.createdAt), { addSuffix: true })
+    : "Some time ago";
 
-  const toggleStatus = () => {
-    setIsActive(!isActive);
-  };
+  const [showFullDescription, setShowFullDescription] = useState(false);
+  const maxChars = 200; // Maximum characters before truncation for description
 
   return (
-    <div className="bg-white shadow-md rounded-lg p-6 transition-transform transform hover:scale-105">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold">{job.title}</h3>
-        <span className={`px-3 py-1 text-sm font-semibold rounded-lg ${isActive ? "bg-green-500 text-white" : "bg-red-500 text-white"}`}>
-          {isActive ? "Active" : "Inactive"}
-        </span>
-      </div>
-
-      {/* Company & Location */}
-      <p className="text-gray-500">{job.company} - {job.location}</p>
-      
-      {/* Salary */}
-      <p className="text-gray-800 font-semibold mt-2">💰 ${job.salary.toLocaleString()}</p>
-
-      {/* Job Description */}
-      <p className="text-gray-600 mt-2">{job.description.slice(0, 100)}...</p>
-
-      {/* Skills */}
-      <div className="mt-3 flex flex-wrap gap-2">
-        {job?.skills?.map((skill, index) => (
-          <span key={index} className={`px-3 py-1 text-xs rounded-full ${skill.valid ? "bg-blue-100 text-blue-700" : "bg-red-100 text-red-700"}`}>
-            {skill.name} {skill.valid ? "✔" : "✖"}
+    <Card className="p-4 shadow-md">
+      <p className="text-gray-400 text-sm">{timeAgo}</p>
+      <div className="flex justify-between">
+        <div>
+          <span className="text-2xl text-sky-800 hover:text-cyan-400 hover:underline cursor-pointer">
+            {job.title}
           </span>
-        ))}
+          <span className="text-blue-500 text-sm font-medium mt-1">({job.status})</span>
+          <br />
+          <span className="text-gray-800">
+            {job.workLocation} - <strong>${job.salary}</strong>
+          </span>
+        </div>
+        <div>
+          <Badge
+            className={`p-2 text-center flex items-center justify-center ${
+              job?.employmentType === "Full-time"
+                ? "bg-green-200 text-green-800"
+                : job?.employmentType === "Part-time"
+                ? "bg-red-200 text-red-800"
+                : job?.employmentType === "Commission"
+                ? "bg-orange-200 text-orange-800"
+                : "bg-gray-200 text-gray-800" // Default case
+            }`}
+            variant="secondary"
+          >
+            {job?.employmentType}
+          </Badge>
+        </div>
       </div>
-
-      {/* Actions */}
-      <div className="mt-4 flex justify-between items-center">
-        {/* <button onClick={() => onViewApplicants(job.id)} className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-700">View Applicants</button>
-        <button onClick={() => onEdit(job.id)} className="bg-yellow-500 text-black px-4 py-2 rounded-lg hover:bg-yellow-600">Edit</button>
-        <button onClick={() => onDelete(job.id)} className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-700">Delete</button> */}
-
-        {/* Toggle Switch */}
-        <label className="flex items-center cursor-pointer">
-          <input type="checkbox" className="sr-only" checked={isActive} onChange={toggleStatus} />
-          <div className="relative w-10 h-5 bg-gray-300 rounded-full shadow-inner">
-            <div className={`absolute w-5 h-5 bg-white rounded-full shadow top-0 transition-transform ${isActive ? "translate-x-5 bg-green-500" : "translate-x-0 bg-red-500"}`}></div>
-          </div>
-        </label>
+      {/* Job Description with See More */}
+      <div className="mt-2">
+        <p className="text-gray-500 text-sm">
+          {showFullDescription
+            ? job.description
+            : `${job.description.slice(0, maxChars)}...`}
+          &nbsp;
+          {job.description.length > maxChars && (
+            <button
+              className="text-blue-500 text-sm font-medium mt-1"
+              onClick={() => setShowFullDescription(!showFullDescription)}
+            >
+              {showFullDescription ? "See Less" : "See More"}
+            </button>
+          )}
+        </p>
       </div>
-    </div>
+      <div className="flex justify-between gap-6 pt-4">
+        <span className="text-gray-500 text-sm">{"10 applicants"}</span>
+        <div className="flex justify-start gap-2">
+          {job?.skill.map((skill: string) => (
+            <Badge
+              key={skill}
+              className="p-2text-center cursor-default flex items-center justify-center"
+              variant="secondary"
+            >
+              {skill}
+            </Badge>
+          ))}
+        </div>
+      </div>
+    </Card>
   );
 };
 

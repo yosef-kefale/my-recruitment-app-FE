@@ -6,6 +6,7 @@ import { AppSidebar } from "../components/app-sidebar";
 import { Toaster } from "@/components/ui/toaster";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+// import Breadcrumb from "../components/ui/breadcrumb";
 
 export default function RootLayout({
   children,
@@ -32,8 +33,9 @@ export default function RootLayout({
         {isLoggedIn ? (
           <SidebarProvider>
             <AppSidebar />
-            <main className="p-6 w-full">
+            <main className="p-4 w-full">
               <SidebarTrigger/>
+              {/* <Breadcrumb /> */}
               {children}
               <Toaster />
             </main>

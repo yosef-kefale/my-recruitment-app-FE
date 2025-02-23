@@ -70,7 +70,7 @@ console.log(data);
       if (!res.ok) throw new Error("Failed to create job posting");
 
       toast({ title: "Job Posted Successfully", description: "Your job posting is live!" });
-      router.push("/view-all");
+      router.push("/jobs/view-all");
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
