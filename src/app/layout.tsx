@@ -18,11 +18,12 @@ export default function RootLayout({
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    // Check login status only on client side
+    // Check login status only on the client side
     const token = typeof window !== "undefined" && localStorage.getItem("token");
     setIsLoggedIn(!!token);
 
-    if (!token && pathname !== "/login") {
+    // Redirect if not logged in and trying to access a protected route
+    if (!token && pathname !== "/login" && pathname !== "/" && pathname !== '/signup') {
       router.push("/login");
     }
   }, [pathname, router]);
@@ -30,7 +31,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        {isLoggedIn ? (
+        {isLoggedIn && pathname !== "/" && pathname !== "/signup" ? (
           <SidebarProvider>
             <AppSidebar />
             <main className="p-4 w-full">
