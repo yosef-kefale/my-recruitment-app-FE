@@ -20,12 +20,12 @@ interface JobDetailProps {
 const JobDetail: React.FC<JobDetailProps> = ({ job, onClose }) => {
   return (
     <motion.div
-      initial={{ x: "100%" }}
-      animate={{ x: 0 }}
-      exit={{ x: "100%" }}
-      transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      className="fixed right-0 top-0 mt-24 h-full w-1/3 bg-white shadow-2xl p-6 border-l rounded-l-xl overflow-y-auto"
-    >
+  initial={{ x: "100%" }}
+  animate={{ x: 0 }}
+  exit={{ x: "100%" }}
+  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+  className="fixed right-0 top-0 mt-20 h-[calc(100vh-5rem)] w-1/3 bg-white shadow-2xl p-6 border-l rounded-l-xl overflow-y-auto"
+>
       {/* Close Button */}
       <button
         onClick={onClose}

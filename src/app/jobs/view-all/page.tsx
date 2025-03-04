@@ -1,21 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Card } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
 import JobCard from "../../../components/job/job-card";
-import { motion } from "framer-motion";
 import FilterSidebar from "../../../components/job/filter-sidebar";
 import JobDetail from "../../../components/job/job-detail";
 

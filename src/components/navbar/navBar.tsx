@@ -39,7 +39,7 @@ export default function Navbar() {
             >
               Jobs
             </Link>
-            <Link href="#" className="text-gray-700 hover:text-sky-600">
+            <Link href="/jobs/applications" className="text-gray-700 hover:text-sky-600">
               Applications
             </Link>
             <Link href="#" className="text-gray-700 hover:text-sky-600">
