@@ -10,11 +10,13 @@ export default function Home() {
   const [applications, setApplications] = useState(0);
   const [users, setUsers] = useState(0);
   const [companies, setCompanies] = useState(0);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   // Set your target numbers here
   const targetApplications = 45000;
   const targetUsers = 15000000;
   const targetCompanies = 2000;
+
 
 
   useEffect(() => {
@@ -35,6 +37,10 @@ export default function Home() {
     animateCount(setApplications, targetApplications);
     animateCount(setUsers, targetUsers);
     animateCount(setCompanies, targetCompanies);
+
+    const token = localStorage.getItem("token");
+
+    setIsLoggedIn(!!token);
   }, []);
 
   const handleLogout = () => {
@@ -45,6 +51,9 @@ export default function Home() {
   return (
     <div className="bg-gray-50 min-h-screen">
       {/* Navbar */}
+
+      {!isLoggedIn ? (
+
       <nav className="flex justify-between items-center p-6 shadow-md bg-white">
         <h1 className="text-2xl font-bold text-sky-600">JobPortal</h1>
         <div className="space-x-6">
@@ -73,6 +82,7 @@ export default function Home() {
           </button>
         </div>
       </nav>
+      ): <div></div>}
 
       {/* Hero Section */}
       <header className="text-center py-20 bg-sky-100">

@@ -4,14 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+
 import {
   Dialog,
   DialogContent,
@@ -22,17 +15,23 @@ import { useToast } from "@/hooks/use-toast";
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import JobCard from "../../../components/job/job-card";
+import { motion } from "framer-motion";
+import FilterSidebar from "../../../components/job/filter-sidebar";
+import JobDetail from "../../../components/job/job-detail";
 
 interface JobPosting {
   id: string;
   title: string;
-  description?: string;
+  description: string;
   position: string;
   workLocation: string;
   employmentType: string;
-  salary: string;
+  salary: number;
+  organizationId: string;
+  requirementId: string;
   skill: string[];
   status: string;
+  createdAt: string;
 }
 
 const ViewJobs = () => {
@@ -41,11 +40,14 @@ const ViewJobs = () => {
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedJob, setSelectedJob] = useState<JobPosting | null>(null);
+  const [selectedViewJob, setSelectedViewJob] = useState<JobPosting | null>(
+    null
+  );
   const [statusFilter, setStatusFilter] = useState("All");
   const [viewMode, setViewMode] = useState("card");
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [jobToDelete, setJobToDelete] = useState<string | null>(null);
-  const router = useRouter();
+  // const router = useRouter();
 
   const { toast } = useToast();
 
@@ -62,17 +64,18 @@ const ViewJobs = () => {
     try {
       const res = await fetch("http://196.188.249.24:3010/api/job-postings");
       if (!res.ok) throw new Error("Failed to fetch jobs");
-  
+
       const data = await res.json();
-  
+
       // Sort jobs by createdAt in descending order (newest first)
       const sortedJobs = data.items.sort(
         (a: { createdAt: string }, b: { createdAt: string }) =>
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
-  
+
       setJobs(sortedJobs);
       setFilteredJobs(sortedJobs);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       toast({
         title: "Error",
@@ -83,7 +86,6 @@ const ViewJobs = () => {
       setLoading(false);
     }
   };
-  
 
   const handleFilter = () => {
     let filtered = jobs;
@@ -121,107 +123,47 @@ const ViewJobs = () => {
   };
 
   return (
-    <div className="container mx-auto p-6">
-      <div className="flex justify-between mb-4">
-        <Input
-          placeholder="Search by title..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-1/3"
-        />
-
-        <div className="flex items-center gap-2">
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="border rounded p-2"
-        >
-          <option value="All">All Status</option>
-          <option value="Open">Open</option>
-          <option value="Closed">Closed</option>
-        </select>
-        
-          <span>Table</span>
-          <Switch
-            checked={viewMode === "card"}
-            onCheckedChange={() =>
-              setViewMode(viewMode === "table" ? "card" : "table")
-            }
-          />
-          <span>Card</span>
+    <div className="my-6 h-screen">
+      <div className="p-2 shadow-lg h-full">
+        <div className="flex h-full gap-4">
+          {/* Filter Section - Fixed Height */}
+          <Card className="w-1/4 h-full overflow-hidden">
+            <FilterSidebar />
+          </Card>
+  
+          {/* Job List Section - Scrollable */}
+          <div className="w-3/4 flex flex-col pr-4 h-full">
+            <Card className="flex p-2 mb-2 shadow-lg gap-2">
+              <Input
+                placeholder="Search by title..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-3/4"
+              />
+              <Button className="bg-blue-500">Search</Button>
+              <Button className="bg-red-500">Reset</Button>
+            </Card>
+            
+  
+            {/* Scrollable Job List */}
+            <div className="overflow-y-auto flex-1">
+              {filteredJobs.map((job) => (
+                <div key={job.id}>
+                  <JobCard job={job} onOpen={() => setSelectedViewJob(job)} />
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
-      <Card className="p-4 shadow-lg">
-        {loading ? (
-          <p>Loading...</p>
-        ) : viewMode === "table" ? (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Title</TableHead>
-                <TableHead>Position</TableHead>
-                <TableHead>Location</TableHead>
-                <TableHead>Employment</TableHead>
-                <TableHead>Salary</TableHead>
-                <TableHead>Skills</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredJobs.map((job) => (
-                <TableRow key={job.id}>
-                  <TableCell>{job.title}</TableCell>
-                  <TableCell>{job.position}</TableCell>
-                  <TableCell>{job.workLocation}</TableCell>
-                  <TableCell>{job.employmentType}</TableCell>
-                  <TableCell>${job.salary}</TableCell>
-                  <TableCell>{job.skill.join(", ")}</TableCell>
-                  <TableCell>{job.status}</TableCell>
-                  <TableCell className="flex gap-2">
-                    <Button size="sm" onClick={() => setSelectedJob(job)}>
-                      Edit
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={() => {
-                        setJobToDelete(job.id);
-                        setShowConfirmDelete(true);
-                      }}
-                    >
-                      Delete
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        ) : (
-          <div className="grid grid-cols-1 gap-4">
-            {filteredJobs.map((job) => (
-              <JobCard key={job.id} job={job} />
-            ))}
-          </div>
-        )}
-      </Card>
-      <Dialog
-        open={showConfirmDelete}
-        onOpenChange={() => setShowConfirmDelete(false)}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Confirm Delete</DialogTitle>
-          </DialogHeader>
-          <p>Are you sure you want to delete this job posting?</p>
-          <Button variant="destructive" onClick={handleDelete}>
-            Delete
-          </Button>
-        </DialogContent>
-      </Dialog>
+      {/* Job Details Drawer */}
+      {selectedViewJob && (
+        <JobDetail job={selectedViewJob} onClose={() => setSelectedViewJob(null)} />
+      )}
     </div>
   );
+  
 };
 
 export default ViewJobs;

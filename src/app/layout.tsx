@@ -6,7 +6,7 @@ import { AppSidebar } from "../components/app-sidebar";
 import { Toaster } from "@/components/ui/toaster";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-// import Breadcrumb from "../components/ui/breadcrumb";
+import Navbar from "../components/navbar/navBar";
 
 export default function RootLayout({
   children,
@@ -14,35 +14,50 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const router = useRouter();
-  const pathname = usePathname(); // ✅ Get current route
+  const pathname = usePathname();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [role, setRole] = useState<string | null>(null);
 
   useEffect(() => {
     // Check login status only on the client side
-    const token = typeof window !== "undefined" && localStorage.getItem("token");
-    setIsLoggedIn(!!token);
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("token");
+      const userRole = localStorage.getItem("role"); // Assuming role is stored in localStorage
 
-    // Redirect if not logged in and trying to access a protected route
-    if (!token && pathname !== "/login" && pathname !== "/" && pathname !== '/signup') {
-      router.push("/login");
+      setIsLoggedIn(!!token);
+      setRole(userRole);
+
+      // Redirect if not logged in and trying to access a protected route
+      if (!token && pathname !== "/login" && pathname !== "/" && pathname !== "/signup") {
+        router.push("/login");
+      }
     }
   }, [pathname, router]);
 
   return (
     <html lang="en">
       <body>
-        {isLoggedIn && pathname !== "/" && pathname !== "/signup" ? (
-          <SidebarProvider>
-            <AppSidebar />
-            <main className="p-4 w-full">
-              <SidebarTrigger/>
-              {/* <Breadcrumb /> */}
-              {children}
+        {isLoggedIn ? (
+          role === "employer" ? ( // Employer layout with sidebar
+            <SidebarProvider>
+              <AppSidebar />
+              <main className="p-4 w-full">
+                <SidebarTrigger />
+                {children}
+                <Toaster />
+              </main>
+            </SidebarProvider>
+          ) : role === "employee" ? ( // Employee layout with navbar
+            <div>
+              <Navbar />
+              <main className="mt-14 py-6 w-full">{children}</main>
               <Toaster />
-            </main>
-          </SidebarProvider>
+            </div>
+          ) : (
+            <main>{children}</main>
+          )
         ) : (
-          <main>{children}</main> // Show login page without sidebar
+          <main>{children}</main> // Show login/signup page without sidebar or navbar
         )}
       </body>
     </html>

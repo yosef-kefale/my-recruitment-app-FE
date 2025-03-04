@@ -60,7 +60,7 @@ export default function SignupPage() {
 
     try {
       const res = await fetch(
-        "http://196.188.249.24:3010/api/accounts/create-account",
+        "http://196.188.249.24:3010/api/users",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
