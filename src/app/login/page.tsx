@@ -55,8 +55,14 @@ export default function LoginPage() {
 
       localStorage.setItem("token", data.accessToken);
       localStorage.setItem("refreshToken", data.refreshToken);
+      
+      console.log("Raw organization data before storing:", data.organization);
       localStorage.setItem("organization", JSON.stringify(data.organization));
+
       localStorage.setItem("role", isEmployee ? "employee" : "employer");
+
+      console.log(data.organization);
+      
 
       toast({ title: "Login successful!", description: "Redirecting..." });
 

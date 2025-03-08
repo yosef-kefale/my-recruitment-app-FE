@@ -1,65 +1,135 @@
-import React from "react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
-const jobApplications = [
+const applications = [
   {
     company: "HYS Enterprise",
     recruiter: "Olga",
-    position: "Intern Front-end (Angular) Developer",
-    status: "You shared your contacts with the employer.",
+    role: "Intern Front-end (Angular) Developer",
+    status: "Shared Contacts",
     time: "3mo",
   },
   {
     company: "EUROCOM Group",
     recruiter: "Yuliia",
-    position: "Mid-Level React Native Developer",
-    status: "You shared your contacts with the employer.",
+    role: "Mid-Level React Native Developer",
+    status: "Shared Contacts",
     time: "3mo",
   },
   {
     company: "Thinksoft",
-    recruiter: "Excellerent",
-    position: "Frontend Developer",
-    status: "The employer noted that you're not the right fit for the position at this time.",
+    recruiter: "Ольга",
+    role: "Frontend Developer",
+    status: "Not a Fit",
     time: "3mo",
   },
   {
     company: "RepMove",
     recruiter: "Vitaliy",
-    position: "Senior Full Stack Developer - Cross Platform Mobile App Developer",
-    status: "The employer noted that you're not the right fit for the position at this time. Decline reason: mismatched skills.",
+    role: "Senior Full Stack Developer - Cross Platform Mobile App Developer",
+    status: "Declined: Mismatched Skills",
     time: "4mo",
   },
   {
     company: "Unravel",
     recruiter: "Vladimir",
-    position: "Sr. Angular Developer",
-    status: "You shared your contacts with the employer.",
+    role: "Sr. Angular Developer",
+    status: "Shared Contacts",
     time: "4mo",
   },
 ];
 
-const Applications = () => {
+export default function Applications() {
   return (
-    <div style={{ padding: "20px", maxWidth: "80%", margin: "auto" }}>
-      <h2>Job Applications</h2>
-      <ul style={{ listStyle: "none", padding: 0 }}>
-        {jobApplications.map((job, index) => (
-          <li
-            key={index}
-            style={{
-              borderBottom: "1px solid #ddd",
-              padding: "10px 0",
-            }}
-          >
-            <strong>{job.company} · {job.recruiter}</strong>
-            <p>{job.position}</p>
-            <p style={{ fontSize: "0.9em", color: "gray" }}>{job.status}</p>
-            <p style={{ fontSize: "0.8em", color: "gray" }}>{job.time}</p>
-          </li>
-        ))}
-      </ul>
+    <div className="max-w-5xl mx-auto p-4">
+      <Tabs defaultValue="inbox">
+        <TabsList className="flex space-x-4 border-b mb-4">
+          <TabsTrigger value="inbox">Inbox</TabsTrigger>
+          <TabsTrigger value="unread">Unread</TabsTrigger>
+          <TabsTrigger value="waiting">Waiting for an answer</TabsTrigger>
+          <TabsTrigger value="archive">Archive</TabsTrigger>
+        </TabsList>
+        
+        <Input placeholder="Search..." className="mb-4" />
+
+        <TabsContent value="inbox">
+          <div className="space-y-4">
+            {applications.map((app, index) => (
+              <Card key={index}>
+                <CardContent className="p-4 flex justify-between items-center">
+                  <div>
+                    <h3 className="text-lg font-semibold">{app.company} • {app.recruiter}</h3>
+                    <p className="text-sm text-gray-500">{app.role}</p>
+                  </div>
+                  <div className="text-right">
+                    <Badge variant="outline">{app.status}</Badge>
+                    <p className="text-sm text-gray-400">{app.time}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="unread">
+          <div className="space-y-4">
+            {applications.map((app, index) => (
+              <Card key={index}>
+                <CardContent className="p-4 flex justify-between items-center">
+                  <div>
+                    <h3 className="text-lg font-semibold">{app.company} • {app.recruiter}</h3>
+                    <p className="text-sm text-gray-500">{app.role}</p>
+                  </div>
+                  <div className="text-right">
+                    <Badge variant="outline">{app.status}</Badge>
+                    <p className="text-sm text-gray-400">{app.time}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="waiting">
+          <div className="space-y-4">
+            {applications.map((app, index) => (
+              <Card key={index}>
+                <CardContent className="p-4 flex justify-between items-center">
+                  <div>
+                    <h3 className="text-lg font-semibold">{app.company} • {app.recruiter}</h3>
+                    <p className="text-sm text-gray-500">{app.role}</p>
+                  </div>
+                  <div className="text-right">
+                    <Badge variant="outline">{app.status}</Badge>
+                    <p className="text-sm text-gray-400">{app.time}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="archive">
+          <div className="space-y-4">
+            {applications.map((app, index) => (
+              <Card key={index}>
+                <CardContent className="p-4 flex justify-between items-center">
+                  <div>
+                    <h3 className="text-lg font-semibold">{app.company} • {app.recruiter}</h3>
+                    <p className="text-sm text-gray-500">{app.role}</p>
+                  </div>
+                  <div className="text-right">
+                    <Badge variant="outline">{app.status}</Badge>
+                    <p className="text-sm text-gray-400">{app.time}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
-};
-
-export default Applications;
+}

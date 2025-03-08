@@ -46,7 +46,19 @@ export default function SignupPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+  
+    const token = localStorage.getItem("token");
+  
+    if (!token) {
+      console.error("Token not found in localStorage!");
+      toast({
+        title: "Authentication Error",
+        description: "No authentication token found. Please log in again.",
+        variant: "destructive",
+      });
+      return;
+    }
+  
     if (formData.password !== formData.confirmPassword) {
       toast({
         title: "Error",
@@ -55,34 +67,34 @@ export default function SignupPage() {
       });
       return;
     }
-
+  
     setLoading(true);
-
+  
     try {
-      const res = await fetch(
-        "http://196.188.249.24:3010/api/users",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            ...formData,
-            status: "Active",
-            createdAt: new Date().toISOString(),
-          }),
-        }
-      );
-
+      const res = await fetch("http://196.188.249.24:3010/api/users", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // Attach token to the request
+        },
+        body: JSON.stringify({
+          ...formData,
+          skills: ["Angular", "React js", "React", "Context API", "SOLID", "Python", "Docker"],
+          status: "Active",
+          createdAt: new Date().toISOString(),
+        }),
+      });
+  
       const data = await res.json();
-
+  
       if (!res.ok) throw new Error(data.message || "Signup failed");
-
+  
       toast({
         title: "Signup successful!",
         description: "Redirecting to login...",
       });
-
+  
       router.push("/login");
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast({
         title: "Error",
@@ -93,6 +105,7 @@ export default function SignupPage() {
       setLoading(false);
     }
   };
+  
 
   return (
     <div>

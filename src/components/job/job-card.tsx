@@ -108,7 +108,7 @@ const JobCard: React.FC<JobCardProps> = ({ job, onOpen }) => {
             </Badge>
           ))}
           {job.skill.length > maxSkillsToShow && (
-            <Badge className="bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs">
+            <Badge className="bg-blue-100 text-blue-800 hover:bg-gray-200 hover:text-blue-500 px-2 py-1 rounded-md text-xs">
               +{job.skill.length - maxSkillsToShow} more
             </Badge>
           )}

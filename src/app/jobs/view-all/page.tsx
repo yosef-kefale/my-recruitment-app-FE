@@ -26,47 +26,49 @@ interface JobPosting {
 }
 
 const ViewJobs = () => {
-  const [jobs, setJobs] = useState<JobPosting[]>([]);
   const [filteredJobs, setFilteredJobs] = useState<JobPosting[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedJob, setSelectedJob] = useState<JobPosting | null>(null);
   const [selectedViewJob, setSelectedViewJob] = useState<JobPosting | null>(
     null
   );
-  const [statusFilter, setStatusFilter] = useState("All");
-  const [viewMode, setViewMode] = useState("card");
-  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
-  const [jobToDelete, setJobToDelete] = useState<string | null>(null);
+
   // const router = useRouter();
 
   const { toast } = useToast();
 
-  useEffect(() => {
-    fetchJobs();
-  }, []);
-
-  useEffect(() => {
-    handleFilter();
-  }, [searchQuery, statusFilter, jobs]);
 
   const fetchJobs = async () => {
     setLoading(true);
     try {
-      const res = await fetch("http://196.188.249.24:3010/api/job-postings");
+      const token = localStorage.getItem("token"); // Retrieve token from localStorage
+      if (!token) throw new Error("No authentication token found");
+  
+      // Determine the correct API endpoint
+      const apiUrl =
+        filterValues.jobType === "For me"
+          ? "http://196.188.249.24:3010/api/job-postings/get-all-job-postings-by-skills"
+          : "http://196.188.249.24:3010/api/job-postings/get-all-job-postings";
+  
+      const res = await fetch(apiUrl, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // Attach token to the request
+        },
+      });
+  
       if (!res.ok) throw new Error("Failed to fetch jobs");
-
+  
       const data = await res.json();
-
+  
       // Sort jobs by createdAt in descending order (newest first)
       const sortedJobs = data.items.sort(
         (a: { createdAt: string }, b: { createdAt: string }) =>
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
 
-      setJobs(sortedJobs);
       setFilteredJobs(sortedJobs);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       toast({
         title: "Error",
@@ -78,48 +80,54 @@ const ViewJobs = () => {
     }
   };
 
-  const handleFilter = () => {
-    let filtered = jobs;
-    if (searchQuery) {
-      filtered = filtered.filter((job) =>
-        job.title.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
-    if (statusFilter !== "All") {
-      filtered = filtered.filter((job) => job.status === statusFilter);
-    }
-    setFilteredJobs(filtered);
-  };
+  const [filterValues, setFilterValues] = useState({
+    salary: 1500,
+    jobType: "For me",
+    location: "New York",
+    availability: {
+      freelance: true,
+      fullTime: true,
+      readyWork: true,
+    },
+    specialties: [
+      { name: "Graphic Designer", checked: true },
+      { name: "UI Designer", checked: true },
+      { name: "UX Designer", checked: true },
+      { name: "Web Design", checked: true },
+    ],
+  });
 
-  const handleDelete = async () => {
-    if (!jobToDelete) return;
-    try {
-      const res = await fetch(
-        `http://196.188.249.24:3010/api/job-postings/${jobToDelete}`,
-        { method: "DELETE" }
-      );
-      if (!res.ok) throw new Error("Failed to delete job posting");
-      toast({ title: "Success", description: "Job deleted successfully" });
-      setJobs(jobs.filter((job) => job.id !== jobToDelete));
-      setShowConfirmDelete(false);
-      setJobToDelete(null);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to delete job",
-        variant: "destructive",
-      });
-    }
+  const handleFilterChange = (updatedFilters: { 
+    salary: number; 
+    jobType: string; 
+    location: string; 
+    availability: { freelance: boolean; fullTime: boolean; readyWork: boolean }; 
+    jobPreference: string; 
+    specialties: { name: string; checked: boolean }[] 
+  }) => {    
+    setFilterValues((prevFilters) => {
+      const newFilters = {
+        ...prevFilters,
+        ...updatedFilters,
+      };
+
+      return newFilters;
+    });
   };
+  
+  // Use useEffect to log the updated state after it changes
+  useEffect(() => {
+    fetchJobs();
+  }, [filterValues.jobType]);
+  
 
   return (
-    <div className="my-6 h-screen">
+    <div className="my-4 h-screen">
       <div className="p-2 shadow-lg h-full">
         <div className="flex h-full gap-4">
           {/* Filter Section - Fixed Height */}
-          <Card className="w-1/4 h-full overflow-hidden">
-            <FilterSidebar />
+          <Card className="w-1/4 overflow-y-auto">
+          <FilterSidebar filterValues={filterValues} onFilterChange={handleFilterChange} />
           </Card>
   
           {/* Job List Section - Scrollable */}

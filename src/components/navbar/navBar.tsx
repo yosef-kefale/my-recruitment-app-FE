@@ -24,7 +24,7 @@ export default function Navbar() {
   return (
     <nav className="flex justify-between items-center p-4 shadow-md bg-gray-100 fixed top-0 left-0 w-full z-50">
       {/* Logo */}
-      <h1 className="text-2xl font-bold text-sky-600">JobPortal</h1>
+      <h1 className="text-2xl font-bold text-sky-600">TalentHub</h1>
 
       {/* Navigation Links */}
       <div className="flex items-center space-x-6">
@@ -42,7 +42,7 @@ export default function Navbar() {
             <Link href="/jobs/applications" className="text-gray-700 hover:text-sky-600">
               Applications
             </Link>
-            <Link href="#" className="text-gray-700 hover:text-sky-600">
+            <Link href="/inbox" className="text-gray-700 hover:text-sky-600">
               Inbox
             </Link>
           </>

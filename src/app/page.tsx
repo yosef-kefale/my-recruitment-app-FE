@@ -55,7 +55,7 @@ export default function Home() {
       {!isLoggedIn ? (
 
       <nav className="flex justify-between items-center p-6 shadow-md bg-white">
-        <h1 className="text-2xl font-bold text-sky-600">JobPortal</h1>
+        <h1 className="text-2xl font-bold text-sky-600">TalentHub</h1>
         <div className="space-x-6">
           <Link href="#" className="text-gray-700 hover:text-sky-600">
             Home
