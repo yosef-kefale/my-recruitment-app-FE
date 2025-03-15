@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
 import { Toaster } from "../../components/ui/toaster";
+import { Label } from "../../components/ui/label";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
@@ -55,19 +56,18 @@ export default function LoginPage() {
 
       localStorage.setItem("token", data.accessToken);
       localStorage.setItem("refreshToken", data.refreshToken);
-      
+
       console.log("Raw organization data before storing:", data.organization);
       localStorage.setItem("organization", JSON.stringify(data.organization));
 
       localStorage.setItem("role", isEmployee ? "employee" : "employer");
 
       console.log(data.organization);
-      
 
       toast({ title: "Login successful!", description: "Redirecting..." });
 
       if (isEmployee) {
-        router.push("/");
+        router.push("/jobs/view-all");
       } else {
         router.push("/dashboard");
       }
@@ -85,6 +85,15 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100 p-4">
+      <nav className="flex justify-between items-center p-4 shadow-md bg-gray-100 fixed top-0 left-0 w-full z-50">
+        {/* Logo */}
+        <Link href="/">
+          <h1 className="text-2xl font-bold text-sky-600 cursor-pointer">
+            TalentHub
+          </h1>
+        </Link>
+      </nav>
+
       <div className="flex w-full max-w-4xl bg-white shadow-lg rounded-lg overflow-hidden">
         {/* Left Side - Image & Description */}
         <div className="w-1/2 hidden md:flex flex-col items-center justify-center p-6 bg-sky-200 text-white">
@@ -108,7 +117,9 @@ export default function LoginPage() {
         <div className="w-full md:w-1/2 p-6">
           <Card className="w-full">
             <CardHeader className="text-center">
-              <CardTitle className="text-2xl text-muted-foreground font-semibold">Login</CardTitle>
+              <CardTitle className="text-2xl text-muted-foreground font-semibold">
+                Login
+              </CardTitle>
               <p className="text-gray-500 text-sm">Sign in to your account</p>
             </CardHeader>
             <CardContent>
@@ -135,23 +146,39 @@ export default function LoginPage() {
                 </Button>
               </div>
               <form onSubmit={handleSubmit} className="space-y-4">
-                <Input
-                  type="text"
-                  placeholder="Username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  required
-                  className="w-full p-3"
-                />
-                <Input
-                  type="password"
-                  placeholder="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="w-full p-3"
-                />
-                                <Button
+                <div className="grid gap-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    type="text"
+                    placeholder="Username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    required
+                    className="w-full p-3"
+                  />
+                </div>
+
+                <div className="grid gap-2">
+                  <div className="flex items-center">
+                    <Label htmlFor="password">Password</Label>
+                    <a
+                      href="#"
+                      className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
+                    >
+                      Forgot your password?
+                    </a>
+                  </div>
+                  <Input
+                    type="password"
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="w-full p-3"
+                  />
+                </div>
+
+                <Button
                   type="submit"
                   className="w-full bg-sky-300 hover:bg-sky-700 text-white p-3 rounded-md"
                   disabled={loading}
@@ -197,7 +224,7 @@ export default function LoginPage() {
               <div className="mt-4 text-center text-sm text-gray-600">
                 Don&apos;t have an account?
                 <Link
-                  href="/signup"
+                  href={isEmployee ? '/signup?type=employee' : '/signup?type=employer'}
                   className="text-sky-300 hover:underline ml-1"
                 >
                   Sign up

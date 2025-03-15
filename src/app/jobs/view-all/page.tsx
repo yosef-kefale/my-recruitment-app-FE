@@ -27,7 +27,6 @@ interface JobPosting {
 
 const ViewJobs = () => {
   const [filteredJobs, setFilteredJobs] = useState<JobPosting[]>([]);
-  const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedViewJob, setSelectedViewJob] = useState<JobPosting | null>(
     null
@@ -39,7 +38,6 @@ const ViewJobs = () => {
 
 
   const fetchJobs = async () => {
-    setLoading(true);
     try {
       const token = localStorage.getItem("token"); // Retrieve token from localStorage
       if (!token) throw new Error("No authentication token found");
@@ -69,6 +67,7 @@ const ViewJobs = () => {
       );
 
       setFilteredJobs(sortedJobs);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       toast({
         title: "Error",
@@ -76,7 +75,7 @@ const ViewJobs = () => {
         variant: "destructive",
       });
     } finally {
-      setLoading(false);
+      // setLoading(false);
     }
   };
 
@@ -111,12 +110,16 @@ const ViewJobs = () => {
         ...updatedFilters,
       };
 
+      console.log(newFilters);
+      
+
       return newFilters;
     });
   };
   
   // Use useEffect to log the updated state after it changes
   useEffect(() => {
+    console.log(filterValues);
     fetchJobs();
   }, [filterValues.jobType]);
   

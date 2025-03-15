@@ -4,6 +4,7 @@ import { formatDistanceToNow } from "date-fns";
 import { useState } from "react";
 import { MapPin, DollarSign } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 
 interface JobCardProps {
   job: {
@@ -45,9 +46,11 @@ const JobCard: React.FC<JobCardProps> = ({ job, onOpen }) => {
             />
           </div>
           <div>
+          <Link href="/jobs/job-details">
             <h2 onClick={onOpen} className="text-xl font-semibold text-sky-800 hover:text-cyan-400 hover:underline cursor-pointer">
               {job.title}
             </h2>
+          </Link>
             <span className="text-blue-500 text-sm font-medium">
               ({job.status})
             </span>
@@ -76,7 +79,7 @@ const JobCard: React.FC<JobCardProps> = ({ job, onOpen }) => {
         </div>
         <div className="flex items-center">
           <DollarSign size={16} className="text-gray-500" />
-          <strong>{job.salary.toLocaleString()}</strong>
+          <strong>{job.salary}</strong>
         </div>
       </div>
 

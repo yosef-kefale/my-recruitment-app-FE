@@ -28,9 +28,6 @@ export default function Navbar() {
 
       {/* Navigation Links */}
       <div className="flex items-center space-x-6">
-        <Link href="/" className="text-gray-700 hover:text-sky-600">
-          Home
-        </Link>
         {isLoggedIn ? (
           <>
             <Link
@@ -39,7 +36,10 @@ export default function Navbar() {
             >
               Jobs
             </Link>
-            <Link href="/jobs/applications" className="text-gray-700 hover:text-sky-600">
+            <Link
+              href="/jobs/applications"
+              className="text-gray-700 hover:text-sky-600"
+            >
               Applications
             </Link>
             <Link href="/inbox" className="text-gray-700 hover:text-sky-600">
@@ -48,6 +48,9 @@ export default function Navbar() {
           </>
         ) : (
           <>
+            <Link href="/" className="text-gray-700 hover:text-sky-600">
+              Home
+            </Link>
             <Link
               href="/jobs/view-all"
               className="text-gray-700 hover:text-sky-600"
@@ -132,4 +135,3 @@ export default function Navbar() {
     </nav>
   );
 }
-
