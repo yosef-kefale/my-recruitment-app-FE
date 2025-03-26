@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
+import ScrollingCards from "../components/landing/ScrollingCards";
 
 export default function Home() {
   const router = useRouter();
@@ -17,10 +18,11 @@ export default function Home() {
   const targetUsers = 15000000;
   const targetCompanies = 2000;
 
-
-
   useEffect(() => {
-    const animateCount = (setter: React.Dispatch<React.SetStateAction<number>>, target: number) => {
+    const animateCount = (
+      setter: React.Dispatch<React.SetStateAction<number>>,
+      target: number
+    ) => {
       let start = 0;
       const increment = Math.ceil(target / 100);
       const interval = setInterval(() => {
@@ -43,9 +45,14 @@ export default function Home() {
     setIsLoggedIn(!!token);
   }, []);
 
-  const handleLogout = () => {
+  const handleLoginClickEmployee = () => {
     localStorage.removeItem("token");
     router.push("/login");
+  };
+
+  const handleLoginClickEmployer = () => {
+    localStorage.removeItem("token");
+    router.push("/login?employer=true");
   };
 
   return (
@@ -53,36 +60,43 @@ export default function Home() {
       {/* Navbar */}
 
       {!isLoggedIn ? (
-
-      <nav className="flex justify-between items-center p-6 shadow-md bg-white">
-        <h1 className="text-2xl font-bold text-sky-600">TalentHub</h1>
-        <div className="space-x-6">
-          <Link href="#" className="text-gray-700 hover:text-sky-600">
-            Home
-          </Link>
-          <Link href="#" className="text-gray-700 hover:text-sky-600">
-            Find Jobs
-          </Link>
-          <Link href="#" className="text-gray-700 hover:text-sky-600">
-            Find Candidates
-          </Link>
-          <Link href="#" className="text-gray-700 hover:text-sky-600">
-            Contact
-          </Link>
-        </div>
-        <div className="space-x-4">
-          <button
-            onClick={handleLogout}
-            className="text-gray-700 hover:text-sky-600"
-          >
-            Sign In
-          </button>
-          <button className="bg-sky-600 text-white px-4 py-2 rounded-lg">
-            Get Started
-          </button>
-        </div>
-      </nav>
-      ): <div></div>}
+        <nav className="flex justify-between items-center p-6 shadow-md bg-white">
+          <h1 className="text-2xl font-bold text-sky-600">TalentHub</h1>
+          <div className="space-x-6">
+            <Link href="#" className="text-gray-700 hover:text-sky-600">
+              Home
+            </Link>
+            <Link href="#" className="text-gray-700 hover:text-sky-600">
+              Find Jobs
+            </Link>
+            <Link
+              href="/signup-employer"
+              className="text-gray-700 hover:text-sky-600"
+            >
+              Find Candidates
+            </Link>
+            <Link href="#" className="text-gray-700 hover:text-sky-600">
+              Contact
+            </Link>
+          </div>
+          <div className="space-x-4">
+            <button
+              onClick={handleLoginClickEmployee}
+              className="text-gray-700 hover:text-sky-600"
+            >
+              Sign In
+            </button>
+            <button
+              onClick={handleLoginClickEmployer}
+              className="bg-sky-600 text-white px-4 py-2 rounded-lg"
+            >
+              For Companies
+            </button>
+          </div>
+        </nav>
+      ) : (
+        <div></div>
+      )}
 
       {/* Hero Section */}
       <header className="text-center py-20 bg-sky-100">
@@ -105,8 +119,8 @@ export default function Home() {
         </div>
       </header>
 
-            {/* Counts */}
-            <section className="flex justify-center items-center bg-sky-100 gap-4">
+      {/* Counts */}
+      <section className="flex justify-center items-center bg-sky-100 gap-4">
         <div className="flex flex-col items-center justify-center p-6 ">
           <h6 className="text-4xl font-bold text-gray-800 flex items-center">
             {applications.toLocaleString()} {/* Format number with commas */}
@@ -157,6 +171,13 @@ export default function Home() {
             </div>
           ))}
         </div>
+      </section>
+
+      <section>
+      <div>
+      <h1 className="text-2xl font-bold text-center pt-4">Trusted By</h1>
+      <ScrollingCards />
+    </div>
       </section>
 
       {/* Featured Job Circulars */}

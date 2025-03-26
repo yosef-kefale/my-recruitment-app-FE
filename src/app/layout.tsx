@@ -28,7 +28,7 @@ export default function RootLayout({
       setRole(userRole);
 
       // Redirect if not logged in and trying to access a protected route
-      if (!token && pathname !== "/login" && pathname !== "/" && pathname !== "/signup") {
+      if (!token && pathname !== "/login" && pathname !== "/" && pathname !== "/signup" && pathname !== "/signup-employer") {
         router.push("/login");
       }
     }
@@ -50,7 +50,7 @@ export default function RootLayout({
           ) : role === "employee" ? ( // Employee layout with navbar
             <div>
               <Navbar />
-              <main className="mt-14 py-6 w-full">{children}</main>
+              <main className="mt-12 py-6 w-full">{children}</main>
               <Toaster />
             </div>
           ) : (

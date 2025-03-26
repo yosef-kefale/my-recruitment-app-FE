@@ -1,18 +1,43 @@
+export interface CompanyLogo {
+  filename: string;
+  path: string;
+  originalname: string;
+  mimetype: string;
+  size: number;
+  bucketName: string;
+}
+
+export interface SalaryRange {
+  minimum?: number;
+  maximum?: number;
+}
+
 export interface JobPosting {
-    id?: string; // Optional, assuming it's generated later
-    title: string;
-    description: string;
-    position: string;
-    workLocation: string;
-    employmentType: string;
-    salary: string;
-    experienceLevel: string;
-    fieldOfStudy: string;
-    educationLevel: string;
-    gpa: string;
-    skill: string;
-    status: string;
-    createdAt?: string; // Optional timestamp
-    updatedAt?: string; // Optional timestamp
-  }
-  
+  id?: string,
+  title: string;
+  description: string;
+  position: string;
+  industry: string;
+  type: string;
+  city: string;
+  location: string;
+  employmentType: string;
+  salaryRange?: SalaryRange;
+  deadline: string; // ISO 8601 format date
+  requirementId: string;
+  skill: string[];
+  benefits: string[];
+  responsibilities: string[];
+  status: string;
+  gender: string;
+  minimumGPA: number;
+  companyName: string;
+  companyLogo?: CompanyLogo;
+  postedDate: string; // ISO 8601 format date
+  applicationURL: string;
+  experienceLevel: string;
+  fieldOfStudy: string;
+  educationLevel: string;
+  howToApply: string;
+  onHoldDate?: string; // Optional date field
+}

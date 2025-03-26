@@ -22,9 +22,9 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="flex justify-between items-center p-4 shadow-md bg-gray-100 fixed top-0 left-0 w-full z-50">
+    <nav className="flex justify-between items-center px-4 py-2 shadow-md bg-sky-400 fixed top-0 left-0 w-full z-50">
       {/* Logo */}
-      <h1 className="text-2xl font-bold text-sky-600">TalentHub</h1>
+      <h1 className="text-2xl font-bold text-white">TalentHub</h1>
 
       {/* Navigation Links */}
       <div className="flex items-center space-x-6">
@@ -32,35 +32,35 @@ export default function Navbar() {
           <>
             <Link
               href="/jobs/view-all"
-              className="text-gray-700 hover:text-sky-600"
+              className="text-white text-lg font-bold hover:text-sky-600"
             >
               Jobs
             </Link>
             <Link
               href="/jobs/applications"
-              className="text-gray-700 hover:text-sky-600"
+              className="text-white text-lg font-bold hover:text-sky-600"
             >
               Applications
             </Link>
-            <Link href="/inbox" className="text-gray-700 hover:text-sky-600">
+            <Link href="/inbox" className="text-white text-lg font-bold hover:text-sky-600">
               Inbox
             </Link>
           </>
         ) : (
           <>
-            <Link href="/" className="text-gray-700 hover:text-sky-600">
+            <Link href="/" className="text-white text-lg font-bold hover:text-sky-600">
               Home
             </Link>
             <Link
               href="/jobs/view-all"
-              className="text-gray-700 hover:text-sky-600"
+              className="text-white text-lg font-bold hover:text-sky-600"
             >
               Find Jobs
             </Link>
-            <Link href="#" className="text-gray-700 hover:text-sky-600">
+            <Link href="#" className="text-white text-lg font-bold hover:text-sky-600">
               Find Candidates
             </Link>
-            <Link href="#" className="text-gray-700 hover:text-sky-600">
+            <Link href="#" className="text-white text-lg font-bold hover:text-sky-600">
               Contact
             </Link>
           </>
@@ -87,22 +87,22 @@ export default function Navbar() {
               <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-lg p-2">
                 <Link
                   href="/profile"
-                  className="block px-4 py-2 hover:bg-gray-100"
+                  className="block px-4 py-2 hover:bg-sky-400"
                 >
                   Profile
                 </Link>
-                <Link href="/cv" className="block px-4 py-2 hover:bg-gray-100">
+                <Link href="/cv" className="block px-4 py-2 hover:bg-sky-400">
                   CV and Contacts
                 </Link>
                 <Link
                   href="/hires"
-                  className="block px-4 py-2 hover:bg-gray-100"
+                  className="block px-4 py-2 hover:bg-sky-400"
                 >
                   Hires
                 </Link>
                 <Link
                   href="/statistics"
-                  className="block px-4 py-2 hover:bg-gray-100"
+                  className="block px-4 py-2 hover:bg-sky-400"
                 >
                   My Statistics
                 </Link>

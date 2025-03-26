@@ -62,7 +62,7 @@ const FilterSidebar = ({ filterValues, onFilterChange }) => {
   };
 
   return (
-    <div className="p-6 bg-white rounded-lg shadow-lg">
+    <div className="p-6 bg-white shadow-lg h-full">
       {/* Header */}
       <div className="flex justify-between items-center">
         <h3 className="font-semibold text-lg">Filter</h3>

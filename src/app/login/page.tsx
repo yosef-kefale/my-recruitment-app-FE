@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
 import { Toaster } from "../../components/ui/toaster";
 import { Label } from "../../components/ui/label";
+import { useSearchParams } from 'next/navigation';
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
@@ -19,9 +20,14 @@ export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
 
+  const searchParams = useSearchParams();
+  const isEmployer = searchParams.get('employer');
+
   // Redirect if already logged in
   useEffect(() => {
     const token = localStorage.getItem("token");
+    setIsEmployee(!isEmployer);
+
     if (token) {
       router.push("/dashboard");
     }
@@ -57,12 +63,9 @@ export default function LoginPage() {
       localStorage.setItem("token", data.accessToken);
       localStorage.setItem("refreshToken", data.refreshToken);
 
-      console.log("Raw organization data before storing:", data.organization);
       localStorage.setItem("organization", JSON.stringify(data.organization));
 
       localStorage.setItem("role", isEmployee ? "employee" : "employer");
-
-      console.log(data.organization);
 
       toast({ title: "Login successful!", description: "Redirecting..." });
 
@@ -123,7 +126,7 @@ export default function LoginPage() {
               <p className="text-gray-500 text-sm">Sign in to your account</p>
             </CardHeader>
             <CardContent>
-              <div className="flex justify-center mb-4">
+              {/* <div className="flex justify-center mb-4">
                 <Button
                   className={`mr-2 ${
                     !isEmployee
@@ -144,7 +147,7 @@ export default function LoginPage() {
                 >
                   Employee
                 </Button>
-              </div>
+              </div> */}
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid gap-2">
                   <Label htmlFor="email">Email</Label>
