@@ -2,18 +2,37 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 export default function Navbar() {
   const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // Check if user is logged in by checking for a token
     const token = localStorage.getItem("token");
     setIsLoggedIn(!!token);
   }, []);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    }
+
+    // Add event listener when dropdown is shown
+    if (showDropdown) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    // Cleanup function to remove event listener
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showDropdown]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -70,7 +89,7 @@ export default function Navbar() {
       {/* User Section */}
       <div className="relative">
         {isLoggedIn ? (
-          <div className="relative">
+          <div className="relative" ref={dropdownRef}>
             {/* Profile Picture */}
             <button onClick={() => setShowDropdown(!showDropdown)}>
               <Image
@@ -86,7 +105,7 @@ export default function Navbar() {
             {showDropdown && (
               <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-lg p-2">
                 <Link
-                  href="/profile"
+                  href="/user/profile"
                   className="block px-4 py-2 hover:bg-sky-400"
                 >
                   Profile

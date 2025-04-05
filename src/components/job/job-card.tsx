@@ -2,7 +2,7 @@ import { Card } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { formatDistanceToNow } from "date-fns";
 import { useEffect, useState } from "react";
-import { MapPin, MoreVertical, Edit, Trash2 } from "lucide-react";
+import { MapPin, MoreVertical, Edit, Trash2, Bookmark } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
@@ -19,22 +19,24 @@ interface JobCardProps {
 }
 
 const JobCard: React.FC<JobCardProps> = ({ job, isEmployer, onDelete }) => {
-  const timeAgo = job.postedDate
-    ? formatDistanceToNow(new Date(job.postedDate), { addSuffix: true })
-    : "Some time ago";
-
+  const [mounted, setMounted] = useState(false);
   const [organization, setOrganization] = useState<Organization | null>(null);
   const [showFullDescription, setShowFullDescription] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
   const maxChars = 800; // Limit for description
   const maxSkillsToShow = 3; // Limit for skills displayed
 
+  const timeAgo = job.createdAt
+    ? formatDistanceToNow(new Date(job.createdAt), { addSuffix: true })
+    : "Some time ago";
+
   useEffect(() => {
-      const org = localStorage.getItem("organization");
-      if (org) {
-        setOrganization(JSON.parse(org) as Organization);
-        console.log(JSON.parse(org)); // Check if data is retrieved
-      }
-    }, []);
+    setMounted(true);
+    const org = localStorage.getItem("organization");
+    if (org) {
+      setOrganization(JSON.parse(org) as Organization);
+    }
+  }, []);
 
   const handleEdit = () => {
     console.log("Editing job:", job.id);
@@ -96,6 +98,7 @@ const JobCard: React.FC<JobCardProps> = ({ job, isEmployer, onDelete }) => {
         throw new Error("Failed to save job");
       }
 
+      setIsSaved(true);
       alert("Job saved successfully!");
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
@@ -103,15 +106,21 @@ const JobCard: React.FC<JobCardProps> = ({ job, isEmployer, onDelete }) => {
     }
   };
 
-  return (
-    <Card className="py-6 px-8 shadow-md border-gray-200 border-t-0 rounded-lg transition-all relative">
-      <p className="text-gray-400 text-sm">{timeAgo}</p>
+  // Don't render anything until after hydration
+  if (!mounted) {
+    return null;
+  }
 
-      {/* Three Dots Menu */}
-      <div>
-        <div className="flex absolute top-5 right-8 p-1">
+  return (
+    <Card className="py-6 px-4 sm:px-8 shadow-md border-gray-200 border-t-0 rounded-lg transition-all relative hover:shadow-lg">
+      {/* Header with time and actions */}
+      <div className="flex justify-between items-start mb-3">
+        <p className="text-gray-500 text-sm">{timeAgo}</p>
+        
+        <div className="flex items-center gap-2">
+          {/* Employment Type Badge */}
           <Badge
-            className={`hover:bg-gray-100 px-3 py-1 text-sm rounded-md ${
+            className={`px-3 py-1 text-sm rounded-md ${
               job.employmentType === "Full-time"
                 ? "bg-green-100 text-green-800"
                 : job.employmentType === "Part-time"
@@ -123,93 +132,85 @@ const JobCard: React.FC<JobCardProps> = ({ job, isEmployer, onDelete }) => {
           >
             {job.employmentType}
           </Badge>
+          
           {/* Save Job Button */}
-          <button onClick={handleSaveJob}
-            className="flex items-center py-2 rounded-lg text-gray-600 hover:bg-sky-100 hover:border-sky-500 hover:text-sky-600 transition"
+          <button
+            onClick={handleSaveJob}
+            className="p-2 rounded-full text-gray-600 hover:bg-sky-100 hover:text-sky-600 transition-colors"
+            aria-label="Save job"
           >
-            {/* Save Icon */}
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={2}
-              stroke="currentColor"
-              className="w-10 h-5"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M17 21l-5-3-5 3V5a2 2 0 012-2h6a2 2 0 012 2z"
-              />
-            </svg>
+            <Bookmark className={`w-5 h-5 ${isSaved ? 'fill-sky-500 text-sky-500' : ''}`} />
           </button>
+          
+          {/* Employer Actions */}
+          {isEmployer && (
+            <Popover>
+              <PopoverTrigger asChild>
+                <button className="p-2 rounded-full hover:bg-gray-100">
+                  <MoreVertical className="w-5 h-5 text-gray-500" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="bg-white border shadow-md rounded-md p-2 w-32">
+                <button
+                  onClick={handleEdit}
+                  className="flex items-center gap-2 w-full p-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md"
+                >
+                  <Edit className="w-4 h-4" /> Edit
+                </button>
+                <button
+                  onClick={handleDeleteJob}
+                  className="flex items-center gap-2 w-full p-2 text-sm text-red-600 hover:bg-red-100 rounded-md"
+                >
+                  <Trash2 className="w-4 h-4" /> Delete
+                </button>
+              </PopoverContent>
+            </Popover>
+          )}
         </div>
-        {isEmployer && (
-          <Popover>
-            <PopoverTrigger asChild>
-              <button className="absolute top-5 right-5 p-2 rounded-full hover:bg-gray-100">
-                <MoreVertical className="w-5 h-5 text-gray-500" />
-              </button>
-            </PopoverTrigger>
-            <PopoverContent className="bg-white border shadow-md rounded-md p-2 w-32">
-              <button
-                onClick={handleEdit}
-                className="flex items-center gap-2 w-full p-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md"
-              >
-                <Edit className="w-4 h-4" /> Edit
-              </button>
-              <button
-                onClick={handleDeleteJob}
-                className="flex items-center gap-2 w-full p-2 text-sm text-red-600 hover:bg-red-100 rounded-md"
-              >
-                <Trash2 className="w-4 h-4" /> Delete
-              </button>
-            </PopoverContent>
-          </Popover>
-        )}
       </div>
 
-      {/* Title & Employment Type */}
-      <div className="flex justify-between items-center mt-1">
-        <div className="flex gap-2">
+      {/* Title & Company Info */}
+      <div className="flex flex-col sm:flex-row gap-4 items-start mb-4">
+        <div className="flex-shrink-0">
           <Image
             src="/logo-demo.png"
             alt="Company Logo"
             width={60}
             height={60}
+            className="rounded-md"
           />
-          <div>
-            <Link href={`/jobs/job-details/${job.id}`}>
-              <h2 className="text-xl font-semibold text-sky-800 hover:text-cyan-400 hover:underline cursor-pointer">
-                {job.title}
-              </h2>
-            </Link>
+        </div>
+        <div className="flex-grow">
+          <Link href={isEmployer ? `/jobs/employer-job-details/${job.id}` : `/jobs/job-details/${job.id}`}>
+            <h2 className="text-xl font-semibold text-sky-800 hover:text-cyan-400 hover:underline cursor-pointer">
+              {job.title}
+            </h2>
+          </Link>
+          <div className="flex items-center gap-2 mt-1">
             <span className="text-blue-500 text-sm font-medium">
-              ({job.status})
+              {job.status}
             </span>
           </div>
         </div>
       </div>
 
       {/* Location & Salary */}
-      <div className="flex items-center gap-3 text-gray-600 mt-2 text-sm">
+      <div className="flex flex-wrap items-center gap-3 text-gray-600 mb-4 text-sm">
         <div className="flex items-center gap-1">
           <MapPin size={16} className="text-gray-500" />
           {job.location}
         </div>
-        <div className="flex items-center">
-          <p className="font-semibold text-md">
-            {job?.salaryRange?.minimum && job?.salaryRange?.maximum && (
-              <div>
-                ${job?.salaryRange?.minimum}
-                {" - " + "$" + job?.salaryRange?.maximum}
-              </div>
-            )}
-          </p>
-        </div>
+        {job?.salaryRange?.minimum && job?.salaryRange?.maximum && (
+          <div className="flex items-center">
+            <span className="font-semibold text-md">
+              ${job?.salaryRange?.minimum} - ${job?.salaryRange?.maximum}
+            </span>
+          </div>
+        )}
       </div>
 
-      <div className="mt-3 text-gray-500 text-sm">
+      {/* Description */}
+      <div className="mt-3 text-gray-600 text-sm font-[Inter] leading-relaxed">
         {/* Show full or truncated description */}
         {showFullDescription ? (
           <div
@@ -228,7 +229,7 @@ const JobCard: React.FC<JobCardProps> = ({ job, isEmployer, onDelete }) => {
         {/* Show See More/See Less button if description is longer than maxChars */}
         {job.description.length > maxChars && (
           <button
-            className="text-blue-500 text-sm font-medium ml-2"
+            className="text-blue-600 text-sm font-medium mt-2 hover:underline"
             onClick={() => setShowFullDescription(!showFullDescription)}
           >
             {showFullDescription ? "See Less" : "See More"}
@@ -237,19 +238,21 @@ const JobCard: React.FC<JobCardProps> = ({ job, isEmployer, onDelete }) => {
       </div>
 
       {/* Skills & Applicants */}
-      <div className="flex justify-between items-center mt-4">
-        <span className="text-gray-500 text-sm">10 applicants</span>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mt-6">
+        <span className="text-gray-500 text-sm">
+          {job?.applicationCount || 0} applicants
+        </span>
         <div className="flex flex-wrap gap-2">
           {job.skill.slice(0, maxSkillsToShow).map((skill) => (
             <Badge
               key={skill}
-              className="bg-gray-200 text-gray-800 hover:bg-gray-200 hover:text-blue-500 px-2 py-1 rounded-md text-xs"
+              className="bg-gray-200 text-gray-800 hover:bg-gray-300 hover:text-blue-500 px-2 py-1 rounded-md text-xs"
             >
               {skill.length > 25 ? `${skill.slice(0, 25)}...` : skill}
             </Badge>
           ))}
           {job.skill.length > maxSkillsToShow && (
-            <Badge className="bg-blue-100 text-blue-800 hover:bg-gray-200 hover:text-blue-500 px-2 py-1 rounded-md text-xs">
+            <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200 hover:text-blue-600 px-2 py-1 rounded-md text-xs">
               +{job.skill.length - maxSkillsToShow} more
             </Badge>
           )}

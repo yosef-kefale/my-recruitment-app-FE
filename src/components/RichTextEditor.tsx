@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import Quill from 'quill';
 import 'quill/dist/quill.snow.css'; // Import Quill styles
+import './RichTextEditor.css'; // Import custom styles
 
 // Define the ref type for the RichTextEditor component
 export type RichTextEditorHandle = {
@@ -10,7 +11,7 @@ export type RichTextEditorHandle = {
 };
 
 interface RichTextEditorProps {
-  onChange: (content: string) => void;
+  onChange?: (content: string) => void;
 }
 
 const RichTextEditor = forwardRef<RichTextEditorHandle, RichTextEditorProps>(({ onChange }, ref) => {
@@ -18,31 +19,39 @@ const RichTextEditor = forwardRef<RichTextEditorHandle, RichTextEditorProps>(({ 
   const quillRef = useRef<Quill | null>(null);
 
   useEffect(() => {
-    if (editorRef.current) {
+    // Only initialize if not already initialized
+    if (editorRef.current && !quillRef.current) {
+      // Create a custom toolbar container
+      const toolbarOptions = [
+        [{ header: [1, 2, 3, false] }],
+        ['bold', 'italic', 'underline', 'strike'],
+        [{ list: 'ordered' }, { list: 'bullet' }],
+        ['link', 'image'],
+        ['clean'],
+      ];
+
+      // Initialize Quill with the custom toolbar
       quillRef.current = new Quill(editorRef.current, {
         theme: 'snow',
         modules: {
-          toolbar: [
-            [{ header: [1, 2, 3, false] }],
-            ['bold', 'italic', 'underline', 'strike'],
-            [{ list: 'ordered' }, { list: 'bullet' }],
-            ['link', 'image'],
-            ['clean'],
-          ],
+          toolbar: toolbarOptions,
         },
         placeholder: 'Write something...',
       });
 
       // Listen for text change events and update the parent state
       quillRef.current.on('text-change', () => {
-        if (quillRef.current) {
+        if (quillRef.current && onChange) {
           onChange(quillRef.current.root.innerHTML);
         }
       });
     }
 
     return () => {
-      quillRef.current = null; // Cleanup to avoid memory leaks
+      // Clean up the editor when component unmounts
+      if (quillRef.current) {
+        quillRef.current = null;
+      }
     };
   }, [onChange]);
 
@@ -56,7 +65,11 @@ const RichTextEditor = forwardRef<RichTextEditorHandle, RichTextEditorProps>(({ 
     },
   }));
 
-  return <div ref={editorRef} style={{ height: '300px' }} />;
+  return (
+    <div className="rich-text-editor-container">
+      <div ref={editorRef} style={{ height: '300px' }} />
+    </div>
+  );
 });
 
 RichTextEditor.displayName = 'RichTextEditor';

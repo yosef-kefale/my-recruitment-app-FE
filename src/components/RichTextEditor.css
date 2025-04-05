@@ -1,0 +1,21 @@
+/* Custom styles for RichTextEditor */
+.rich-text-editor-container {
+  position: relative;
+  width: 100%;
+}
+
+/* Hide any duplicate toolbars */
+.rich-text-editor-container .ql-toolbar:not(:first-of-type) {
+  display: none;
+}
+
+/* Ensure proper spacing */
+.rich-text-editor-container .ql-container {
+  border-bottom-left-radius: 0.5rem;
+  border-bottom-right-radius: 0.5rem;
+}
+
+.rich-text-editor-container .ql-toolbar {
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+} 

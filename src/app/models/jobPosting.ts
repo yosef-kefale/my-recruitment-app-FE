@@ -40,4 +40,8 @@ export interface JobPosting {
   educationLevel: string;
   howToApply: string;
   onHoldDate?: string; // Optional date field
+  applicationCount?: number;
+  createdAt?: string;
+  updatedAt?: string;
+  remotePolicy: string;
 }

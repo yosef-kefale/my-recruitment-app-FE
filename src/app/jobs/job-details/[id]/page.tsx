@@ -4,12 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { JobPosting } from "../../../models/jobPosting";
 import { notFound, useParams } from "next/navigation";
 import { CheckCircle } from "lucide-react";
 import { Organization } from "../../../models/organization";
 import { FaFacebook, FaXTwitter, FaLinkedin } from "react-icons/fa6";
+import axios from "axios";
 
 const JobDetail = () => {
   const params = useParams();
@@ -21,6 +22,14 @@ const JobDetail = () => {
   const [job, setJob] = useState<JobPosting | null>(null);
   const [organization, setOrganization] = useState<Organization | null>(null);
   const [jobUrl, setJobUrl] = useState("");
+
+  //Application variables
+  const [showForm, setShowForm] = useState(false);
+  const [coverLetter, setCoverLetter] = useState("");
+  const [cv, setCv] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+  const applySectionRef = useRef<HTMLDivElement | null>(null);
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
@@ -90,6 +99,74 @@ const JobDetail = () => {
       alert("Error saving job. Please try again.");
     }
   };
+
+  // Apply
+  // Scroll to the application form
+  const handleApplyClick = () => {
+    setShowForm(true);
+    setTimeout(() => {
+      if (applySectionRef.current) {
+        applySectionRef.current.scrollIntoView({ behavior: "smooth" });
+      }
+    }, 100); // Small delay for smooth transition
+  };
+
+  const handleFileChange = (event) => {
+    setCv(event.target.files[0]);
+  };
+
+  const handleSubmitApplication = async () => {
+    if (!coverLetter.trim() || !cv) {
+      setMessage("Please provide a cover letter and upload your CV.");
+      return;
+    }
+    const token = localStorage.getItem("token");
+  
+    if (!token) {
+      setMessage("Authentication error. Please log in again.");
+      return;
+    }
+  
+    setLoading(true);
+    setMessage("");
+  
+    const formData = new FormData();
+    formData.append("cv", cv);
+  
+    try {
+      const applicationData = {
+        userId: organization?.id,
+        JobPostId: job?.id,
+        coverLetter: coverLetter,
+        applicationInformation: {
+          cv: cv, // Store uploaded CV URL
+          appliedAt: new Date().toISOString(),
+        },
+      };
+  
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      };
+  
+      // Send application request with token in headers
+      await axios.post(
+        "http://196.188.249.24:3010/api/applications/create-application",
+        applicationData,
+        config
+      );
+  
+      setMessage("Application submitted successfully!");
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error) {
+      setMessage("Error applying for the job. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+  
 
   return (
     <div className="w-full bg-gray-100">
@@ -164,13 +241,13 @@ const JobDetail = () => {
 
                 {/* Job Details */}
                 <div>
-                  <p className="text-lg font-bold">
+                  <span className="text-lg font-bold">
                     {job?.title}
                     <span className="text-gray-400 font-normal">
                       {" "}
                       ({job?.employmentType})
                     </span>
-                  </p>
+                  </span>
                   <p className="text-gray-500">
                     Circlebox Creative - Royston, Hertfordshire, UK
                   </p>
@@ -178,7 +255,7 @@ const JobDetail = () => {
                     {job?.salaryRange?.minimum && job?.salaryRange?.maximum && (
                       <div>
                         ${job?.salaryRange?.minimum}
-                        {" - " + '$' +job?.salaryRange?.maximum}
+                        {" - " + "$" + job?.salaryRange?.maximum}
                         {job?.benefits ? " + Benefits" : ""}
                       </div>
                     )}
@@ -263,9 +340,16 @@ const JobDetail = () => {
         <div>
           <Card>
             <CardContent className="p-6">
-              <Button className="w-full bg-emerald-500 font-semibold">
-                Apply for this job
-              </Button>
+              {/* Apply Button */}
+              {!showForm && (
+                <button
+                  className="w-full bg-emerald-500 text-white font-semibold p-3 rounded-lg hover:bg-emerald-600 transition"
+                  onClick={handleApplyClick}
+                >
+                  Apply for this job
+                </button>
+              )}
+
               <div className="mt-4 space-y-2">
                 <Button
                   variant="outline"
@@ -353,14 +437,99 @@ const JobDetail = () => {
               </div>
 
               <div className="mt-8">
-                <Button className="w-full bg-emerald-500 font-semibold">
+              {!showForm && (
+                <button
+                  className="w-full bg-emerald-500 text-white font-semibold p-3 rounded-lg hover:bg-emerald-600 transition"
+                  onClick={handleApplyClick}
+                >
                   Apply for this job
-                </Button>
+                </button>
+              )}
               </div>
             </CardContent>
           </Card>
         </div>
       </div>
+
+      {/* Application Form - Appears on Apply Click */}
+      {showForm && (
+        <div
+          ref={applySectionRef}
+          className="mt-6 p-6 border rounded-2xl shadow-lg bg-white mx-4"
+        >
+          <h2 className="text-xl font-semibold mb-6 text-gray-800 text-center">
+            Complete Your Application
+          </h2>
+
+          {/* Cover Letter */}
+          <label className="block text-gray-700 font-medium mb-2">
+            Cover Letter
+          </label>
+          <textarea
+            placeholder="Write your cover letter..."
+            className="w-full p-4 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 resize-none min-h-[120px]"
+            value={coverLetter}
+            onChange={(e) => setCoverLetter(e.target.value)}
+          />
+
+          {/* File Upload */}
+          <label className="block text-gray-700 font-medium mb-2">
+            Upload CV
+          </label>
+          <div className="relative w-full border border-gray-300 rounded-lg flex items-center p-3 bg-gray-100 hover:bg-gray-200 transition">
+            <input
+              type="file"
+              onChange={handleFileChange}
+              className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+            />
+            <span className="text-gray-600">
+              {cv ? cv.name : "Choose a file (PDF, DOC, DOCX)"}
+            </span>
+          </div>
+
+          {/* Submit Button */}
+          <button
+            className="mt-6 w-full bg-emerald-500 text-white font-semibold py-3 rounded-xl hover:bg-emerald-600 transition flex items-center justify-center"
+            onClick={handleSubmitApplication}
+            disabled={loading}
+          >
+            {loading ? (
+              <>
+                <svg
+                  className="animate-spin h-5 w-5 mr-2 text-white"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v8H4z"
+                  ></path>
+                </svg>
+                Submitting...
+              </>
+            ) : (
+              "Submit Application"
+            )}
+          </button>
+
+          {/* Message */}
+          {message && (
+            <p className="text-center mt-4 text-sm font-medium text-red-500">
+              {message}
+            </p>
+          )}
+        </div>
+      )}
     </div>
   );
 };

@@ -17,7 +17,6 @@ import { Label } from "@/components/ui/label";
 import RichTextEditor, {
   RichTextEditorHandle,
 } from "../../components/RichTextEditor";
-import { Organization } from "../../app/models/organization";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "../ui/badge";
 
@@ -28,9 +27,6 @@ const JobPostingForm = () => {
   const { register, handleSubmit, setValue } = useForm();
   const [loading, setLoading] = useState(false);
   const editorRef = useRef<RichTextEditorHandle>(null); // Ref for RichTextEditor
-  const [jobDescription, setJobDescription] = useState(''); 
-  const [editorContent, setEditorContent] = useState<string>(""); // State to store the editor content
-  const [organization, setOrganization] = useState<Organization | null>(null);
 
   const [skills, setSkills] = useState<string[]>([]);
   const [skill, setSkill] = useState("");
@@ -52,7 +48,6 @@ const JobPostingForm = () => {
   useEffect(() => {
     const org = localStorage.getItem("organization");
     if (org) {
-      setOrganization(JSON.parse(org) as Organization);
       console.log(JSON.parse(org)); // Check if data is retrieved
     }
   }, []);
@@ -65,7 +60,7 @@ const JobPostingForm = () => {
   const handleGetContent = () => {
     if (editorRef.current) {
       const content = editorRef.current.getContent(); // Get the editor content
-      setEditorContent(content); // Update the state with the content
+      console.log("Editor content:", content);
     }
   };
 
@@ -121,14 +116,6 @@ const JobPostingForm = () => {
     setBenefits(benefits.filter((b) => b !== benefitToRemove));
   };
 
-  const handleSave = () => {
-    if (editorRef.current) {
-      const content = editorRef.current.getContent();
-      console.log('Saved Content:', content);
-      setJobDescription(content);
-    }
-  };
-
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const onSubmit = async (data: any) => {
     const token = localStorage.getItem("token"); // Retrieve token from localStorage
@@ -169,6 +156,8 @@ const JobPostingForm = () => {
             },
             body: JSON.stringify({
               ...data,
+              positions: 4,
+              jobPostRequirement: ['test'],
               organizationId: "2b004c6d-9af9-4586-bbdb-1d4abcd239fa",
             }),
           }
@@ -223,8 +212,7 @@ const JobPostingForm = () => {
         {/* Job Description Section */}
         <div className="grid grid-cols-1">
           <Label className="pb-1">Job Description</Label>
-          <RichTextEditor ref={editorRef} onChange={setJobDescription} />
-          <button onClick={handleSave}>Save</button>
+          <RichTextEditor ref={editorRef} />
         </div>
 
         {/* Job Industry Section */}
