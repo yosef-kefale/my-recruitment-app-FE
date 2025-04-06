@@ -1,21 +1,35 @@
 export interface Application {
-  id: string;
-  jobPostId: string;
-  userId: string;
+  id?: string;
+  userId?: string;
+  jobId?: string;
+  status: 'pending' | 'reviewed' | 'shortlisted' | 'rejected' | 'hired';
   coverLetter: string;
-  status: string;
+  resumeUrl?: string;
+  screeningScore?: number;
   applicationInformation: {
     appliedAt: string;
-    cv: string;
-    screeningAnswers?: {
-      questionId: string;
-      answer: string;
-    }[];
+    lastUpdated?: string;
+    notes?: string;
   };
-  evaluationNotes?: string;
-  screeningScore?: number;
-  createdAt: string;
-  updatedAt: string;
+  candidateInformation?: {
+    name?: string;
+    email?: string;
+    phone?: string;
+    location?: string;
+    currentCompany?: string;
+    currentPosition?: string;
+    experience?: number;
+    education?: string;
+    skills?: string[];
+  };
+  interviewInformation?: {
+    scheduled?: boolean;
+    date?: string;
+    time?: string;
+    type?: 'phone' | 'video' | 'in-person';
+    notes?: string;
+    feedback?: string;
+  };
 }
 
 export interface ScreeningAnswer {

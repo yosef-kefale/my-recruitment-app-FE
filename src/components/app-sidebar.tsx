@@ -20,7 +20,7 @@ import {
   Mail,
   Building,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Sidebar,
   SidebarContent,
@@ -29,6 +29,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { useRouter, usePathname } from "next/navigation";
 import {
@@ -50,8 +51,19 @@ import {
   SelectValue,
 } from "./ui/select";
 import Link from "next/link";
+import React from "react";
 
-const menuItems = [
+interface MenuItem {
+  title: string;
+  url?: string;
+  icon: React.ComponentType<{ className?: string }>;
+  submenus?: Array<{
+    title: string;
+    url: string;
+  }>;
+}
+
+const menuItems: MenuItem[] = [
   {
     title: "Dashboard",
     url: "/dashboard",
@@ -141,11 +153,29 @@ export function AppSidebar() {
   const [openMenus, setOpenMenus] = useState<{ [key: string]: boolean }>({});
   const router = useRouter();
   const pathname = usePathname();
+  const { setOpen, state } = useSidebar();
 
-  const [selectedCompany, setSelectedCompany] = useState(companies[0].id); // Default to first company
+  const [selectedCompany, setSelectedCompany] = useState(companies[0].id);
+
+  // Reset open menus when sidebar is collapsed
+  useEffect(() => {
+    if (state === "collapsed") {
+      setOpenMenus({});
+    }
+  }, [state]);
 
   const toggleMenu = (title: string) => {
     setOpenMenus((prev) => ({ ...prev, [title]: !prev[title] }));
+  };
+
+  const handleMenuClick = (item: MenuItem) => {
+    // If sidebar is collapsed, expand it
+    setOpen(true);
+    
+    // If item has submenus, toggle them
+    if (item.submenus) {
+      toggleMenu(item.title);
+    }
   };
 
   const handleLogout = () => {
@@ -161,7 +191,7 @@ export function AppSidebar() {
     setSelectedCompany(value);
   };
 
-  const isActiveMenu = (url: string) => {
+  const isActiveMenu = (url: string | undefined) => {
     if (!url) return false;
     return pathname.startsWith(url);
   };
@@ -172,10 +202,10 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar className="h-screen flex flex-col bg-gray-900 text-white w-64">
+    <Sidebar className="h-screen flex flex-col bg-gray-900 text-white w-64" collapsible="icon">
       <SidebarContent className="flex-1 overflow-y-auto">
         {/* Company Section */}
-        <div className="text-sky-800 w-full p-4">
+        <div className="text-sky-800 w-full p-4 group-data-[collapsible=icon]:hidden">
           <Select onValueChange={handleSelectChange} value={selectedCompany}>
             <SelectTrigger className="w-[220px] h-[50px] flex items-center">
               {selectedCompany !== "create-new" ? (
@@ -228,13 +258,14 @@ export function AppSidebar() {
                 <SidebarMenuItem>
                   <SidebarMenuButton
                     asChild
+                    tooltip={item.title}
                     className={`flex items-center px-4 py-5 text-sky-800 transition-all w-full ${
                       !item.submenus && isActiveMenu(item.url) ? "bg-sky-50 text-sky-700" : ""
                     }`}
-                    onClick={() => item.submenus && toggleMenu(item.title)}
+                    onClick={() => handleMenuClick(item)}
                   >
                     {item.submenus ? (
-                      <div className="flex justify-between items-center w-full ">
+                      <div className="flex justify-between items-center w-full">
                         <div className="flex items-center">
                           <item.icon className="w-5 h-5 mr-3" />
                           <span>{item.title}</span>
@@ -246,7 +277,7 @@ export function AppSidebar() {
                         />
                       </div>
                     ) : (
-                      <Link href={item.url} className="flex items-center w-full">
+                      <Link href={item.url || '#'} className="flex items-center w-full">
                         <item.icon className="w-5 h-5 mr-3" />
                         <span>{item.title}</span>
                       </Link>
@@ -278,7 +309,7 @@ export function AppSidebar() {
       </SidebarContent>
 
       {/* User Profile & Logout (Fixed at Bottom) */}
-      <div className="mt-auto p-4 border-t flex items-center bg-white w-full">
+      <div className="mt-auto p-4 border-t flex items-center bg-white w-full group-data-[collapsible=icon]:hidden">
         <DropdownMenu>
           <DropdownMenuTrigger className="flex items-center space-x-3 w-full cursor-pointer">
             <Image

@@ -179,6 +179,16 @@ export default function CreateJob() {
   };
 
   const handleSuggestSkills = async () => {
+    // Check if required fields are filled
+    if (!title || !position || !industry || !employmentType || !experienceLevel) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields (title, position, industry, employment type, and experience level) before generating skills.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsSuggestingSkills(true);
     
     // Simulate API call to get suggested skills
@@ -193,6 +203,16 @@ export default function CreateJob() {
   
   // New function to handle requirements suggestions
   const handleSuggestRequirements = async () => {
+    // Check if required fields are filled
+    if (!title || !position || !industry || !employmentType || !experienceLevel) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields (title, position, industry, employment type, and experience level) before generating requirements.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsSuggestingRequirements(true);
     
     // Simulate API call to get suggested requirements
@@ -207,6 +227,16 @@ export default function CreateJob() {
   
   // New function to handle responsibilities suggestions
   const handleSuggestResponsibilities = async () => {
+    // Check if required fields are filled
+    if (!title || !position || !industry || !employmentType || !experienceLevel) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields (title, position, industry, employment type, and experience level) before generating responsibilities.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsSuggestingResponsibilities(true);
     
     // Simulate API call to get suggested responsibilities
@@ -897,7 +927,6 @@ We offer a competitive salary, comprehensive benefits package, and opportunities
                   type="button" 
                   variant="outline" 
                   onClick={handleSuggestSkills}
-                  disabled={isSuggestingSkills}
                   className="whitespace-nowrap"
                 >
                   {isSuggestingSkills ? (
@@ -956,7 +985,6 @@ We offer a competitive salary, comprehensive benefits package, and opportunities
                   type="button" 
                   variant="outline" 
                   onClick={handleSuggestResponsibilities}
-                  disabled={isSuggestingResponsibilities}
                   className="whitespace-nowrap"
                 >
                   {isSuggestingResponsibilities ? (
@@ -1015,7 +1043,6 @@ We offer a competitive salary, comprehensive benefits package, and opportunities
                   type="button" 
                   variant="outline" 
                   onClick={handleSuggestRequirements}
-                  disabled={isSuggestingRequirements}
                   className="whitespace-nowrap"
                 >
                   {isSuggestingRequirements ? (
