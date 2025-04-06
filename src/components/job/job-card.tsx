@@ -112,7 +112,7 @@ const JobCard: React.FC<JobCardProps> = ({ job, isEmployer, onDelete }) => {
   }
 
   return (
-    <Card className="py-6 px-4 sm:px-8 shadow-md border-gray-200 border-t-0 rounded-lg transition-all relative hover:shadow-lg">
+    <Card className="h-full py-6 px-4 sm:px-8 shadow-md border-gray-200 border-t-0 rounded-lg transition-all relative hover:shadow-lg flex flex-col">
       {/* Header with time and actions */}
       <div className="flex justify-between items-start mb-3">
         <p className="text-gray-500 text-sm">{timeAgo}</p>
@@ -182,7 +182,7 @@ const JobCard: React.FC<JobCardProps> = ({ job, isEmployer, onDelete }) => {
         </div>
         <div className="flex-grow">
           <Link href={isEmployer ? `/jobs/employer-job-details/${job.id}` : `/jobs/job-details/${job.id}`}>
-            <h2 className="text-xl font-semibold text-sky-800 hover:text-cyan-400 hover:underline cursor-pointer">
+            <h2 className="text-xl font-semibold text-sky-800 hover:text-cyan-400 hover:underline cursor-pointer line-clamp-2">
               {job.title}
             </h2>
           </Link>
@@ -198,7 +198,7 @@ const JobCard: React.FC<JobCardProps> = ({ job, isEmployer, onDelete }) => {
       <div className="flex flex-wrap items-center gap-3 text-gray-600 mb-4 text-sm">
         <div className="flex items-center gap-1">
           <MapPin size={16} className="text-gray-500" />
-          {job.location}
+          <span className="truncate">{job.location}</span>
         </div>
         {job?.salaryRange?.minimum && job?.salaryRange?.maximum && (
           <div className="flex items-center">
@@ -210,7 +210,7 @@ const JobCard: React.FC<JobCardProps> = ({ job, isEmployer, onDelete }) => {
       </div>
 
       {/* Description */}
-      <div className="mt-3 text-gray-600 text-sm font-[Inter] leading-relaxed">
+      <div className="mt-3 text-gray-600 text-sm font-[Inter] leading-relaxed flex-grow">
         {/* Show full or truncated description */}
         {showFullDescription ? (
           <div
@@ -219,7 +219,7 @@ const JobCard: React.FC<JobCardProps> = ({ job, isEmployer, onDelete }) => {
           />
         ) : (
           <div
-            className="description-content"
+            className="description-content line-clamp-3"
             dangerouslySetInnerHTML={{
               __html: `${job.description.slice(0, maxChars)}...`,
             }}
@@ -238,17 +238,21 @@ const JobCard: React.FC<JobCardProps> = ({ job, isEmployer, onDelete }) => {
       </div>
 
       {/* Skills & Applicants */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mt-6">
-        <span className="text-gray-500 text-sm">
-          {job?.applicationCount || 0} applicants
-        </span>
+      <div className="flex flex-col gap-4 mt-6 pt-4 border-t border-gray-100">
+        <div className="flex justify-between items-center">
+          <span className="text-gray-500 text-sm">
+            {job?.applicationCount || 0} applicants
+          </span>
+        </div>
+        
         <div className="flex flex-wrap gap-2">
           {job.skill.slice(0, maxSkillsToShow).map((skill) => (
             <Badge
               key={skill}
-              className="bg-gray-200 text-gray-800 hover:bg-gray-300 hover:text-blue-500 px-2 py-1 rounded-md text-xs"
+              className="bg-gray-200 text-gray-800 hover:bg-gray-300 hover:text-blue-500 px-2 py-1 rounded-md text-xs truncate max-w-[120px]"
+              title={skill}
             >
-              {skill.length > 25 ? `${skill.slice(0, 25)}...` : skill}
+              {skill.length > 15 ? `${skill.slice(0, 15)}...` : skill}
             </Badge>
           ))}
           {job.skill.length > maxSkillsToShow && (

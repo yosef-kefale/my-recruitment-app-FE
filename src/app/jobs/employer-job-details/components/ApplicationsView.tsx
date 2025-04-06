@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import ApplicationDetail from "./ApplicationDetail";
-import { Eye, Download, FileText, Calendar, CheckCircle, XCircle, Clock, AlertCircle } from "lucide-react";
+import { Eye, Download, FileText, Calendar, CheckCircle, XCircle, Clock, AlertCircle, ExternalLink } from "lucide-react";
 
 interface ApplicationsViewProps {
   applications: Application[];
@@ -203,8 +203,8 @@ const ApplicationsView = ({
                           window.open(application.applicationInformation.cv, '_blank');
                         }}
                       >
-                        <Download className="h-4 w-4 mr-2" />
-                        Download CV
+                        <Eye className="h-4 w-4 mr-2" />
+                        View CV
                       </Button>
                     </div>
                     

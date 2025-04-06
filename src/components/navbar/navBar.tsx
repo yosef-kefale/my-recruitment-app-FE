@@ -1,11 +1,12 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 
 export default function Navbar() {
   const router = useRouter();
+  const pathname = usePathname();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -37,7 +38,7 @@ export default function Navbar() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     setIsLoggedIn(false);
-    router.push("/login");
+    router.push("/");
   };
 
   return (
@@ -51,35 +52,61 @@ export default function Navbar() {
           <>
             <Link
               href="/jobs/view-all"
-              className="text-white text-lg font-bold hover:text-sky-600"
+              className={`text-white text-lg font-bold ${
+                pathname.startsWith("/jobs") ? "text-sky-100 border-b-2 border-sky-100" : ""
+              }`}
             >
               Jobs
             </Link>
             <Link
               href="/jobs/applications"
-              className="text-white text-lg font-bold hover:text-sky-600"
+              className={`text-white text-lg font-bold ${
+                pathname === "/jobs/applications" ? "text-sky-100 border-b-2 border-sky-100" : ""
+              }`}
             >
               Applications
             </Link>
-            <Link href="/inbox" className="text-white text-lg font-bold hover:text-sky-600">
+            <Link 
+              href="/inbox" 
+              className={`text-white text-lg font-bold ${
+                pathname === "/inbox" ? "text-sky-100 border-b-2 border-sky-100" : ""
+              }`}
+            >
               Inbox
             </Link>
           </>
         ) : (
           <>
-            <Link href="/" className="text-white text-lg font-bold hover:text-sky-600">
+            <Link 
+              href="/" 
+              className={`text-white text-lg font-bold ${
+                pathname === "/" ? "text-sky-100 border-b-2 border-sky-100" : ""
+              }`}
+            >
               Home
             </Link>
             <Link
               href="/jobs/view-all"
-              className="text-white text-lg font-bold hover:text-sky-600"
+              className={`text-white text-lg font-bold ${
+                pathname.startsWith("/jobs") ? "text-sky-100 border-b-2 border-sky-100" : ""
+              }`}
             >
               Find Jobs
             </Link>
-            <Link href="#" className="text-white text-lg font-bold hover:text-sky-600">
+            <Link 
+              href="#" 
+              className={`text-white text-lg font-bold ${
+                pathname === "/candidates" ? "text-sky-100 border-b-2 border-sky-100" : ""
+              }`}
+            >
               Find Candidates
             </Link>
-            <Link href="#" className="text-white text-lg font-bold hover:text-sky-600">
+            <Link 
+              href="#" 
+              className={`text-white text-lg font-bold ${
+                pathname === "/contact" ? "text-sky-100 border-b-2 border-sky-100" : ""
+              }`}
+            >
               Contact
             </Link>
           </>
@@ -105,22 +132,16 @@ export default function Navbar() {
             {showDropdown && (
               <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-lg p-2">
                 <Link
-                  href="/user/profile"
+                  href="/user/profile?tab=profile"
                   className="block px-4 py-2 hover:bg-sky-400"
                 >
                   Profile
                 </Link>
-                <Link href="/cv" className="block px-4 py-2 hover:bg-sky-400">
+                <Link href="/user/profile?tab=cv" className="block px-4 py-2 hover:bg-sky-400">
                   CV and Contacts
                 </Link>
                 <Link
-                  href="/hires"
-                  className="block px-4 py-2 hover:bg-sky-400"
-                >
-                  Hires
-                </Link>
-                <Link
-                  href="/statistics"
+                  href="/user/profile?tab=statistics"
                   className="block px-4 py-2 hover:bg-sky-400"
                 >
                   My Statistics

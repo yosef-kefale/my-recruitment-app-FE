@@ -25,7 +25,8 @@ import {
   Star,
   MessageSquare,
   Save,
-  Eye
+  Eye,
+  ExternalLink
 } from "lucide-react";
 
 interface ApplicationDetailProps {
@@ -143,15 +144,26 @@ const ApplicationDetail = ({
                     </div>
                     <div>
                       <p className="text-sm font-medium text-gray-500">CV</p>
-                      <a 
-                        href={application.applicationInformation.cv} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:underline flex items-center"
-                      >
-                        <Download className="h-4 w-4 mr-1" />
-                        Download CV
-                      </a>
+                      <div className="flex flex-col gap-2">
+                        <a 
+                          href={application.applicationInformation.cv} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:underline flex items-center"
+                        >
+                          <Download className="h-4 w-4 mr-1" />
+                          Download CV
+                        </a>
+                        <a 
+                          href={application.applicationInformation.cv} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:underline flex items-center"
+                        >
+                          <Eye className="h-4 w-4 mr-1" />
+                          View CV
+                        </a>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -191,28 +203,16 @@ const ApplicationDetail = ({
                       );
                       
                       return (
-                        <div key={question.id} className="border rounded-lg p-4">
-                          <div className="flex justify-between items-start">
-                            <h3 className="font-medium text-blue-800">Question {index + 1}</h3>
-                            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                              {question.type}
+                        <div key={index} className="border border-gray-200 rounded-lg p-4">
+                          <div className="flex justify-between items-start mb-2">
+                            <h4 className="font-medium text-blue-800">{question.question}</h4>
+                            <Badge className="bg-blue-100 text-blue-800">
+                              Weight: {question.weight}
                             </Badge>
                           </div>
-                          <p className="mt-1 text-gray-700">{question.question}</p>
-                          
-                          <div className="mt-3">
-                            <p className="text-sm font-medium text-gray-500">Answer:</p>
-                            <div className="mt-1 p-3 bg-gray-50 rounded-md">
-                              <p>{answer?.answer || "No answer provided"}</p>
-                            </div>
+                          <div className="bg-gray-50 p-3 rounded-md">
+                            <p className="text-gray-700">{answer?.answer || "No answer provided"}</p>
                           </div>
-                          
-                          {question.correctAnswer && (
-                            <div className="mt-2">
-                              <p className="text-sm font-medium text-gray-500">Correct Answer:</p>
-                              <p className="mt-1 text-green-600">{question.correctAnswer}</p>
-                            </div>
-                          )}
                         </div>
                       );
                     })}
@@ -225,35 +225,40 @@ const ApplicationDetail = ({
           <TabsContent value="evaluation" className="space-y-4">
             <Card>
               <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50">
-                <CardTitle className="text-xl text-blue-800">Evaluation Score</CardTitle>
-                <CardDescription>Rate the applicant's overall performance</CardDescription>
+                <CardTitle className="text-xl text-blue-800">Screening Score</CardTitle>
+                <CardDescription>Rate the applicant's screening answers</CardDescription>
               </CardHeader>
               <CardContent className="pt-6">
-                <div className="space-y-6">
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <label className="text-sm font-medium text-gray-700">Evaluation Score</label>
-                      <span className="text-lg font-bold text-blue-600">{evaluationScore}/10</span>
-                    </div>
-                    <Slider
-                      value={[evaluationScore]}
-                      onValueChange={(value) => setEvaluationScore(value[0])}
-                      max={10}
-                      step={1}
-                      className="py-4"
-                    />
-                    <div className="flex justify-between text-xs text-gray-500">
-                      <span>Poor</span>
-                      <span>Average</span>
-                      <span>Excellent</span>
-                    </div>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-gray-700">Score: {evaluationScore}/10</span>
+                    <span className="text-sm text-gray-500">Drag to adjust</span>
                   </div>
-                  
-                  <div className="flex items-center gap-2 mt-4">
-                    <div className={`h-3 w-3 rounded-full ${evaluationScore <= 3 ? 'bg-red-500' : evaluationScore <= 7 ? 'bg-yellow-500' : 'bg-green-500'}`}></div>
-                    <span className="text-sm text-gray-600">
-                      {evaluationScore <= 3 ? 'Not Recommended' : evaluationScore <= 7 ? 'Consider' : 'Highly Recommended'}
-                    </span>
+                  <Slider 
+                    value={[evaluationScore]} 
+                    onValueChange={(value) => setEvaluationScore(value[0])}
+                    max={10}
+                    step={1}
+                    className="py-4"
+                  />
+                  <div className="flex justify-end">
+                    <Button 
+                      onClick={handleSaveNotes} 
+                      disabled={isSaving}
+                      className="bg-blue-600 hover:bg-blue-700"
+                    >
+                      {isSaving ? (
+                        <>
+                          <Save className="h-4 w-4 mr-2 animate-spin" />
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="h-4 w-4 mr-2" />
+                          Save Score
+                        </>
+                      )}
+                    </Button>
                   </div>
                 </div>
               </CardContent>

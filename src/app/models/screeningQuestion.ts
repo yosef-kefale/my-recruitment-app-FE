@@ -2,11 +2,14 @@ export interface ScreeningQuestion {
   id?: string;
   jobPostId: string;
   question: string;
-  type: 'text' | 'multiple-choice' | 'yes-no';
+  type: 'text' | 'multiple-choice' | 'yes-no' | 'boolean' | 'essay';
   options?: string[];
-  correctAnswer?: string;
-  required: boolean;
+  isKnockout: boolean;
   weight: number;
+  booleanAnswer?: boolean;
+  selectedOptions?: string[];
+  essayAnswer?: string;
+  score?: number;
   createdAt?: string;
   updatedAt?: string;
 }

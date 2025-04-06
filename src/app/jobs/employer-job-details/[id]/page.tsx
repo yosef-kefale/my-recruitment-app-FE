@@ -27,6 +27,17 @@ import {
 import axios from "axios";
 import ApplicationDetail from "../components/ApplicationDetail";
 import ApplicationsView from "../components/ApplicationsView";
+import BulkEvaluation from "../components/BulkEvaluation";
+import { useToast } from "@/hooks/use-toast";
+import { Toaster } from "@/components/ui/toaster";
+import { 
+  ClipboardList, 
+  Users, 
+  FileText, 
+  BarChart2, 
+  Settings, 
+  CheckSquare 
+} from "lucide-react";
 
 const EmployerJobDetail = () => {
   const params = useParams();
@@ -39,15 +50,22 @@ const EmployerJobDetail = () => {
   const [statistics, setStatistics] = useState<JobStatistics | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
-  const [currentTab, setCurrentTab] = useState("overview");
-  const [newQuestion, setNewQuestion] = useState({
+  const [currentTab, setCurrentTab] = useState<"overview" | "applications" | "screening" | "statistics" | "settings" | "bulk-evaluation">("overview");
+  type QuestionType = 'text' | 'multiple-choice' | 'yes-no' | 'boolean' | 'essay';
+
+  const [newQuestion, setNewQuestion] = useState<Omit<ScreeningQuestion, 'id' | 'jobPostId' | 'createdAt' | 'updatedAt'>>({
     question: "",
-    type: "text",
+    type: "text" as QuestionType,
     options: [""],
-    correctAnswer: "",
-    required: false,
+    isKnockout: false,
     weight: 1,
+    booleanAnswer: false,
+    selectedOptions: [],
+    essayAnswer: "",
+    score: 0
   });
+  
+  const { toast } = useToast();
   
   // Sample applications for testing
   const sampleApplications: Application[] = [
@@ -159,6 +177,10 @@ const EmployerJobDetail = () => {
     }
   }, [id]);
   
+  useEffect(() => {
+    console.log("Current screening questions:", screeningQuestions);
+  }, [screeningQuestions]);
+  
   const fetchJobDetails = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -199,6 +221,7 @@ const EmployerJobDetail = () => {
   const fetchScreeningQuestions = async () => {
     try {
       const token = localStorage.getItem("token");
+      console.log("Fetching screening questions for job ID:", id);
       const response = await axios.get(
         `http://196.188.249.24:3010/api/pre-screening-questions/${id}`,
         {
@@ -207,9 +230,17 @@ const EmployerJobDetail = () => {
           },
         }
       );
+      console.log("Screening questions response:", response.data);
       setScreeningQuestions(response.data);
     } catch (error) {
       console.error("Error fetching screening questions:", error);
+      if (axios.isAxiosError(error)) {
+        console.error("Axios error details:", {
+          status: error.response?.status,
+          statusText: error.response?.statusText,
+          data: error.response?.data
+        });
+      }
     }
   };
   
@@ -252,11 +283,13 @@ const EmployerJobDetail = () => {
       const questionData = {
         ...newQuestion,
         jobPostId: id,
-        options: newQuestion.options.filter((opt: string) => opt.trim() !== ""),
+        options: newQuestion.options?.filter((opt: string) => opt.trim() !== "") || [],
       };
-
-      await axios.post(
-        "http://196.188.249.24:3010/api/screening-questions",
+      
+      console.log("Adding new screening question:", questionData);
+      
+      const response = await axios.post(
+        "http://196.188.249.24:3010/api/pre-screening-questions",
         questionData,
         {
           headers: {
@@ -264,21 +297,47 @@ const EmployerJobDetail = () => {
           },
         }
       );
+      
+      console.log("Add question response:", response.data);
+
+      // Show success toast
+      toast({
+        title: "Success",
+        description: "Screening question added successfully",
+      });
 
       // Refresh questions
+      console.log("Refreshing screening questions after adding new question");
       fetchScreeningQuestions();
       
       // Reset form
       setNewQuestion({
         question: "",
-        type: "text",
+        type: "text" as QuestionType,
         options: [""],
-        correctAnswer: "",
-        required: false,
+        isKnockout: false,
         weight: 1,
+        booleanAnswer: false,
+        selectedOptions: [],
+        essayAnswer: "",
+        score: 0
       });
     } catch (error) {
       console.error("Error adding screening question:", error);
+      if (axios.isAxiosError(error)) {
+        console.error("Axios error details:", {
+          status: error.response?.status,
+          statusText: error.response?.statusText,
+          data: error.response?.data
+        });
+      }
+      
+      // Show error toast
+      toast({
+        title: "Error",
+        description: "Failed to add screening question. Please try again.",
+        variant: "destructive",
+      });
     }
   };
   
@@ -320,6 +379,10 @@ const EmployerJobDetail = () => {
   
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
   
+  const handleQuestionTypeChange = (value: QuestionType) => {
+    setNewQuestion({...newQuestion, type: value});
+  };
+  
   // Don't render anything until after hydration
   if (!mounted) {
     return <div className="flex justify-center items-center h-screen">Loading...</div>;
@@ -331,7 +394,7 @@ const EmployerJobDetail = () => {
   
   return (
     <div className="container mx-auto py-8 px-4">
-      <div className="mb-8 bg-gradient-to-r from-blue-50 to-indigo-50 p-8 rounded-xl border border-blue-100 shadow-sm">
+      <div className="mb-8 p-8 rounded-xl border border-blue-100 shadow-sm">
         <div className="flex flex-col md:flex-row justify-between items-start gap-6">
           <div className="w-full md:w-2/3">
             <h1 className="text-4xl font-bold text-blue-900 mb-3">{job?.title}</h1>
@@ -350,7 +413,7 @@ const EmployerJobDetail = () => {
                 </Badge>
               )}
             </div>
-            <div className="prose prose-blue max-w-none prose-headings:text-blue-800 prose-p:text-gray-700 prose-strong:text-blue-700" dangerouslySetInnerHTML={{ __html: job?.description || "" }} />
+            <div className="mt-6 prose prose-blue max-w-none prose-headings:text-blue-800 prose-p:text-gray-700 prose-strong:text-blue-700 prose-li:text-gray-700 prose-ul:list-disc prose-ol:list-decimal prose-ul:pl-4 prose-ol:pl-4 prose-li:my-1 prose-p:my-3 prose-headings:my-4 prose-hr:my-6 prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline" dangerouslySetInnerHTML={{ __html: job?.description || "" }} />
           </div>
           <div className="w-full md:w-1/3 bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
             <h3 className="font-semibold text-xl text-blue-800 mb-4">Quick Info</h3>
@@ -382,55 +445,71 @@ const EmployerJobDetail = () => {
       {/* Tabs */}
       <div className="mb-6 overflow-x-auto">
         <div className="border-b border-gray-200 min-w-max">
-          <nav className="-mb-px flex space-x-8">
+          <nav className="-mb-px flex space-x-1">
             <button
               onClick={() => setCurrentTab("overview")}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+              className={`py-3 px-4 border-b-2 font-medium text-sm flex items-center gap-2 rounded-t-lg transition-colors ${
                 currentTab === "overview"
-                  ? "border-blue-500 text-blue-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  ? "border-blue-500 text-blue-600 bg-blue-50"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
               }`}
             >
+              <ClipboardList size={16} />
               Overview
             </button>
             <button
               onClick={() => setCurrentTab("applications")}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+              className={`py-3 px-4 border-b-2 font-medium text-sm flex items-center gap-2 rounded-t-lg transition-colors ${
                 currentTab === "applications"
-                  ? "border-blue-500 text-blue-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  ? "border-blue-500 text-blue-600 bg-blue-50"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
               }`}
             >
+              <Users size={16} />
               Applications ({applications.length})
             </button>
             <button
               onClick={() => setCurrentTab("screening")}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+              className={`py-3 px-4 border-b-2 font-medium text-sm flex items-center gap-2 rounded-t-lg transition-colors ${
                 currentTab === "screening"
-                  ? "border-blue-500 text-blue-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  ? "border-blue-500 text-blue-600 bg-blue-50"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
               }`}
             >
+              <FileText size={16} />
               Screening Questions
             </button>
             <button
               onClick={() => setCurrentTab("statistics")}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+              className={`py-3 px-4 border-b-2 font-medium text-sm flex items-center gap-2 rounded-t-lg transition-colors ${
                 currentTab === "statistics"
-                  ? "border-blue-500 text-blue-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  ? "border-blue-500 text-blue-600 bg-blue-50"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
               }`}
             >
+              <BarChart2 size={16} />
               Statistics
             </button>
             <button
-              onClick={() => setCurrentTab("settings")}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                currentTab === "settings"
-                  ? "border-blue-500 text-blue-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              onClick={() => setCurrentTab("bulk-evaluation")}
+              className={`py-3 px-4 border-b-2 font-medium text-sm flex items-center gap-2 rounded-t-lg transition-colors ${
+                currentTab === "bulk-evaluation"
+                  ? "border-blue-500 text-blue-600 bg-blue-50"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
               }`}
             >
+              <CheckSquare size={16} />
+              Bulk Evaluation
+            </button>
+            <button
+              onClick={() => setCurrentTab("settings")}
+              className={`py-3 px-4 border-b-2 font-medium text-sm flex items-center gap-2 rounded-t-lg transition-colors ${
+                currentTab === "settings"
+                  ? "border-blue-500 text-blue-600 bg-blue-50"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+              }`}
+            >
+              <Settings size={16} />
               Settings
             </button>
           </nav>
@@ -439,74 +518,100 @@ const EmployerJobDetail = () => {
 
       {/* Tab Content */}
       {currentTab === "overview" && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="md:col-span-2">
+        <div className="space-y-6">
+          {/* Job Overview Card */}
+          <Card className="border-blue-100">
+            <CardContent className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="md:col-span-2">
+                  <h2 className="text-2xl font-bold text-blue-900 mb-4">Job Overview</h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="bg-white p-4 rounded-lg border border-gray-200">
+                      <p className="text-sm text-gray-500">Experience Level</p>
+                      <p className="font-medium text-gray-800">{job?.experienceLevel || 'Not specified'}</p>
+                    </div>
+                    <div className="bg-white p-4 rounded-lg border border-gray-200">
+                      <p className="text-sm text-gray-500">Industry</p>
+                      <p className="font-medium text-gray-800">{job?.industry || 'Not specified'}</p>
+                    </div>
+                    <div className="bg-white p-4 rounded-lg border border-gray-200">
+                      <p className="text-sm text-gray-500">Remote Policy</p>
+                      <p className="font-medium text-gray-800">{job?.remotePolicy || 'Not specified'}</p>
+                    </div>
+                    <div className="bg-white p-4 rounded-lg border border-gray-200">
+                      <p className="text-sm text-gray-500">Application URL</p>
+                      <a 
+                        href={job?.applicationURL} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:underline break-all"
+                      >
+                        {job?.applicationURL || 'Not specified'}
+                      </a>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-white p-6 rounded-lg border border-gray-200">
+                  <h3 className="font-semibold text-xl text-blue-800 mb-4">Quick Stats</h3>
+                  <div className="space-y-4">
+                    <div>
+                      <p className="text-sm text-gray-500">Total Applications</p>
+                      <p className="text-3xl font-bold text-blue-600">{applications.length}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">Posted Date</p>
+                      <p className="font-medium text-gray-800">{job?.postedDate ? new Date(job.postedDate).toLocaleDateString() : 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">Application Deadline</p>
+                      <p className="font-medium text-gray-800">{job?.deadline ? new Date(job.deadline).toLocaleDateString() : 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">Status</p>
+                      <Badge className={`${getStatusColor(job?.status || "")} text-white font-medium mt-1`}>
+                        {job?.status || 'Unknown'}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Job Details Card */}
+          <Card>
             <CardHeader>
               <CardTitle className="text-2xl text-blue-800">Job Details</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-6">
-                <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
-                  <h3 className="font-semibold text-xl text-blue-800 mb-3">Responsibilities</h3>
-                  <ul className="list-disc list-inside space-y-2">
-                    {job?.responsibilities?.map((responsibility, index) => (
-                      <li key={index} className="text-gray-700">{responsibility}</li>
-                    ))}
-                  </ul>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-6">
+                  <div className="bg-white p-6 rounded-lg border border-gray-200">
+                    <h3 className="font-semibold text-xl text-blue-800 mb-3">Responsibilities</h3>
+                    <ul className="list-disc list-inside space-y-2">
+                      {job?.responsibilities?.map((responsibility, index) => (
+                        <li key={index} className="text-gray-700">{responsibility}</li>
+                      ))}
+                    </ul>
+                  </div>
+                  
+                  <div className="bg-white p-6 rounded-lg border border-gray-200">
+                    <h3 className="font-semibold text-xl text-blue-800 mb-3">Benefits</h3>
+                    <ul className="list-disc list-inside space-y-2">
+                      {job?.benefits?.map((benefit, index) => (
+                        <li key={index} className="text-gray-700">{benefit}</li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
                 
-                <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+                <div className="bg-white p-6 rounded-lg border border-gray-200">
                   <h3 className="font-semibold text-xl text-blue-800 mb-3">Required Skills</h3>
                   <div className="flex flex-wrap gap-2 mt-2">
                     {job?.skill?.map((skill, index) => (
                       <Badge key={index} variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 px-3 py-1">{skill}</Badge>
                     ))}
                   </div>
-                </div>
-                
-                <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
-                  <h3 className="font-semibold text-xl text-blue-800 mb-3">Benefits</h3>
-                  <ul className="list-disc list-inside space-y-2">
-                    {job?.benefits?.map((benefit, index) => (
-                      <li key={index} className="text-gray-700">{benefit}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-2xl text-blue-800">Additional Information</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <p className="text-sm text-blue-600 font-medium">Experience Level</p>
-                  <p className="font-medium text-gray-800">{job?.experienceLevel || 'Not specified'}</p>
-                </div>
-                
-                <div className="bg-white p-4 rounded-lg border border-gray-200">
-                  <p className="text-sm text-gray-500">Industry</p>
-                  <p className="font-medium text-gray-800">{job?.industry || 'Not specified'}</p>
-                </div>
-                
-                <div className="bg-white p-4 rounded-lg border border-gray-200">
-                  <p className="text-sm text-gray-500">Remote Policy</p>
-                  <p className="font-medium text-gray-800">{job?.remotePolicy || 'Not specified'}</p>
-                </div>
-                
-                <div className="bg-white p-4 rounded-lg border border-gray-200">
-                  <p className="text-sm text-gray-500">Application URL</p>
-                  <a 
-                    href={job?.applicationURL} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline break-all"
-                  >
-                    {job?.applicationURL || 'Not specified'}
-                  </a>
                 </div>
               </div>
             </CardContent>
@@ -542,8 +647,9 @@ const EmployerJobDetail = () => {
                           <p className="mt-1">{question.question}</p>
                           <div className="flex flex-wrap gap-2 mt-2">
                             <Badge>{question.type}</Badge>
-                            {question.required && <Badge>Required</Badge>}
+                            {question.isKnockout && <Badge className="bg-red-100 text-red-800">Knockout</Badge>}
                             <Badge>Weight: {question.weight}</Badge>
+                            {question.score !== undefined && <Badge>Score: {question.score}</Badge>}
                           </div>
                           {question.type === 'multiple-choice' && (
                             <div className="mt-2">
@@ -553,12 +659,28 @@ const EmployerJobDetail = () => {
                                   <li key={i}>{option}</li>
                                 ))}
                               </ul>
+                              {question.selectedOptions && question.selectedOptions.length > 0 && (
+                                <div className="mt-2">
+                                  <p className="text-sm font-medium">Correct Options:</p>
+                                  <ul className="list-disc list-inside">
+                                    {question.selectedOptions.map((option, i) => (
+                                      <li key={i}>{option}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
                             </div>
                           )}
-                          {question.correctAnswer && (
+                          {question.type === 'boolean' && question.booleanAnswer !== undefined && (
                             <div className="mt-2">
                               <p className="text-sm font-medium">Correct Answer:</p>
-                              <p>{question.correctAnswer}</p>
+                              <p>{question.booleanAnswer ? 'Yes' : 'No'}</p>
+                            </div>
+                          )}
+                          {question.type === 'essay' && question.essayAnswer && (
+                            <div className="mt-2">
+                              <p className="text-sm font-medium">Sample Answer:</p>
+                              <p>{question.essayAnswer}</p>
                             </div>
                           )}
                         </div>
@@ -592,7 +714,7 @@ const EmployerJobDetail = () => {
                   <label className="block text-sm font-medium mb-1">Type</label>
                   <Select 
                     value={newQuestion.type}
-                    onValueChange={(value) => setNewQuestion({...newQuestion, type: value})}
+                    onValueChange={handleQuestionTypeChange}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select question type" />
@@ -601,6 +723,8 @@ const EmployerJobDetail = () => {
                       <SelectItem value="text">Text</SelectItem>
                       <SelectItem value="multiple-choice">Multiple Choice</SelectItem>
                       <SelectItem value="yes-no">Yes/No</SelectItem>
+                      <SelectItem value="boolean">Boolean</SelectItem>
+                      <SelectItem value="essay">Essay</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -646,14 +770,57 @@ const EmployerJobDetail = () => {
                   </div>
                 )}
                 
-                <div>
-                  <label className="block text-sm font-medium mb-1">Correct Answer</label>
-                  <Input 
-                    value={newQuestion.correctAnswer}
-                    onChange={(e) => setNewQuestion({...newQuestion, correctAnswer: e.target.value})}
-                    placeholder="Enter correct answer"
-                  />
-                </div>
+                {newQuestion.type === 'multiple-choice' && (
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Correct Options</label>
+                    {newQuestion.options?.map((option, index) => (
+                      <div key={index} className="flex items-center space-x-2 mb-2">
+                        <Checkbox 
+                          id={`correct-${index}`}
+                          checked={newQuestion.selectedOptions?.includes(option)}
+                          onCheckedChange={(checked) => {
+                            const updatedSelectedOptions = checked 
+                              ? [...(newQuestion.selectedOptions || []), option]
+                              : (newQuestion.selectedOptions || []).filter(opt => opt !== option);
+                            setNewQuestion({...newQuestion, selectedOptions: updatedSelectedOptions});
+                          }}
+                        />
+                        <label htmlFor={`correct-${index}`} className="text-sm">
+                          {option}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                {newQuestion.type === 'boolean' && (
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Correct Answer</label>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox 
+                        id="boolean-answer" 
+                        checked={newQuestion.booleanAnswer}
+                        onCheckedChange={(checked) => 
+                          setNewQuestion({...newQuestion, booleanAnswer: checked as boolean})
+                        }
+                      />
+                      <label htmlFor="boolean-answer" className="text-sm font-medium">
+                        Yes
+                      </label>
+                    </div>
+                  </div>
+                )}
+                
+                {newQuestion.type === 'essay' && (
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Sample Answer</label>
+                    <Textarea 
+                      value={newQuestion.essayAnswer}
+                      onChange={(e) => setNewQuestion({...newQuestion, essayAnswer: e.target.value})}
+                      placeholder="Enter a sample answer"
+                    />
+                  </div>
+                )}
                 
                 <div>
                   <label className="block text-sm font-medium mb-1">Weight</label>
@@ -666,16 +833,27 @@ const EmployerJobDetail = () => {
                   />
                 </div>
                 
+                <div>
+                  <label className="block text-sm font-medium mb-1">Score</label>
+                  <Input 
+                    type="number" 
+                    min="0" 
+                    max="100"
+                    value={newQuestion.score}
+                    onChange={(e) => setNewQuestion({...newQuestion, score: parseInt(e.target.value)})}
+                  />
+                </div>
+                
                 <div className="flex items-center space-x-2">
                   <Checkbox 
-                    id="required" 
-                    checked={newQuestion.required}
+                    id="knockout" 
+                    checked={newQuestion.isKnockout}
                     onCheckedChange={(checked) => 
-                      setNewQuestion({...newQuestion, required: checked as boolean})
+                      setNewQuestion({...newQuestion, isKnockout: checked as boolean})
                     }
                   />
-                  <label htmlFor="required" className="text-sm font-medium">
-                    Required
+                  <label htmlFor="knockout" className="text-sm font-medium">
+                    Knockout Question (Reject if answered incorrectly)
                   </label>
                 </div>
                 
@@ -855,6 +1033,14 @@ const EmployerJobDetail = () => {
         </Card>
       )}
 
+      {currentTab === "bulk-evaluation" && (
+        <BulkEvaluation 
+          applications={applications} 
+          screeningQuestions={screeningQuestions}
+          onUpdateApplicationStatus={handleUpdateApplicationStatus}
+        />
+      )}
+
       {/* Application Detail Modal */}
       {selectedApplication && (
         <ApplicationDetail
@@ -864,6 +1050,9 @@ const EmployerJobDetail = () => {
           onClose={() => setSelectedApplication(null)}
         />
       )}
+      
+      {/* Toast Notifications */}
+      <Toaster />
     </div>
   );
 };

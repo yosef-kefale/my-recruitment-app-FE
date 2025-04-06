@@ -59,6 +59,7 @@ export default function RootLayout({
         ) : (
           <main>{children}</main> // Show login/signup page without sidebar or navbar
         )}
+        <Toaster />
       </body>
     </html>
   );

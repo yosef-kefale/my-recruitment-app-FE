@@ -26,9 +26,11 @@ const JobDetail = () => {
   //Application variables
   const [showForm, setShowForm] = useState(false);
   const [coverLetter, setCoverLetter] = useState("");
-  const [cv, setCv] = useState(null);
+  const [cv, setCv] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [screeningQuestions, setScreeningQuestions] = useState<string[]>([]);
+  const [screeningAnswers, setScreeningAnswers] = useState<Record<number, string>>({});
   const applySectionRef = useRef<HTMLDivElement | null>(null);
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -67,9 +69,20 @@ const JobDetail = () => {
       const data = await res.json();
       console.log(data);
 
-      setJob(data); // Set job data in state
+      setJob(data);
+      
+      // Fetch screening questions if they exist
+      if (data.screeningQuestions) {
+        setScreeningQuestions(data.screeningQuestions);
+        // Initialize answers object
+        const initialAnswers: Record<number, string> = {};
+        data.screeningQuestions.forEach((question: string, index: number) => {
+          initialAnswers[index] = "";
+        });
+        setScreeningAnswers(initialAnswers);
+      }
     } catch (error) {
-      console.error(error);
+      console.error("Error fetching job:", error);
     }
   };
 
@@ -111,8 +124,10 @@ const JobDetail = () => {
     }, 100); // Small delay for smooth transition
   };
 
-  const handleFileChange = (event) => {
-    setCv(event.target.files[0]);
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      setCv(event.target.files[0]);
+    }
   };
 
   const handleSubmitApplication = async () => {
@@ -120,6 +135,14 @@ const JobDetail = () => {
       setMessage("Please provide a cover letter and upload your CV.");
       return;
     }
+
+    // Check if all screening questions are answered
+    const unansweredQuestions = screeningQuestions.filter((_, index) => !screeningAnswers[index]?.trim());
+    if (unansweredQuestions.length > 0) {
+      setMessage("Please answer all screening questions.");
+      return;
+    }
+
     const token = localStorage.getItem("token");
   
     if (!token) {
@@ -138,8 +161,9 @@ const JobDetail = () => {
         userId: organization?.id,
         JobPostId: job?.id,
         coverLetter: coverLetter,
+        screeningAnswers: screeningAnswers,
         applicationInformation: {
-          cv: cv, // Store uploaded CV URL
+          cv: cv,
           appliedAt: new Date().toISOString(),
         },
       };
@@ -151,7 +175,6 @@ const JobDetail = () => {
         },
       };
   
-      // Send application request with token in headers
       await axios.post(
         "http://196.188.249.24:3010/api/applications/create-application",
         applicationData,
@@ -159,14 +182,19 @@ const JobDetail = () => {
       );
   
       setMessage("Application submitted successfully!");
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       setMessage("Error applying for the job. Please try again.");
     } finally {
       setLoading(false);
     }
   };
-  
+
+  const handleScreeningAnswerChange = (index: number, answer: string) => {
+    setScreeningAnswers(prev => ({
+      ...prev,
+      [index]: answer
+    }));
+  };
 
   return (
     <div className="w-full bg-gray-100">
@@ -471,6 +499,26 @@ const JobDetail = () => {
             value={coverLetter}
             onChange={(e) => setCoverLetter(e.target.value)}
           />
+
+          {/* Screening Questions */}
+          {screeningQuestions.length > 0 && (
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold mb-4">Screening Questions</h3>
+              {screeningQuestions.map((question, index) => (
+                <div key={index} className="mb-4">
+                  <label className="block text-gray-700 font-medium mb-2">
+                    {question}
+                  </label>
+                  <textarea
+                    placeholder="Your answer..."
+                    className="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 resize-none min-h-[100px]"
+                    value={screeningAnswers[index] || ""}
+                    onChange={(e) => handleScreeningAnswerChange(index, e.target.value)}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* File Upload */}
           <label className="block text-gray-700 font-medium mb-2">

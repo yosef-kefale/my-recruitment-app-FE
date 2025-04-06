@@ -178,11 +178,13 @@ const ViewJobs = () => {
 
             {/* Scrollable Job List */}
             <div className="overflow-y-auto flex-1">
-              {filteredJobs.map((job) => (
-                <div key={job.id} className="py-4">
-                  <JobCard job={job} isEmployer={!isEmployeeView} onDelete={handleDeleteJob}/>
-                </div>
-              ))}
+              <div className={`grid ${isListView ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'} gap-6 p-4`}>
+                {filteredJobs.map((job) => (
+                  <div key={job.id} className={isListView ? 'py-2' : 'h-full'}>
+                    <JobCard job={job} isEmployer={!isEmployeeView} onDelete={handleDeleteJob}/>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>

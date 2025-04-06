@@ -12,6 +12,13 @@ import {
   MessageSquare,
   Briefcase,
   PlusCircle,
+  Brain,
+  BarChart,
+  Zap,
+  Filter,
+  CheckCircle,
+  Mail,
+  Building,
 } from "lucide-react";
 import { useState } from "react";
 import {
@@ -23,7 +30,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -55,73 +62,60 @@ const menuItems = [
     icon: Inbox,
     submenus: [
       { title: "View All", url: "/jobs/view-all" },
-      { title: "Post New Job", url: "/jobs/create" },
-      { title: "Analytics", url: "/jobs/analytics" },
+      { title: "Create New Job", url: "/jobs/create" },
     ],
   },
   {
     title: "Candidate Management",
     icon: Users,
     submenus: [
-      { title: "View All Candidates", url: "/candidates/all" },
-      { title: "Shortlisted Candidates", url: "/candidates/shortlisted" },
-      { title: "Candidate Profiles", url: "/candidates/profiles" },
+      { title: "All Candidates", url: "/candidates/all" },
+      { title: "AI-Matched Candidates", url: "/candidates/ai-matches" },
+      { title: "Shortlisted", url: "/candidates/shortlisted" },
     ],
   },
   {
-    title: "Interview & Scheduling",
+    title: "AI Screening",
+    icon: Brain,
+    submenus: [
+      { title: "Screening Questions", url: "/screening/questions" },
+      { title: "AI Evaluation", url: "/screening/ai-evaluation" },
+      { title: "Bulk Evaluation", url: "/screening/bulk-evaluation" },
+    ],
+  },
+  {
+    title: "Interview Management",
     icon: Calendar,
     submenus: [
       { title: "Schedule Interviews", url: "/interviews/schedule" },
-      { title: "Interview Feedback", url: "/interviews/feedback" },
+      { title: "AI Interview Assistant", url: "/interviews/ai-assistant" },
+      { title: "Feedback", url: "/interviews/feedback" },
     ],
   },
   {
-    title: "Assessments",
-    icon: FileText,
+    title: "Analytics & Insights",
+    icon: BarChart,
     submenus: [
-      { title: "Create Assessment", url: "/assessments/create" },
-      { title: "View Results", url: "/assessments/results" },
+      { title: "Hiring Analytics", url: "/analytics/hiring" },
+      { title: "AI Insights", url: "/analytics/ai-insights" },
+      { title: "Diversity Metrics", url: "/analytics/diversity" },
     ],
   },
   {
-    title: "Reports & Analytics",
-    icon: Search,
-    submenus: [
-      { title: "Hiring Analytics", url: "/reports/hiring" },
-      { title: "Diversity & Inclusion", url: "/reports/diversity" },
-    ],
-  },
-  {
-    title: "Messaging",
+    title: "Communication",
     icon: MessageSquare,
     submenus: [
       { title: "Candidate Messaging", url: "/messaging/candidates" },
-      { title: "Interview Invitations", url: "/messaging/interviews" },
+      { title: "AI Email Assistant", url: "/messaging/ai-assistant" },
       { title: "Notifications", url: "/messaging/notifications" },
     ],
   },
   {
-    title: "Team Management",
-    icon: Briefcase,
+    title: "Company Profile",
+    icon: Building,
     submenus: [
-      { title: "Assign Roles", url: "/team/roles" },
-      { title: "Shared Reviews", url: "/team/reviews" },
-    ],
-  },
-  {
-    title: "Employer Branding",
-    icon: Home,
-    submenus: [
-      { title: "Company Profile", url: "/branding/profile" },
-      { title: "Media & Testimonials", url: "/branding/media" },
-    ],
-  },
-  {
-    title: "Job Board Integration",
-    icon: Home,
-    submenus: [
-      { title: "Manage External Job Posts", url: "/integration/jobs" },
+      { title: "Company Information", url: "/company/profile" },
+      { title: "Branding", url: "/company/branding" },
     ],
   },
   {
@@ -129,7 +123,7 @@ const menuItems = [
     icon: Settings,
     submenus: [
       { title: "Account Settings", url: "/settings/account" },
-      { title: "Notification Preferences", url: "/settings/notifications" },
+      { title: "AI Preferences", url: "/settings/ai-preferences" },
       { title: "Billing/Subscription", url: "/settings/billing" },
     ],
   },
@@ -146,6 +140,7 @@ const companies = [
 export function AppSidebar() {
   const [openMenus, setOpenMenus] = useState<{ [key: string]: boolean }>({});
   const router = useRouter();
+  const pathname = usePathname();
 
   const [selectedCompany, setSelectedCompany] = useState(companies[0].id); // Default to first company
 
@@ -155,7 +150,7 @@ export function AppSidebar() {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    router.push("/login");
+    router.push("/");
   };
 
   const handleSelectChange = (value: string) => {
@@ -164,6 +159,16 @@ export function AppSidebar() {
       return;
     }
     setSelectedCompany(value);
+  };
+
+  const isActiveMenu = (url: string) => {
+    if (!url) return false;
+    return pathname.startsWith(url);
+  };
+
+  const isActiveSubmenu = (url: string) => {
+    if (!url) return false;
+    return pathname === url;
   };
 
   return (
@@ -223,7 +228,9 @@ export function AppSidebar() {
                 <SidebarMenuItem>
                   <SidebarMenuButton
                     asChild
-                    className="flex items-center px-4 py-5 text-sky-800 hover:bg-sky-100 transition-all w-full"
+                    className={`flex items-center px-4 py-5 text-sky-800 transition-all w-full ${
+                      !item.submenus && isActiveMenu(item.url) ? "bg-sky-50 text-sky-700" : ""
+                    }`}
                     onClick={() => item.submenus && toggleMenu(item.title)}
                   >
                     {item.submenus ? (
@@ -254,7 +261,9 @@ export function AppSidebar() {
                       <SidebarMenuItem key={sub.title}>
                         <SidebarMenuButton
                           asChild
-                          className="px-6 py-2 text-cyan-900 hover:text-white hover:bg-gray-800 transition-all w-full"
+                          className={`px-6 py-2 text-cyan-700 transition-all w-full ${
+                            isActiveSubmenu(sub.url) ? "bg-sky-600 text-white" : ""
+                          }`}
                         >
                           <Link href={sub.url}>{sub.title}</Link>
                         </SidebarMenuButton>
