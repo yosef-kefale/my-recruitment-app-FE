@@ -263,7 +263,7 @@ const UserProfileUpdate = () => {
     try {
       setUploadingResume(true);
       const formData = new FormData();
-      formData.append("resume", file);
+      formData.append("file", file);
 
       const config = {
         headers: { 
@@ -273,7 +273,7 @@ const UserProfileUpdate = () => {
       };
 
       const response = await axios.post(
-        `http://196.188.249.24:3010/api/users/${user.id}/resume`,
+        `http://196.188.249.24:3010/api/users/upload-resume/${user.id}`,
         formData,
         config
       );

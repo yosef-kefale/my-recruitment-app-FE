@@ -33,6 +33,16 @@ const JobDetail = () => {
   const [screeningAnswers, setScreeningAnswers] = useState<Record<number, string>>({});
   const applySectionRef = useRef<HTMLDivElement | null>(null);
 
+  // Sample screening questions for demonstration
+  const sampleScreeningQuestions = [
+    "What is your expected salary range for this position?",
+    "How many years of experience do you have in this field?",
+    "Are you willing to relocate if required?",
+    "Do you have experience with React and Next.js?",
+    "When would you be available to start?",
+    "Do you have a portfolio or GitHub repository we can review?"
+  ];
+
   // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     setJobUrl(window.location.href);
@@ -71,16 +81,27 @@ const JobDetail = () => {
 
       setJob(data);
       
-      // Fetch screening questions if they exist
-      if (data.screeningQuestions) {
-        setScreeningQuestions(data.screeningQuestions);
-        // Initialize answers object
-        const initialAnswers: Record<number, string> = {};
-        data.screeningQuestions.forEach((question: string, index: number) => {
-          initialAnswers[index] = "";
-        });
-        setScreeningAnswers(initialAnswers);
-      }
+      // Use sample screening questions for demonstration
+      // In a real app, this would come from the API
+      setScreeningQuestions(sampleScreeningQuestions);
+      
+      // Initialize answers object
+      const initialAnswers: Record<number, string> = {};
+      sampleScreeningQuestions.forEach((_, index) => {
+        initialAnswers[index] = "";
+      });
+      setScreeningAnswers(initialAnswers);
+      
+      // Comment out the original code that would fetch from API
+      // if (data.screeningQuestions) {
+      //   setScreeningQuestions(data.screeningQuestions);
+      //   // Initialize answers object
+      //   const initialAnswers: Record<number, string> = {};
+      //   data.screeningQuestions.forEach((question: string, index: number) => {
+      //     initialAnswers[index] = "";
+      //   });
+      //   setScreeningAnswers(initialAnswers);
+      // }
     } catch (error) {
       console.error("Error fetching job:", error);
     }
@@ -136,13 +157,6 @@ const JobDetail = () => {
       return;
     }
 
-    // Check if all screening questions are answered
-    const unansweredQuestions = screeningQuestions.filter((_, index) => !screeningAnswers[index]?.trim());
-    if (unansweredQuestions.length > 0) {
-      setMessage("Please answer all screening questions.");
-      return;
-    }
-
     const token = localStorage.getItem("token");
   
     if (!token) {
@@ -183,6 +197,7 @@ const JobDetail = () => {
   
       setMessage("Application submitted successfully!");
     } catch (error) {
+      console.error("Error submitting application:", error);
       setMessage("Error applying for the job. Please try again.");
     } finally {
       setLoading(false);
@@ -509,12 +524,44 @@ const JobDetail = () => {
                   <label className="block text-gray-700 font-medium mb-2">
                     {question}
                   </label>
-                  <textarea
-                    placeholder="Your answer..."
-                    className="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 resize-none min-h-[100px]"
-                    value={screeningAnswers[index] || ""}
-                    onChange={(e) => handleScreeningAnswerChange(index, e.target.value)}
-                  />
+                  {index === 1 ? (
+                    // Number input for years of experience
+                    <input
+                      type="number"
+                      min="0"
+                      placeholder="Enter years of experience..."
+                      className="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      value={screeningAnswers[index] || ""}
+                      onChange={(e) => handleScreeningAnswerChange(index, e.target.value)}
+                    />
+                  ) : index === 2 || index === 3 ? (
+                    // Yes/No dropdown for relocation and experience questions
+                    <select
+                      className="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      value={screeningAnswers[index] || ""}
+                      onChange={(e) => handleScreeningAnswerChange(index, e.target.value)}
+                    >
+                      <option value="">Select an option</option>
+                      <option value="Yes">Yes</option>
+                      <option value="No">No</option>
+                    </select>
+                  ) : index === 4 ? (
+                    // Date input for availability
+                    <input
+                      type="date"
+                      className="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      value={screeningAnswers[index] || ""}
+                      onChange={(e) => handleScreeningAnswerChange(index, e.target.value)}
+                    />
+                  ) : (
+                    // Text input for other questions
+                    <textarea
+                      placeholder="Your answer..."
+                      className="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 resize-none min-h-[100px]"
+                      value={screeningAnswers[index] || ""}
+                      onChange={(e) => handleScreeningAnswerChange(index, e.target.value)}
+                    />
+                  )}
                 </div>
               ))}
             </div>

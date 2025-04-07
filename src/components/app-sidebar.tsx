@@ -5,19 +5,12 @@ import {
   ChevronDown,
   Home,
   Inbox,
-  Search,
   Settings,
   Users,
-  FileText,
   MessageSquare,
-  Briefcase,
-  PlusCircle,
   Brain,
   BarChart,
-  Zap,
-  Filter,
-  CheckCircle,
-  Mail,
+  PlusCircle,
   Building,
 } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -204,47 +197,60 @@ export function AppSidebar() {
   return (
     <Sidebar className="h-screen flex flex-col bg-gray-900 text-white w-64" collapsible="icon">
       <SidebarContent className="flex-1 overflow-y-auto">
-        {/* Company Section */}
-        <div className="text-sky-800 w-full p-4 group-data-[collapsible=icon]:hidden">
-          <Select onValueChange={handleSelectChange} value={selectedCompany}>
-            <SelectTrigger className="w-[220px] h-[50px] flex items-center">
-              {selectedCompany !== "create-new" ? (
-                <>
+        {/* Company Section with Collapse Button */}
+        <div className="flex items-center justify-between p-4 group-data-[collapsible=icon]:hidden">
+          <div className="text-sky-800 w-full">
+            <Select onValueChange={handleSelectChange} value={selectedCompany}>
+              <SelectTrigger className="w-[180px] h-[50px] flex items-center">
+                {selectedCompany !== "create-new" ? (
+                  <>
+                    <SelectValue placeholder="Select a company" />
+                  </>
+                ) : (
                   <SelectValue placeholder="Select a company" />
-                </>
-              ) : (
-                <SelectValue placeholder="Select a company" />
-              )}
-            </SelectTrigger>
+                )}
+              </SelectTrigger>
 
-            <SelectContent>
-              <SelectGroup>
-                <SelectLabel>Companies</SelectLabel>
-                {companies.map((company) => (
-                  <SelectItem key={company.id} value={company.id}>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectLabel>Companies</SelectLabel>
+                  {companies.map((company) => (
+                    <SelectItem key={company.id} value={company.id}>
+                      <div className="flex items-center gap-2">
+                        <Image
+                          src={company.logo}
+                          alt={company.name}
+                          width={8}
+                          height={8}
+                          className="w-10 h-10 rounded-full"
+                        />
+                        {company.name}
+                      </div>
+                    </SelectItem>
+                  ))}
+                  <SelectItem
+                    value="create-new"
+                    className="text-blue-500 font-semibold"
+                  >
                     <div className="flex items-center gap-2">
-                      <Image
-                        src={company.logo}
-                        alt={company.name}
-                        width={8}
-                        height={8}
-                        className="w-10 h-10 rounded-full"
-                      />
-                      {company.name}
+                      <PlusCircle size={18} /> Create New Company
                     </div>
                   </SelectItem>
-                ))}
-                <SelectItem
-                  value="create-new"
-                  className="text-blue-500 font-semibold"
-                >
-                  <div className="flex items-center gap-2">
-                    <PlusCircle size={18} /> Create New Company
-                  </div>
-                </SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
+          <button
+            onClick={() => setOpen(state === "collapsed")}
+            className="p-2 hover:bg-gray-800 rounded-md transition-colors ml-2"
+            title={state === "expanded" ? "Collapse sidebar" : "Expand sidebar"}
+          >
+            <ChevronDown
+              className={`w-5 h-5 text-gray-400 transition-transform ${
+                state === "collapsed" ? "rotate-90" : "-rotate-90"
+              }`}
+            />
+          </button>
         </div>
 
         {/* Navigation Menu */}

@@ -67,119 +67,20 @@ const EmployerJobDetail = () => {
   
   const { toast } = useToast();
   
-  // Sample applications for testing
-  const sampleApplications: Application[] = [
-    {
-      id: "app-001",
-      jobPostId: id,
-      userId: "user-001",
-      coverLetter: "I am excited to apply for this position. With my 5 years of experience in software development, I believe I would be a great fit for your team. I have worked on similar projects in the past and am confident in my ability to contribute immediately.",
-      status: "pending",
-      applicationInformation: {
-        appliedAt: new Date(Date.now() - 86400000 * 2).toISOString(), // 2 days ago
-        cv: "https://example.com/cv1.pdf",
-        screeningAnswers: [
-          { questionId: "q1", answer: "Yes, I have 5 years of experience with React." },
-          { questionId: "q2", answer: "I prefer working in a team environment." }
-        ]
-      },
-      evaluationNotes: "",
-      screeningScore: 0,
-      createdAt: new Date(Date.now() - 86400000 * 2).toISOString(),
-      updatedAt: new Date(Date.now() - 86400000 * 2).toISOString()
-    },
-    {
-      id: "app-002",
-      jobPostId: id,
-      userId: "user-002",
-      coverLetter: "I am writing to express my interest in the position. I have been following your company for some time and am impressed by your innovative approach to technology. I believe my skills and experience align well with what you are looking for.",
-      status: "reviewed",
-      applicationInformation: {
-        appliedAt: new Date(Date.now() - 86400000 * 5).toISOString(), // 5 days ago
-        cv: "https://example.com/cv2.pdf",
-        screeningAnswers: [
-          { questionId: "q1", answer: "Yes, I have 3 years of experience with React." },
-          { questionId: "q2", answer: "I can work both independently and in a team." }
-        ]
-      },
-      evaluationNotes: "Candidate has good technical skills but lacks some of the required experience.",
-      screeningScore: 7,
-      createdAt: new Date(Date.now() - 86400000 * 5).toISOString(),
-      updatedAt: new Date(Date.now() - 86400000 * 1).toISOString()
-    },
-    {
-      id: "app-003",
-      jobPostId: id,
-      userId: "user-003",
-      coverLetter: "I am thrilled to apply for this opportunity. Your company's mission resonates with my personal values, and I believe my background in software development makes me an excellent candidate for this role.",
-      status: "shortlisted",
-      applicationInformation: {
-        appliedAt: new Date(Date.now() - 86400000 * 10).toISOString(), // 10 days ago
-        cv: "https://example.com/cv3.pdf",
-        screeningAnswers: [
-          { questionId: "q1", answer: "Yes, I have 7 years of experience with React and other frontend frameworks." },
-          { questionId: "q2", answer: "I thrive in collaborative team environments." }
-        ]
-      },
-      evaluationNotes: "Strong candidate with excellent technical skills and communication abilities.",
-      screeningScore: 9,
-      createdAt: new Date(Date.now() - 86400000 * 10).toISOString(),
-      updatedAt: new Date(Date.now() - 86400000 * 3).toISOString()
-    },
-    {
-      id: "app-004",
-      jobPostId: id,
-      userId: "user-004",
-      coverLetter: "I am writing to apply for the position. While I may not have all the required experience, I am a fast learner and am confident in my ability to quickly adapt to your team's needs.",
-      status: "rejected",
-      applicationInformation: {
-        appliedAt: new Date(Date.now() - 86400000 * 15).toISOString(), // 15 days ago
-        cv: "https://example.com/cv4.pdf",
-        screeningAnswers: [
-          { questionId: "q1", answer: "I have 1 year of experience with React." },
-          { questionId: "q2", answer: "I prefer working independently but can collaborate when needed." }
-        ]
-      },
-      evaluationNotes: "Candidate lacks the required experience for this position.",
-      screeningScore: 5,
-      createdAt: new Date(Date.now() - 86400000 * 15).toISOString(),
-      updatedAt: new Date(Date.now() - 86400000 * 8).toISOString()
-    },
-    {
-      id: "app-005",
-      jobPostId: id,
-      userId: "user-005",
-      coverLetter: "I am excited to apply for this position. With my extensive experience in software development and team leadership, I believe I would be an asset to your organization.",
-      status: "hired",
-      applicationInformation: {
-        appliedAt: new Date(Date.now() - 86400000 * 20).toISOString(), // 20 days ago
-        cv: "https://example.com/cv5.pdf",
-        screeningAnswers: [
-          { questionId: "q1", answer: "Yes, I have 10 years of experience with React and other modern frameworks." },
-          { questionId: "q2", answer: "I have led multiple teams and enjoy mentoring others." }
-        ]
-      },
-      evaluationNotes: "Exceptional candidate with strong technical skills and leadership experience.",
-      screeningScore: 10,
-      createdAt: new Date(Date.now() - 86400000 * 20).toISOString(),
-      updatedAt: new Date(Date.now() - 86400000 * 12).toISOString()
-    }
-  ];
-
   useEffect(() => {
     setMounted(true);
     if (id) {
       fetchJobDetails();
       fetchApplications();
       fetchScreeningQuestions();
-      // Use sample statistics data instead of fetching
-      setSampleStatistics();
     }
   }, [id]);
   
   useEffect(() => {
-    console.log("Current screening questions:", screeningQuestions);
-  }, [screeningQuestions]);
+    if (applications.length > 0) {
+      setSampleStatistics();
+    }
+  }, [applications]);
   
   const fetchJobDetails = async () => {
     try {
@@ -197,22 +98,31 @@ const EmployerJobDetail = () => {
   
   const fetchApplications = async () => {
     try {
-      // For testing, use sample applications directly
-      setApplications(sampleApplications);
-      
-      // Comment out the API call for now
-      /*
       const token = localStorage.getItem("token");
-      const response = await axios.get(`http://196.188.249.24:3010/api/applications/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`
+      const response = await axios.get(
+        `http://196.188.249.24:3010/api/applications?q=i=JobPost%26%26w=JobPostId:=:${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
         }
-      });
-      setApplications(response.data);
-      */
+      );
+      console.log("Applications response:", response.data);
+      setApplications(response.data.items || []);
     } catch (error) {
       console.error("Error fetching applications:", error);
-      setApplications(sampleApplications);
+      if (axios.isAxiosError(error)) {
+        console.error("Axios error details:", {
+          status: error.response?.status,
+          statusText: error.response?.statusText,
+          data: error.response?.data
+        });
+      }
+      toast({
+        title: "Error",
+        description: "Failed to fetch applications. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -223,7 +133,7 @@ const EmployerJobDetail = () => {
       const token = localStorage.getItem("token");
       console.log("Fetching screening questions for job ID:", id);
       const response = await axios.get(
-        `http://196.188.249.24:3010/api/pre-screening-questions/${id}`,
+        `http://196.188.249.24:3010/api/pre-screening-questions?q=w=jobPostId:=:${id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -231,7 +141,7 @@ const EmployerJobDetail = () => {
         }
       );
       console.log("Screening questions response:", response.data);
-      setScreeningQuestions(response.data);
+      setScreeningQuestions(response.data.items || []);
     } catch (error) {
       console.error("Error fetching screening questions:", error);
       if (axios.isAxiosError(error)) {
@@ -241,19 +151,24 @@ const EmployerJobDetail = () => {
           data: error.response?.data
         });
       }
+      toast({
+        title: "Error",
+        description: "Failed to fetch screening questions. Please try again.",
+        variant: "destructive",
+      });
     }
   };
   
   const setSampleStatistics = () => {
     // Sample data for statistics
     const sampleStats: JobStatistics = {
-      totalApplications: 42,
+      totalApplications: applications.length,
       applicationsByStatus: {
-        pending: 15,
-        reviewed: 10,
-        shortlisted: 8,
-        rejected: 5,
-        hired: 4,
+        pending: applications.filter(app => app.status === 'pending').length,
+        reviewed: applications.filter(app => app.status === 'reviewed').length,
+        shortlisted: applications.filter(app => app.status === 'shortlisted').length,
+        rejected: applications.filter(app => app.status === 'rejected').length,
+        hired: applications.filter(app => app.status === 'hired').length,
       },
       applicationsByDay: [
         { date: "2023-05-01", count: 3 },
@@ -381,6 +296,40 @@ const EmployerJobDetail = () => {
   
   const handleQuestionTypeChange = (value: QuestionType) => {
     setNewQuestion({...newQuestion, type: value});
+  };
+  
+  const handleEditQuestion = (question: ScreeningQuestion) => {
+    // Navigate to create job form with the question data
+    window.location.href = `/jobs/create?editQuestion=${encodeURIComponent(JSON.stringify(question))}`;
+  };
+
+  const handleDeleteQuestion = async (questionId: string) => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(
+        `http://196.188.249.24:3010/api/pre-screening-questions/${questionId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      
+      // Refresh questions
+      fetchScreeningQuestions();
+      
+      toast({
+        title: "Success",
+        description: "Screening question deleted successfully",
+      });
+    } catch (error) {
+      console.error("Error deleting screening question:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete screening question. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
   
   // Don't render anything until after hydration
@@ -628,8 +577,8 @@ const EmployerJobDetail = () => {
       )}
 
       {currentTab === "screening" && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="md:col-span-2">
+        <div className="grid grid-cols-1 gap-6">
+          <Card>
             <CardHeader>
               <CardTitle>Screening Questions</CardTitle>
               <CardDescription>Manage screening questions for applicants</CardDescription>
@@ -684,185 +633,26 @@ const EmployerJobDetail = () => {
                             </div>
                           )}
                         </div>
-                        <div className="w-full md:w-1/5 flex justify-end">
-                          <Button variant="outline" size="sm">Edit</Button>
+                        <div className="w-full md:w-1/5 flex justify-end gap-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleEditQuestion(question)}
+                          >
+                            Edit
+                          </Button>
+                          <Button 
+                            variant="destructive" 
+                            size="sm"
+                            onClick={() => handleDeleteQuestion(question.id)}
+                          >
+                            Delete
+                          </Button>
                         </div>
                       </div>
                     </Card>
                   ))
                 )}
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader>
-              <CardTitle>Add New Question</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Question</label>
-                  <Textarea 
-                    value={newQuestion.question}
-                    onChange={(e) => setNewQuestion({...newQuestion, question: e.target.value})}
-                    placeholder="Enter your question"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium mb-1">Type</label>
-                  <Select 
-                    value={newQuestion.type}
-                    onValueChange={handleQuestionTypeChange}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select question type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="text">Text</SelectItem>
-                      <SelectItem value="multiple-choice">Multiple Choice</SelectItem>
-                      <SelectItem value="yes-no">Yes/No</SelectItem>
-                      <SelectItem value="boolean">Boolean</SelectItem>
-                      <SelectItem value="essay">Essay</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                {newQuestion.type === 'multiple-choice' && (
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Options</label>
-                    {newQuestion.options?.map((option, index) => (
-                      <div key={index} className="flex gap-2 mb-2">
-                        <Input 
-                          value={option}
-                          onChange={(e) => {
-                            const updatedOptions = [...(newQuestion.options || [])];
-                            updatedOptions[index] = e.target.value;
-                            setNewQuestion({...newQuestion, options: updatedOptions});
-                          }}
-                          placeholder={`Option ${index + 1}`}
-                        />
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => {
-                            const updatedOptions = newQuestion.options?.filter((_, i) => i !== index);
-                            setNewQuestion({...newQuestion, options: updatedOptions});
-                          }}
-                        >
-                          Remove
-                        </Button>
-                      </div>
-                    ))}
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => {
-                        setNewQuestion({
-                          ...newQuestion, 
-                          options: [...(newQuestion.options || []), ""]
-                        });
-                      }}
-                    >
-                      Add Option
-                    </Button>
-                  </div>
-                )}
-                
-                {newQuestion.type === 'multiple-choice' && (
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Correct Options</label>
-                    {newQuestion.options?.map((option, index) => (
-                      <div key={index} className="flex items-center space-x-2 mb-2">
-                        <Checkbox 
-                          id={`correct-${index}`}
-                          checked={newQuestion.selectedOptions?.includes(option)}
-                          onCheckedChange={(checked) => {
-                            const updatedSelectedOptions = checked 
-                              ? [...(newQuestion.selectedOptions || []), option]
-                              : (newQuestion.selectedOptions || []).filter(opt => opt !== option);
-                            setNewQuestion({...newQuestion, selectedOptions: updatedSelectedOptions});
-                          }}
-                        />
-                        <label htmlFor={`correct-${index}`} className="text-sm">
-                          {option}
-                        </label>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                
-                {newQuestion.type === 'boolean' && (
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Correct Answer</label>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox 
-                        id="boolean-answer" 
-                        checked={newQuestion.booleanAnswer}
-                        onCheckedChange={(checked) => 
-                          setNewQuestion({...newQuestion, booleanAnswer: checked as boolean})
-                        }
-                      />
-                      <label htmlFor="boolean-answer" className="text-sm font-medium">
-                        Yes
-                      </label>
-                    </div>
-                  </div>
-                )}
-                
-                {newQuestion.type === 'essay' && (
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Sample Answer</label>
-                    <Textarea 
-                      value={newQuestion.essayAnswer}
-                      onChange={(e) => setNewQuestion({...newQuestion, essayAnswer: e.target.value})}
-                      placeholder="Enter a sample answer"
-                    />
-                  </div>
-                )}
-                
-                <div>
-                  <label className="block text-sm font-medium mb-1">Weight</label>
-                  <Input 
-                    type="number" 
-                    min="1" 
-                    max="10"
-                    value={newQuestion.weight}
-                    onChange={(e) => setNewQuestion({...newQuestion, weight: parseInt(e.target.value)})}
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium mb-1">Score</label>
-                  <Input 
-                    type="number" 
-                    min="0" 
-                    max="100"
-                    value={newQuestion.score}
-                    onChange={(e) => setNewQuestion({...newQuestion, score: parseInt(e.target.value)})}
-                  />
-                </div>
-                
-                <div className="flex items-center space-x-2">
-                  <Checkbox 
-                    id="knockout" 
-                    checked={newQuestion.isKnockout}
-                    onCheckedChange={(checked) => 
-                      setNewQuestion({...newQuestion, isKnockout: checked as boolean})
-                    }
-                  />
-                  <label htmlFor="knockout" className="text-sm font-medium">
-                    Knockout Question (Reject if answered incorrectly)
-                  </label>
-                </div>
-                
-                <Button 
-                  className="w-full"
-                  onClick={handleAddQuestion}
-                >
-                  Add Question
-                </Button>
               </div>
             </CardContent>
           </Card>
@@ -879,7 +669,7 @@ const EmployerJobDetail = () => {
               <div className="space-y-4">
                 <div>
                   <h3 className="font-semibold">Total Applications</h3>
-                  <p className="text-3xl font-bold">{statistics?.totalApplications || 0}</p>
+                  <p className="text-3xl font-bold">{applications.length}</p>
                 </div>
                 
                 <div>

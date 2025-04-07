@@ -43,7 +43,7 @@ const ViewJobs = () => {
       const apiUrl =
         filterValues.jobType === "For me"
           ? "http://196.188.249.24:3010/api/jobs/get-all-job-postings-by-skills"
-          : "http://196.188.249.24:3010/api/jobs";
+          : "http://196.188.249.24:3010/api/jobs/get-all-job-postings";
 
       const res = await fetch(apiUrl, {
         method: "GET",

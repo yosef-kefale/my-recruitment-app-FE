@@ -1,7 +1,7 @@
 "use client";
 
 import "./globals.css";
-import { SidebarProvider, SidebarTrigger } from "../components/ui/sidebar";
+import { SidebarProvider } from "../components/ui/sidebar";
 import { AppSidebar } from "../components/app-sidebar";
 import { Toaster } from "@/components/ui/toaster";
 import { useRouter, usePathname } from "next/navigation";
@@ -41,10 +41,8 @@ export default function RootLayout({
           role === "employer" ? ( // Employer layout with sidebar
             <SidebarProvider>
               <AppSidebar />
-              <main className="p-4 w-full">
-                <SidebarTrigger />
+              <main className="flex-1 overflow-y-auto">
                 {children}
-                <Toaster />
               </main>
             </SidebarProvider>
           ) : role === "employee" ? ( // Employee layout with navbar
