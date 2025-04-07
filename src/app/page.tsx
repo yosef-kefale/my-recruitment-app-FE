@@ -2,48 +2,157 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Plus } from "lucide-react";
-import ScrollingCards from "../components/landing/ScrollingCards";
+import Image from "next/image";
+
+// Job categories data with Ethiopian context
+const jobCategories = [
+  { 
+    name: "Technology & IT", 
+    count: 1240, 
+    icon: "💻",
+    image: "/images/placeholders/tech-category.jpg",
+    description: "Software, IT, and Digital roles"
+  },
+  { 
+    name: "Business & Finance", 
+    count: 856, 
+    icon: "💼",
+    image: "/images/placeholders/business-category.jpg",
+    description: "Banking, Finance, and Consulting"
+  },
+  { 
+    name: "Manufacturing", 
+    count: 732, 
+    icon: "⚙️",
+    image: "/images/placeholders/production-category.jpg",
+    description: "Production and Manufacturing jobs"
+  },
+  { 
+    name: "Marketing & Sales", 
+    count: 945, 
+    icon: "📊",
+    image: "/images/placeholders/marketing-category.jpg",
+    description: "Marketing, Sales, and Business Development"
+  },
+  { 
+    name: "Education", 
+    count: 543, 
+    icon: "📚",
+    image: "/images/placeholders/education-category.jpg",
+    description: "Teaching and Training positions"
+  },
+  { 
+    name: "Healthcare", 
+    count: 678, 
+    icon: "⚕️",
+    image: "/images/placeholders/healthcare-category.jpg",
+    description: "Medical and Healthcare professions"
+  },
+  { 
+    name: "Agriculture", 
+    count: 432, 
+    icon: "🌾",
+    image: "/images/placeholders/agriculture-category.jpg",
+    description: "Farming and Agricultural roles"
+  },
+  { 
+    name: "Construction", 
+    count: 567, 
+    icon: "🏗️",
+    image: "/images/placeholders/construction-category.jpg",
+    description: "Building and Construction jobs"
+  }
+];
+
+// Features data
+const features = [
+  {
+    title: "Smart Job Matching",
+    description: "AI-powered matching system that connects you with the perfect opportunities based on your skills and experience",
+    icon: "🎯",
+    image: "/images/placeholders/feature-matching.jpg"
+  },
+  {
+    title: "Easy Application Process",
+    description: "Simple and quick application process with profile templates designed for Ethiopian job market",
+    icon: "⚡",
+    image: "/images/placeholders/feature-application.jpg"
+  },
+  {
+    title: "Real-time Updates",
+    description: "Get instant notifications for new opportunities in Ethiopia's fastest-growing sectors",
+    icon: "🔔",
+    image: "/images/placeholders/feature-updates.jpg"
+  }
+];
+
+// Testimonials data
+const testimonials = [
+  {
+    name: "Sara Haile",
+    role: "Software Engineer",
+    company: "Ethiopian Tech Solutions",
+    testimonial: "Found my dream job at a leading Ethiopian tech company within weeks. The platform's matching algorithm is excellent!",
+    avatar: "/images/placeholders/testimonial-1.jpg"
+  },
+  {
+    name: "Abebe Bekele", 
+    role: "HR Manager",
+    company: "Ethio Industries",
+    testimonial: "As an employer, this platform helped us find the best local talent quickly and efficiently.",
+    avatar: "/images/placeholders/testimonial-2.jpg"
+  },
+  {
+    name: "Mohammed Ahmed",
+    role: "Marketing Director",
+    company: "Digital Ethiopia",
+    testimonial: "The best job platform for Ethiopian professionals. Modern interface and great features!",
+    avatar: "/images/placeholders/testimonial-3.jpg"
+  }
+];
 
 export default function Home() {
   const router = useRouter();
-
-  const [applications, setApplications] = useState(0);
-  const [users, setUsers] = useState(0);
-  const [companies, setCompanies] = useState(0);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  // Set your target numbers here
-  const targetApplications = 45000;
-  const targetUsers = 15000000;
-  const targetCompanies = 2000;
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const animateCount = (
-      setter: React.Dispatch<React.SetStateAction<number>>,
-      target: number
-    ) => {
-      let start = 0;
-      const increment = Math.ceil(target / 100);
-      const interval = setInterval(() => {
-        start += increment;
-        if (start >= target) {
-          setter(target);
-          clearInterval(interval);
-        } else {
-          setter(start);
-        }
-      }, 20);
-    };
-
-    animateCount(setApplications, targetApplications);
-    animateCount(setUsers, targetUsers);
-    animateCount(setCompanies, targetCompanies);
-
     const token = localStorage.getItem("token");
-
     setIsLoggedIn(!!token);
   }, []);
+
+  const handleSearch = async () => {
+    if (!searchQuery.trim()) return;
+    
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const response = await fetch(`http://196.188.249.24:3010/api/jobs/get-all-job-postings?q=${encodeURIComponent(searchQuery)}`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch jobs');
+      }
+      
+      await response.json();
+      
+      // Navigate to search results page with the query
+      router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+      console.error('Search error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
 
   const handleLoginClickEmployee = () => {
     localStorage.removeItem("token");
@@ -58,9 +167,8 @@ export default function Home() {
   return (
     <div className="bg-gray-50 min-h-screen">
       {/* Navbar */}
-
       {!isLoggedIn ? (
-        <nav className="flex justify-between items-center p-6 shadow-md bg-white">
+        <nav className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center p-6 bg-white/80 backdrop-blur-md shadow-sm">
           <h1 className="text-2xl font-bold text-sky-600">TalentHub</h1>
           <div className="space-x-6">
             <Link href="#" className="text-gray-700 hover:text-sky-600">
@@ -88,7 +196,7 @@ export default function Home() {
             </button>
             <button
               onClick={handleLoginClickEmployer}
-              className="bg-sky-600 text-white px-4 py-2 rounded-lg"
+              className="bg-sky-600 text-white px-4 py-2 rounded-lg hover:bg-sky-700 transition-colors"
             >
               For Companies
             </button>
@@ -99,112 +207,264 @@ export default function Home() {
       )}
 
       {/* Hero Section */}
-      <header className="text-center py-20 bg-sky-100">
-        <h2 className="text-4xl font-bold text-gray-800">
-          Modernizing Job Search Experience
-        </h2>
-        <p className="text-gray-600 mt-4">
-          The fast and reliable way to discover, hire, and manage freelance
-          talent.
-        </p>
-        <div className="mt-6">
-          <input
-            type="text"
-            placeholder="Search your needs..."
-            className="p-3 rounded-l-lg border border-gray-300 w-1/3"
+      <header className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
+        <div className="absolute inset-0">
+          <Image
+            src="/images/placeholders/hero-placeholder.jpg"
+            alt="Ethiopian Professional Workplace"
+            fill
+            className="object-cover"
+            priority
           />
-          <button className="bg-sky-600 text-white p-3 rounded-r-lg">
-            Search
-          </button>
+          <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/50"></div>
+        </div>
+        <div className="relative z-10 max-w-4xl mx-auto px-4 text-center">
+          <h1 className="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight">
+            Find Your Dream Job in <span className="text-sky-400">Ethiopia</span>
+          </h1>
+          <p className="text-xl text-gray-200 mb-8">
+            The leading platform connecting Ethiopian talent with top companies
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <div className="flex-1 w-full max-w-md">
+              <input
+                type="text"
+                placeholder="Search jobs, skills, or companies..."
+                className="w-full p-4 rounded-lg border-2 border-white/20 bg-white/10 text-white placeholder-gray-300 backdrop-blur-sm focus:ring-2 focus:ring-sky-400 focus:border-transparent"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyPress={handleKeyPress}
+              />
+            </div>
+            <button 
+              className="w-full sm:w-auto bg-sky-500 text-white px-8 py-4 rounded-lg hover:bg-sky-600 transition-colors font-medium shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={handleSearch}
+              disabled={isLoading || !searchQuery.trim()}
+            >
+              {isLoading ? (
+                <span className="flex items-center gap-2">
+                  <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  Searching...
+                </span>
+              ) : (
+                'Search Jobs'
+              )}
+            </button>
+          </div>
+          {error && (
+            <p className="mt-4 text-red-400 text-sm">
+              {error}
+            </p>
+          )}
+          <div className="mt-8 flex flex-wrap justify-center items-center gap-4">
+            <span className="text-gray-300 font-medium">Popular:</span>
+            {["Remote", "Addis Ababa", "Entry Level", "IT"].map((tag) => (
+              <span
+                key={tag}
+                className="px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full text-white hover:bg-white/20 cursor-pointer transition-colors"
+                onClick={() => {
+                  setSearchQuery(tag);
+                  handleSearch();
+                }}
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
         </div>
       </header>
 
-      {/* Counts */}
-      <section className="flex justify-center items-center bg-sky-100 gap-4">
-        <div className="flex flex-col items-center justify-center p-6 ">
-          <h6 className="text-4xl font-bold text-gray-800 flex items-center">
-            {applications.toLocaleString()} {/* Format number with commas */}
-            <Plus className="ml-2 text-green-500 w-6 h-6" />
-          </h6>
-          <p className="text-gray-500 text-sm">Total Applications Received</p>
-        </div>
-
-        <div className="flex flex-col items-center justify-center p-6">
-          <h6 className="text-4xl font-bold text-gray-800 flex items-center">
-            {users.toLocaleString()} {/* Format number with commas */}
-            <Plus className="ml-2 text-green-500 w-6 h-6" />
-          </h6>
-          <p className="text-gray-500 text-sm">Total Applications Received</p>
-        </div>
-
-        <div className="flex flex-col items-center justify-center p-6">
-          <h6 className="text-4xl font-bold text-gray-800 flex items-center">
-            {companies.toLocaleString()} {/* Format number with commas */}
-            <Plus className="ml-2 text-green-500 w-6 h-6" />
-          </h6>
-          <p className="text-gray-500 text-sm">Total Applications Received</p>
-        </div>
-      </section>
-
       {/* Job Categories */}
-      <section className="py-16 px-10">
-        <h3 className="text-2xl font-semibold text-gray-800 mb-6">
-          Popular Job Categories
-        </h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {[
-            "Design & Development",
-            "Business Consulting",
-            "Production Operation",
-            "Marketing & Sales",
-            "Web Developer",
-            "Project Manager",
-            "Business analyst",
-            "Education & Training",
-          ].map((category) => (
-            <div
-              key={category}
-              className="bg-white p-6 shadow-md rounded-lg text-center"
-            >
-              <h4 className="font-bold text-gray-700">{category}</h4>
-              <p className="text-gray-500">+49 Jobs Available</p>
-            </div>
-          ))}
+      <section className="py-16 bg-white">
+        <div className="max-w-6xl mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center text-gray-800 mb-4">
+            Explore Job Categories
+          </h2>
+          <p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto">
+            Discover opportunities across Ethiopia&apos;s most dynamic sectors
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {jobCategories.map((category) => (
+              <div
+                key={category.name}
+                className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+              >
+                <div className="relative h-48">
+                  <Image
+                    src={category.image}
+                    alt={category.name}
+                    fill
+                    className="object-cover transition-transform duration-300 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent"></div>
+                </div>
+                <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+                  <div className="text-2xl mb-2">{category.icon}</div>
+                  <h4 className="font-semibold text-lg mb-1">{category.name}</h4>
+                  <p className="text-sm text-gray-200 mb-2">{category.description}</p>
+                  <p className="text-sm text-sky-300">
+                    {category.count.toLocaleString()} jobs available
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
-      <section>
-      <div>
-      <h1 className="text-2xl font-bold text-center pt-4">Trusted By</h1>
-      <ScrollingCards />
-    </div>
+      {/* Features Section */}
+      <section className="py-16 bg-gray-50">
+        <div className="max-w-6xl mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center text-gray-800 mb-4">
+            Why Choose TalentHub Ethiopia
+          </h2>
+          <p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto">
+            The most effective way to advance your career in Ethiopia
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {features.map((feature) => (
+              <div
+                key={feature.title}
+                className="relative overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group"
+              >
+                <div className="relative h-48">
+                  <Image
+                    src={feature.image}
+                    alt={feature.title}
+                    fill
+                    className="object-cover transition-transform duration-300 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent"></div>
+                </div>
+                <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                  <div className="text-3xl mb-3">{feature.icon}</div>
+                  <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
+                  <p className="text-gray-200 text-sm">{feature.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </section>
 
-      {/* Featured Job Circulars */}
-      <section className="py-16 px-10">
-        <h3 className="text-2xl text-center font-semibold text-gray-800 mb-6">
-          Featured Job Circulars
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 px-28">
-          {[
-            "Design & Development",
-            "Business Consulting",
-            "Production Operation",
-          ].map((category) => (
-            <div
-              key={category}
-              className="bg-white min-h-[350px] p-6 shadow-md rounded-lg text-center"
+      {/* Testimonials */}
+      <section className="py-16 bg-white">
+        <div className="max-w-6xl mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center text-gray-800 mb-4">
+            Success Stories
+          </h2>
+          <p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto">
+            Hear from professionals who found success through TalentHub Ethiopia
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {testimonials.map((testimonial) => (
+              <div
+                key={testimonial.name}
+                className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+              >
+                <div className="relative w-20 h-20 mx-auto mb-4">
+                  <Image
+                    src={testimonial.avatar}
+                    alt={testimonial.name}
+                    fill
+                    className="rounded-full object-cover"
+                  />
+                </div>
+                <p className="text-gray-600 mb-4 text-center italic">
+                  &ldquo;{testimonial.testimonial}&rdquo;
+                </p>
+                <div className="text-center">
+                  <p className="font-semibold text-gray-800">{testimonial.name}</p>
+                  <p className="text-sm text-gray-500">
+                    {testimonial.role} at {testimonial.company}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-16 relative overflow-hidden">
+        <div className="absolute inset-0">
+          <Image
+            src="/images/placeholders/cta-bg.jpg"
+            alt="Ethiopian Office Environment"
+            fill
+            className="object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-sky-900/90 to-sky-800/90"></div>
+        </div>
+        <div className="relative z-10 max-w-4xl mx-auto px-4 text-center">
+          <h2 className="text-4xl font-bold text-white mb-6">
+            Ready to Advance Your Career in Ethiopia?
+          </h2>
+          <p className="text-xl mb-8 text-sky-100">
+            Join thousands of professionals who have found their dream jobs through TalentHub Ethiopia
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <button
+              onClick={handleLoginClickEmployee}
+              className="bg-white text-sky-900 px-8 py-4 rounded-lg hover:bg-sky-50 transition-colors font-medium shadow-lg"
             >
-              <h4 className="font-bold text-gray-700">{category}</h4>
-              <p className="text-gray-500">+49 Jobs Available</p>
-            </div>
-          ))}
+              Find Jobs
+            </button>
+            <button
+              onClick={handleLoginClickEmployer}
+              className="bg-sky-700 text-white px-8 py-4 rounded-lg hover:bg-sky-800 transition-colors font-medium shadow-lg border-2 border-white/20"
+            >
+              Post Jobs
+            </button>
+          </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="text-center py-6 bg-gray-200 text-gray-600">
-        © 2024 JobPortal. All rights reserved.
+      <footer className="bg-gray-900 text-gray-300 py-12">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div>
+              <h3 className="text-2xl font-bold text-white mb-4">TalentHub</h3>
+              <p className="text-gray-400">
+                Connecting talent with opportunity in the modern workplace.
+              </p>
+            </div>
+            <div>
+              <h4 className="text-lg font-semibold text-white mb-4">For Job Seekers</h4>
+              <ul className="space-y-2">
+                <li><Link href="#" className="hover:text-white transition-colors">Browse Jobs</Link></li>
+                <li><Link href="#" className="hover:text-white transition-colors">Create Profile</Link></li>
+                <li><Link href="#" className="hover:text-white transition-colors">Job Alerts</Link></li>
+                <li><Link href="#" className="hover:text-white transition-colors">Career Advice</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="text-lg font-semibold text-white mb-4">For Employers</h4>
+              <ul className="space-y-2">
+                <li><Link href="#" className="hover:text-white transition-colors">Post a Job</Link></li>
+                <li><Link href="#" className="hover:text-white transition-colors">Browse Candidates</Link></li>
+                <li><Link href="#" className="hover:text-white transition-colors">Pricing</Link></li>
+                <li><Link href="#" className="hover:text-white transition-colors">Employer Resources</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="text-lg font-semibold text-white mb-4">Company</h4>
+              <ul className="space-y-2">
+                <li><Link href="#" className="hover:text-white transition-colors">About Us</Link></li>
+                <li><Link href="#" className="hover:text-white transition-colors">Contact</Link></li>
+                <li><Link href="#" className="hover:text-white transition-colors">Blog</Link></li>
+                <li><Link href="#" className="hover:text-white transition-colors">Careers</Link></li>
+              </ul>
+            </div>
+          </div>
+          <div className="border-t border-gray-800 mt-12 pt-8 text-center">
+            <p>© 2024 TalentHub. All rights reserved.</p>
+          </div>
+        </div>
       </footer>
     </div>
   );
