@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { JobPosting } from "../../../models/jobPosting";
-import { notFound, useParams } from "next/navigation";
+import { notFound, useParams, useRouter } from "next/navigation";
 import { CheckCircle } from "lucide-react";
 import { Organization } from "../../../models/organization";
 import { FaFacebook, FaXTwitter, FaLinkedin } from "react-icons/fa6";
@@ -33,6 +33,7 @@ const JobDetail = () => {
   const params = useParams();
   const id = params.id as string;
   const [mounted, setMounted] = useState(false);
+  const router = useRouter();
 
   if (!id) return notFound();
 
@@ -216,6 +217,11 @@ const JobDetail = () => {
       );
   
       setMessage("Application submitted successfully!");
+      
+      // Redirect to applications page after successful submission
+      setTimeout(() => {
+        router.push("/jobs/applications");
+      }, 1500); // Short delay to show success message
     } catch (error) {
       console.error("Error submitting application:", error);
       setMessage("Error applying for the job. Please try again.");
@@ -272,13 +278,17 @@ const JobDetail = () => {
 
                 {/* Save Job Button */}
                 <button
-                  className="flex items-center px-4 py-2 rounded-lg text-gray-600 hover:bg-sky-100 hover:border-sky-500 hover:text-sky-600 transition"
+                  className={`flex items-center px-4 py-2 rounded-lg transition ${
+                    job?.isSaved 
+                      ? "bg-sky-100 border-sky-500 text-sky-600" 
+                      : "text-gray-600 hover:bg-sky-100 hover:border-sky-500 hover:text-sky-600"
+                  }`}
                   onClick={handleSaveJob}
                 >
                   {/* Save Icon */}
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
+                    fill={job?.isSaved ? "currentColor" : "none"}
                     viewBox="0 0 24 24"
                     strokeWidth={2}
                     stroke="currentColor"
@@ -291,7 +301,7 @@ const JobDetail = () => {
                     />
                   </svg>
                   {/* Save Label */}
-                  <span className="font-medium">Save</span>
+                  <span className="font-medium">{job?.isSaved ? "Saved" : "Save"}</span>
                 </button>
               </div>
 

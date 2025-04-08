@@ -1,8 +1,19 @@
 "use client";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import axios from "axios";
+
+interface UserData {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  profile?: {
+    path?: string;
+  };
+}
 
 export default function Navbar() {
   const router = useRouter();
@@ -10,11 +21,28 @@ export default function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const [userData, setUserData] = useState<UserData | null>(null);
 
   useEffect(() => {
     // Check if user is logged in by checking for a token
     const token = localStorage.getItem("token");
+    const user = JSON.parse(localStorage.getItem("organization") || "null");
     setIsLoggedIn(!!token);
+    
+    if (token && user?.id) {
+      // Fetch user data
+      const fetchUserData = async () => {
+        try {
+          const response = await axios.get(`http://196.188.249.24:3010/api/users/${user.id}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          setUserData(response.data);
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+        }
+      };
+      fetchUserData();
+    }
   }, []);
 
   useEffect(() => {
@@ -119,13 +147,16 @@ export default function Navbar() {
           <div className="relative" ref={dropdownRef}>
             {/* Profile Picture */}
             <button onClick={() => setShowDropdown(!showDropdown)}>
-              <Image
-                src="/profile.avif"
-                alt="Profile"
-                width={50}
-                height={50}
-                className="w-12 h-12 rounded-full border border-gray-300 cursor-pointer"
-              />
+              <Avatar className="w-12 h-12 border border-gray-300 cursor-pointer">
+                <AvatarImage
+                  src={userData?.profile?.path || "/profile.avif"}
+                  alt="Profile"
+                  className="object-cover"
+                />
+                <AvatarFallback className="text-lg bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                  {userData?.firstName?.[0] || "U"}
+                </AvatarFallback>
+              </Avatar>
             </button>
 
             {/* Dropdown Menu */}

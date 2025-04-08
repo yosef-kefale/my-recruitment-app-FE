@@ -2,7 +2,7 @@ import { Card } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { formatDistanceToNow } from "date-fns";
 import { useEffect, useState } from "react";
-import { MapPin, MoreVertical, Edit, Trash2, Bookmark } from "lucide-react";
+import { MapPin, MoreVertical, Edit, Trash2, Bookmark, Building2, Briefcase, Users, DollarSign } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
@@ -19,17 +19,32 @@ interface JobCardProps {
   onClick?: (job: JobPosting) => void;
 }
 
-const JobCard: React.FC<JobCardProps> = ({ job, isEmployer, onDelete, onClick }) => {
+const JobCard: React.FC<JobCardProps> = ({ job, isEmployer, onDelete }) => {
   const [mounted, setMounted] = useState(false);
   const [organization, setOrganization] = useState<Organization | null>(null);
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [isSaved, setIsSaved] = useState(job.isSaved || false);
+  const [timeAgo, setTimeAgo] = useState<string>("Some time ago");
   const maxChars = 800; // Limit for description
   const maxSkillsToShow = 3; // Limit for skills displayed
 
-  const timeAgo = job.createdAt
-    ? formatDistanceToNow(new Date(job.createdAt), { addSuffix: true })
-    : "Some time ago";
+  // Update timeAgo every minute
+  useEffect(() => {
+    if (job.createdAt && typeof job.createdAt === 'string') {
+      const updateTimeAgo = () => {
+        setTimeAgo(formatDistanceToNow(new Date(job.createdAt as string), { addSuffix: true }));
+      };
+      
+      // Initial update
+      updateTimeAgo();
+      
+      // Update every minute
+      const interval = setInterval(updateTimeAgo, 60000);
+      
+      // Cleanup interval on unmount
+      return () => clearInterval(interval);
+    }
+  }, [job.createdAt]);
 
   useEffect(() => {
     setMounted(true);
@@ -115,20 +130,6 @@ const JobCard: React.FC<JobCardProps> = ({ job, isEmployer, onDelete, onClick })
     }
   };
 
-  const handleCardClick = (e: React.MouseEvent) => {
-    // Prevent click event if clicking on action buttons
-    if (
-      (e.target as HTMLElement).closest('.job-actions') ||
-      (e.target as HTMLElement).closest('button')
-    ) {
-      return;
-    }
-    
-    if (onClick) {
-      onClick(job);
-    }
-  };
-
   // Don't render anything until after hydration
   if (!mounted) {
     return null;
@@ -136,17 +137,13 @@ const JobCard: React.FC<JobCardProps> = ({ job, isEmployer, onDelete, onClick })
 
   return (
     <Card 
-      className="h-full py-6 px-4 sm:px-8 shadow-md border-gray-200 border-t-0 rounded-lg transition-all relative hover:shadow-lg flex flex-col overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer"
-      onClick={handleCardClick}
+      className="group h-full p-3 sm:p-4 shadow-sm hover:shadow-md border-gray-200 border-t-0 rounded-lg transition-all relative flex flex-col overflow-hidden duration-300 cursor-pointer"
     >
       {/* Header with time and actions */}
       <div className="flex justify-between items-start mb-3">
-        <p className="text-gray-500 text-sm">{timeAgo}</p>
-        
         <div className="flex items-center gap-2">
-          {/* Employment Type Badge */}
           <Badge
-            className={`px-3 py-1 text-sm rounded-md ${
+            className={`px-2 py-0.5 text-xs rounded-md ${
               job.employmentType === "Full-time"
                 ? "bg-green-100 text-green-800"
                 : job.employmentType === "Part-time"
@@ -158,24 +155,25 @@ const JobCard: React.FC<JobCardProps> = ({ job, isEmployer, onDelete, onClick })
           >
             {job.employmentType}
           </Badge>
-          
-          {/* Save Job Button - Only show for employees */}
+          <span className="text-gray-400 text-xs">{timeAgo}</span>
+        </div>
+        
+        <div className="flex items-center gap-1">
           {!isEmployer && (
             <button
               onClick={handleSaveJob}
-              className="p-2 rounded-full text-gray-600 hover:bg-sky-100 hover:text-sky-600 transition-colors"
+              className="p-1.5 rounded-full text-gray-400 hover:bg-sky-50 hover:text-sky-600 transition-colors"
               aria-label="Save job"
             >
-              <Bookmark className={`w-5 h-5 ${isSaved ? 'fill-sky-500 text-sky-500' : ''}`} />
+              <Bookmark className={`w-4 h-4 ${isSaved ? 'fill-sky-500 text-sky-500' : ''}`} />
             </button>
           )}
           
-          {/* Employer Actions */}
           {isEmployer && (
             <Popover>
               <PopoverTrigger asChild>
-                <button className="p-2 rounded-full hover:bg-gray-100">
-                  <MoreVertical className="w-5 h-5 text-gray-500" />
+                <button className="p-1.5 rounded-full hover:bg-gray-50">
+                  <MoreVertical className="w-4 h-4 text-gray-400" />
                 </button>
               </PopoverTrigger>
               <PopoverContent className="bg-white border shadow-md rounded-md p-2 w-32">
@@ -198,48 +196,55 @@ const JobCard: React.FC<JobCardProps> = ({ job, isEmployer, onDelete, onClick })
       </div>
 
       {/* Title & Company Info */}
-      <div className="flex flex-col sm:flex-row gap-4 items-start mb-4">
+      <div className="flex gap-3 items-start mb-3">
         <div className="flex-shrink-0">
           <Image
             src="/logo-demo.png"
             alt="Company Logo"
-            width={60}
-            height={60}
+            width={40}
+            height={40}
             className="rounded-md"
           />
         </div>
-        <div className="flex-grow">
+        <div className="flex-grow min-w-0">
           <Link href={isEmployer ? `/jobs/employer-job-details/${job.id}` : `/jobs/job-details/${job.id}`}>
-            <h2 className="text-xl font-semibold text-sky-800 hover:text-cyan-400 hover:underline cursor-pointer line-clamp-2">
+            <h2 className="text-base font-semibold text-gray-900 group-hover:text-sky-600 transition-colors line-clamp-1">
               {job.title}
             </h2>
           </Link>
-          <div className="flex items-center gap-2 mt-1">
-            <span className="text-blue-500 text-sm font-medium">
-              {job.status}
-            </span>
+          <div className="flex items-center gap-1.5 mt-0.5 text-sm text-gray-500">
+            <Building2 className="w-3.5 h-3.5" />
+            <span className="truncate">{job.companyName || "Company Name"}</span>
           </div>
         </div>
       </div>
 
-      {/* Location & Salary */}
-      <div className="flex flex-wrap items-center gap-3 text-gray-600 mb-4 text-sm">
-        <div className="flex items-center gap-1">
-          <MapPin size={16} className="text-gray-500" />
-          <span className="truncate">{job.location}</span>
+      {/* Key Information Grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
+        <div className="flex items-center gap-1.5 text-xs text-gray-500">
+          <MapPin className="w-3.5 h-3.5" />
+          <span className="truncate">{job.location || job.city}</span>
+        </div>
+        <div className="flex items-center gap-1.5 text-xs text-gray-500">
+          <Briefcase className="w-3.5 h-3.5" />
+          <span className="truncate">{job.experienceLevel || "Experience Level"}</span>
+        </div>
+        <div className="flex items-center gap-1.5 text-xs text-gray-500">
+          <Users className="w-3.5 h-3.5" />
+          <span>{job?.applicationCount || 0} applicants</span>
         </div>
         {job?.salaryRange?.minimum && job?.salaryRange?.maximum && (
-          <div className="flex items-center">
-            <span className="font-semibold text-md">
-              ${job?.salaryRange?.minimum} - ${job?.salaryRange?.maximum}
+          <div className="flex items-center gap-1.5 text-xs text-gray-500">
+            <DollarSign className="w-3.5 h-3.5" />
+            <span className="truncate">
+              ${job.salaryRange.minimum.toLocaleString()} - ${job.salaryRange.maximum.toLocaleString()}
             </span>
           </div>
         )}
       </div>
 
       {/* Description */}
-      <div className="mt-3 text-gray-600 text-sm font-[Inter] leading-relaxed flex-grow">
-        {/* Show full or truncated description */}
+      <div className="text-gray-500 text-xs leading-relaxed flex-grow">
         {showFullDescription ? (
           <div
             className="description-content"
@@ -247,17 +252,16 @@ const JobCard: React.FC<JobCardProps> = ({ job, isEmployer, onDelete, onClick })
           />
         ) : (
           <div
-            className="description-content line-clamp-3"
+            className="description-content line-clamp-2"
             dangerouslySetInnerHTML={{
               __html: `${job.description.slice(0, maxChars)}...`,
             }}
           />
         )}
 
-        {/* Show See More/See Less button if description is longer than maxChars */}
         {job.description.length > maxChars && (
           <button
-            className="text-blue-600 text-sm font-medium mt-2 hover:underline"
+            className="text-sky-600 text-xs font-medium mt-1 hover:underline"
             onClick={() => setShowFullDescription(!showFullDescription)}
           >
             {showFullDescription ? "See Less" : "See More"}
@@ -265,30 +269,22 @@ const JobCard: React.FC<JobCardProps> = ({ job, isEmployer, onDelete, onClick })
         )}
       </div>
 
-      {/* Skills & Applicants */}
-      <div className="flex flex-col gap-4 mt-6 pt-4 border-t border-gray-100">
-        <div className="flex justify-between items-center">
-          <span className="text-gray-500 text-sm">
-            {job?.applicationCount || 0} applicants
-          </span>
-        </div>
-        
-        <div className="flex flex-wrap gap-2">
-          {job.skill.slice(0, maxSkillsToShow).map((skill) => (
-            <Badge
-              key={skill}
-              className="bg-gray-200 text-gray-800 hover:bg-gray-300 hover:text-blue-500 px-2 py-1 rounded-md text-xs truncate max-w-[120px]"
-              title={skill}
-            >
-              {skill.length > 15 ? `${skill.slice(0, 15)}...` : skill}
-            </Badge>
-          ))}
-          {job.skill.length > maxSkillsToShow && (
-            <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200 hover:text-blue-600 px-2 py-1 rounded-md text-xs">
-              +{job.skill.length - maxSkillsToShow} more
-            </Badge>
-          )}
-        </div>
+      {/* Skills */}
+      <div className="flex flex-wrap gap-1.5 mt-3 pt-3 border-t border-gray-100">
+        {job.skill.slice(0, maxSkillsToShow).map((skill) => (
+          <Badge
+            key={skill}
+            className="bg-gray-50 text-gray-600 hover:bg-gray-100 px-2 py-0.5 rounded text-xs truncate max-w-[100px]"
+            title={skill}
+          >
+            {skill.length > 12 ? `${skill.slice(0, 12)}...` : skill}
+          </Badge>
+        ))}
+        {job.skill.length > maxSkillsToShow && (
+          <Badge className="bg-sky-50 text-sky-600 hover:bg-sky-100 px-2 py-0.5 rounded text-xs">
+            +{job.skill.length - maxSkillsToShow}
+          </Badge>
+        )}
       </div>
     </Card>
   );

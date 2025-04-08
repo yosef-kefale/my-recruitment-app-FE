@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { MapPin, SlidersHorizontal, X, Filter, DollarSign, Briefcase, Clock, Tag, GraduationCap, Building2, UserCog, ChevronDown, ChevronUp, Plus } from "lucide-react";
+import { MapPin, X, Filter, DollarSign, Briefcase, Clock, Tag, GraduationCap, Building2, UserCog, ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -108,7 +108,7 @@ const FilterSidebar = ({ filterValues, onFilterChange }: FilterSidebarProps) => 
     onFilterChange({ location: value });
   };
 
-  const handleAvailabilityChange = (field: string) => {
+  const handleAvailabilityChange = (field: keyof typeof availability) => {
     const updatedAvailability = {
       ...availability,
       [field]: !availability[field],
@@ -186,27 +186,27 @@ const FilterSidebar = ({ filterValues, onFilterChange }: FilterSidebarProps) => 
   };
 
   return (
-    <div className="p-6 bg-white rounded-lg h-full">
+    <div className="p-4 sm:p-6 bg-white rounded-lg h-full overflow-y-auto">
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-between items-center mb-4 sm:mb-6">
         <div className="flex items-center gap-2">
           <Filter className="h-5 w-5 text-blue-600" />
-          <h3 className="font-semibold text-lg text-gray-800">Filters</h3>
+          <h3 className="font-semibold text-base sm:text-lg text-gray-800">Filters</h3>
         </div>
         <Button 
           variant="ghost" 
-          size="sm" 
-          className="text-blue-600 hover:text-blue-800 hover:bg-blue-50"
+          size="icon"
+          className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-full"
           onClick={resetFilters}
+          title="Clear all filters"
         >
-          <X className="h-4 w-4 mr-1" />
-          Clear all
+          <Trash2 className="h-4 w-4" />
         </Button>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-3 sm:space-y-4">
         {/* Job Type */}
-        <div className="space-y-3">
+        <div className="space-y-2 sm:space-y-3">
           <div className="flex items-center gap-2">
             <Briefcase className="h-4 w-4 text-gray-500" />
             <h4 className="font-medium text-gray-700">Job Type</h4>
@@ -230,7 +230,7 @@ const FilterSidebar = ({ filterValues, onFilterChange }: FilterSidebarProps) => 
         <Separator />
 
         {/* Industry & Employment Type */}
-        <div className="space-y-3">
+        <div className="space-y-2 sm:space-y-3">
           <div className="flex items-center gap-2">
             <Building2 className="h-4 w-4 text-gray-500" />
             <h4 className="font-medium text-gray-700">Industry</h4>
@@ -252,7 +252,7 @@ const FilterSidebar = ({ filterValues, onFilterChange }: FilterSidebarProps) => 
           </Select>
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-2 sm:space-y-3">
           <div className="flex items-center gap-2">
             <Briefcase className="h-4 w-4 text-gray-500" />
             <h4 className="font-medium text-gray-700">Employment Type</h4>
@@ -275,7 +275,7 @@ const FilterSidebar = ({ filterValues, onFilterChange }: FilterSidebarProps) => 
         <Separator />
 
         {/* Location */}
-        <div className="space-y-3">
+        <div className="space-y-2 sm:space-y-3">
           <div className="flex items-center gap-2">
             <MapPin className="h-4 w-4 text-gray-500" />
             <h4 className="font-medium text-gray-700">Location</h4>
@@ -297,7 +297,7 @@ const FilterSidebar = ({ filterValues, onFilterChange }: FilterSidebarProps) => 
         <Separator />
 
         {/* Experience & Education */}
-        <div className="space-y-3">
+        <div className="space-y-2 sm:space-y-3">
           <div className="flex items-center gap-2">
             <UserCog className="h-4 w-4 text-gray-500" />
             <h4 className="font-medium text-gray-700">Experience Level</h4>
@@ -316,7 +316,7 @@ const FilterSidebar = ({ filterValues, onFilterChange }: FilterSidebarProps) => 
           </Select>
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-2 sm:space-y-3">
           <div className="flex items-center gap-2">
             <GraduationCap className="h-4 w-4 text-gray-500" />
             <h4 className="font-medium text-gray-700">Education Level</h4>
@@ -338,7 +338,7 @@ const FilterSidebar = ({ filterValues, onFilterChange }: FilterSidebarProps) => 
         <Separator />
 
         {/* Salary Slider */}
-        <div className="space-y-3">
+        <div className="space-y-2 sm:space-y-3">
           <div className="flex items-center gap-2">
             <DollarSign className="h-4 w-4 text-gray-500" />
             <h4 className="font-medium text-gray-700">Salary</h4>
@@ -365,7 +365,7 @@ const FilterSidebar = ({ filterValues, onFilterChange }: FilterSidebarProps) => 
         <Separator />
 
         {/* Additional Filters Toggle */}
-        <div className="space-y-3">
+        <div className="space-y-2 sm:space-y-3">
           <button 
             className="flex items-center justify-between w-full text-sm font-medium text-gray-700 hover:text-blue-600"
             onClick={toggleAdditionalFilters}
@@ -375,9 +375,9 @@ const FilterSidebar = ({ filterValues, onFilterChange }: FilterSidebarProps) => 
           </button>
           
           {showAdditionalFilters && (
-            <div className="space-y-4 pt-4">
+            <div className="space-y-3 sm:space-y-4 pt-4">
               {/* Availability */}
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4 text-gray-500" />
                   <h4 className="font-medium text-gray-700">Availability</h4>
@@ -411,7 +411,7 @@ const FilterSidebar = ({ filterValues, onFilterChange }: FilterSidebarProps) => 
               </div>
 
               {/* Specialties */}
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 <div className="flex items-center gap-2">
                   <Tag className="h-4 w-4 text-gray-500" />
                   <h4 className="font-medium text-gray-700">Specialties</h4>
@@ -457,7 +457,7 @@ const FilterSidebar = ({ filterValues, onFilterChange }: FilterSidebarProps) => 
         </div>
       </div>
 
-      <div className="mt-8">
+      <div className="mt-6 sm:mt-8">
         <Button 
           className="w-full bg-blue-600 hover:bg-blue-700 text-white"
           onClick={() => onFilterChange({

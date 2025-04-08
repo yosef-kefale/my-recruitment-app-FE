@@ -10,7 +10,7 @@ import JobDetail from "../../../components/job/job-detail";
 import { Grid, List, Search, RefreshCw, Loader2, Bookmark } from "lucide-react";
 import { JobPosting } from "../../models/jobPosting";
 import { Card } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const ViewJobs = () => {
   const [filteredJobs, setFilteredJobs] = useState<JobPosting[]>([]);
@@ -108,7 +108,22 @@ const ViewJobs = () => {
     setFilteredJobs((prevJobs) => prevJobs.filter((job) => job.id !== deletedJobId));
   };
 
-  const [filterValues, setFilterValues] = useState({
+  const [filterValues, setFilterValues] = useState<{
+    salary?: number;
+    jobType?: string;
+    location?: string;
+    availability?: {
+      freelance?: boolean;
+      fullTime?: boolean;
+      readyWork?: boolean;
+    };
+    jobPreference?: string;
+    specialties?: Array<{ name: string; checked: boolean }>;
+    industry?: string;
+    experienceLevel?: string;
+    educationLevel?: string;
+    employmentType?: string;
+  }>({
     salary: 1500,
     jobType: "All",
     location: "New York",
@@ -126,12 +141,16 @@ const ViewJobs = () => {
   });
 
   const handleFilterChange = (updatedFilters: {
-    salary: number;
-    jobType: string;
-    location: string;
-    availability: { freelance: boolean; fullTime: boolean; readyWork: boolean };
-    jobPreference: string;
-    specialties: { name: string; checked: boolean }[];
+    salary?: number;
+    jobType?: string;
+    location?: string;
+    availability?: { freelance?: boolean; fullTime?: boolean; readyWork?: boolean };
+    jobPreference?: string;
+    specialties?: { name: string; checked: boolean }[];
+    industry?: string;
+    experienceLevel?: string;
+    educationLevel?: string;
+    employmentType?: string;
   }) => {
     setFilterValues((prevFilters) => {
       const newFilters = {
@@ -169,11 +188,11 @@ const ViewJobs = () => {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <div className="container mx-auto py-6 px-4">
+      <div className="container mx-auto py-6">
         <div className="flex flex-col md:flex-row gap-6 h-full">
           {/* Filter Section */}
           {isEmployeeView && (
-            <div className="w-full md:w-1/4 lg:w-1/5">
+            <div className="w-full md:w-1/4 lg:w-1/5 sticky top-6 self-start">
               <Card className="p-4 shadow-md rounded-lg">
                 <FilterSidebar
                   filterValues={filterValues}
@@ -185,7 +204,7 @@ const ViewJobs = () => {
 
           {/* Job List Section */}
           <div className={`${isEmployeeView ? "w-full md:w-3/4 lg:w-4/5" : "w-full"} flex flex-col`}>
-            <Card className="p-4 shadow-md rounded-lg mb-6">
+            <Card className="p-4 shadow-md rounded-lg mb-2">
               <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                 <div className="relative w-full md:w-3/4">
                   <div className="relative">
@@ -236,7 +255,7 @@ const ViewJobs = () => {
 
             {/* Tabs for All Jobs and Saved Jobs */}
             {isEmployeeView && (
-              <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-2">
                 <TabsList className="grid grid-cols-2 w-full md:w-auto">
                   <TabsTrigger value="all" className="flex items-center gap-2">
                     <List className="h-4 w-4" />
@@ -268,7 +287,7 @@ const ViewJobs = () => {
                     <Bookmark className="h-12 w-12 text-gray-300 mb-4" />
                     <h3 className="text-xl font-medium text-gray-700">No saved jobs</h3>
                     <p className="text-gray-500 mt-2">
-                      You haven't saved any jobs yet. Click the bookmark icon on a job card to save it.
+                      You haven&apos;t saved any jobs yet. Click the bookmark icon on a job card to save it.
                     </p>
                     <Button 
                       variant="outline" 
