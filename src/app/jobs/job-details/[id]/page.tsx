@@ -275,21 +275,49 @@ const JobDetail = () => {
   return (
     <div className="w-full bg-gray-50">
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-blue-50 to-blue-100 text-gray-800 pt-4 px-6 border-b border-blue-100">
+      <div className="bg-gradient-to-r from-blue-50 to-blue-100 text-gray-800 py-4 px-6 border-b border-blue-100">
         <div className="container mx-auto">
-          <div className="flex flex-col md:flex-row items-start justify-between gap-8">
-            <div className="md:w-2/3">
-              <h1 className="text-3xl md:text-4xl font-bold mb-3 text-gray-800">
-                {job?.title}
-              </h1>
-              <div className="flex items-center gap-2 text-gray-600 mb-4">
-                <Building size={16} />
-                <span>{job?.companyName || "Company Name"}</span>
+          <div className="flex flex-col md:flex-row items-start gap-6">
+            {/* Company Logo */}
+            <div className="w-28 h-28 flex-shrink-0 flex items-center justify-center rounded-lg bg-white p-2 border border-blue-100">
+              <Image
+                width={90}
+                height={90}
+                src={job?.companyLogo?.path || "/logo.webp"}
+                alt={`${job?.companyName || "Company"} Logo`}
+                className="w-full h-full object-contain"
+              />
+            </div>
+            
+            {/* Job Info */}
+            <div className="flex-grow">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-2">
+                <div>
+                  <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-1">
+                    {job?.title}
+                  </h1>
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <Building size={14} />
+                    <span>{job?.companyName || "Company Name"}</span>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-3">
+                  <Button 
+                    variant="outline" 
+                    className="border-blue-200 text-blue-700 hover:bg-blue-50"
+                    onClick={handleSaveJob}
+                  >
+                    {job?.isSaved ? <BookmarkCheck size={16} /> : <Bookmark size={16} />}
+                  </Button>
+                
+                </div>
               </div>
-              <div className="flex flex-wrap gap-3 mb-5">
+              
+              <div className="flex flex-wrap gap-3 mb-3">
                 <div className="flex items-center gap-1 bg-white px-3 py-1.5 rounded-full border border-blue-100 text-gray-700">
                   <MapPin size={14} className="text-blue-500" />
-                  <span>{job?.location || job?.city || "Location"}</span>
+                  <span>{job?.location || "Location"}</span>
                 </div>
                 <div className="flex items-center gap-1 bg-white px-3 py-1.5 rounded-full border border-blue-100 text-gray-700">
                   <Briefcase size={14} className="text-blue-500" />
@@ -299,39 +327,18 @@ const JobDetail = () => {
                   <Calendar size={14} className="text-blue-500" />
                   <span>Posted: {formatDate(job?.postedDate)}</span>
                 </div>
+                <div className="flex items-center gap-1 bg-white px-3 py-1.5 rounded-full border border-blue-100 text-gray-700">
+                  <Clock size={14} className="text-blue-500" />
+                  <span>Deadline: {formatDate(job?.deadline)}</span>
+                </div>
               </div>
-            </div>
-            <div className="md:w-1/3 flex flex-col items-center w-full md:w-auto">
-              <div className="w-24 h-24 flex items-center justify-center rounded-lg bg-white p-2 mb-4 border border-blue-100">
-                <Image
-                  width={90}
-                  height={90}
-                  src={job?.companyLogo?.path || "/logo.webp"}
-                  alt={`${job?.companyName || "Company"} Logo`}
-                  className="w-full h-full object-contain"
-                />
-              </div>
-              <div className="flex gap-3 w-full">
-                <Button 
-                  className="flex-1 bg-blue-600 text-white hover:bg-blue-700 font-medium"
-                  onClick={handleApplyClick}
-                >
-                  Apply Now
-                </Button>
-                <Button 
-                  variant="outline" 
-                  className="border-blue-200 text-blue-700 hover:bg-blue-50"
-                  onClick={handleSaveJob}
-                >
-                  {job?.isSaved ? <BookmarkCheck size={18} /> : <Bookmark size={18} />}
-                </Button>
-              </div>
+              
             </div>
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto py-4 grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="container mx-auto py-6 grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Job Details Section */}
         <div className="md:col-span-2 space-y-6">
           <Card className="border border-gray-100 shadow-sm">
@@ -340,10 +347,6 @@ const JobDetail = () => {
                 <h3 className="text-xl font-bold text-gray-800">
                   Job Details
                 </h3>
-                <div className="flex items-center gap-2 text-sm text-gray-500">
-                  <Clock size={14} />
-                  <span>Deadline: {formatDate(job?.deadline)}</span>
-                </div>
               </div>
 
               <div className="mb-6">
@@ -495,6 +498,27 @@ const JobDetail = () => {
                     {isCopied ? "Copied!" : "Copy"}
                   </Button>
                 </div>
+              </div>
+
+              <div className="mb-5">
+                <h4 className="text-sm font-semibold text-gray-500 mb-2">Save this job</h4>
+                <Button
+                  variant="outline"
+                  className="w-full flex items-center gap-2 justify-center text-sm border-blue-200 text-blue-700 hover:bg-blue-50"
+                  onClick={handleSaveJob}
+                >
+                  {job?.isSaved ? (
+                    <>
+                      <BookmarkCheck size={16} />
+                      <span>Saved</span>
+                    </>
+                  ) : (
+                    <>
+                      <Bookmark size={16} />
+                      <span>Save Job</span>
+                    </>
+                  )}
+                </Button>
               </div>
 
               <div>
