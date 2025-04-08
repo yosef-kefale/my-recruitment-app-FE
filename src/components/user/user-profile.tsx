@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -164,7 +164,7 @@ interface Reference {
   contact: string;
 }
 
-const UserProfileUpdate = () => {
+function UserProfileContent() {
   const { toast } = useToast();
   const searchParams = useSearchParams();
   const activeTab = searchParams.get("tab") || "profile";
@@ -1964,6 +1964,14 @@ const UserProfileUpdate = () => {
         </Tabs>
       </div>
     </div>
+  );
+}
+
+const UserProfileUpdate = () => {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <UserProfileContent />
+    </Suspense>
   );
 };
 

@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -15,7 +15,7 @@ interface JobPosting {
   postedAt: string;
 }
 
-export default function SearchResults() {
+function SearchContent() {
   const searchParams = useSearchParams();
   const query = searchParams.get("q");
   const [jobs, setJobs] = useState<JobPosting[]>([]);
@@ -88,48 +88,35 @@ export default function SearchResults() {
             Found {jobs.length} {jobs.length === 1 ? 'job' : 'jobs'}
           </p>
         </div>
-
+        
         {jobs.length === 0 ? (
           <div className="text-center py-12">
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">No jobs found</h2>
-            <p className="text-gray-600 mb-4">Try adjusting your search terms</p>
-            <Link href="/" className="text-sky-500 hover:text-sky-600">
-              Return to Home
+            <h2 className="text-2xl font-semibold text-gray-700 mb-4">No jobs found</h2>
+            <p className="text-gray-500 mb-6">Try adjusting your search terms or browse all available jobs</p>
+            <Link href="/" className="inline-block bg-sky-500 text-white px-6 py-3 rounded-lg hover:bg-sky-600 transition-colors">
+              Browse All Jobs
             </Link>
           </div>
         ) : (
-          <div className="grid gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {jobs.map((job) => (
-              <div
-                key={job.id}
-                className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6"
-              >
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                      {job.title}
-                    </h2>
-                    <p className="text-gray-600 mb-2">{job.company}</p>
-                    <div className="flex items-center gap-4 text-sm text-gray-500">
-                      <span>{job.location}</span>
-                      {job.type && <span>• {job.type}</span>}
-                      {job.salary && <span>• {job.salary}</span>}
-                    </div>
+              <div key={job.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                <div className="p-6">
+                  <h2 className="text-xl font-semibold text-gray-900 mb-2">{job.title}</h2>
+                  <p className="text-gray-600 mb-4">{job.company}</p>
+                  <div className="flex items-center text-sm text-gray-500 mb-4">
+                    <span className="mr-4">{job.location}</span>
+                    {job.type && <span>{job.type}</span>}
                   </div>
-                  <button className="bg-sky-500 text-white px-4 py-2 rounded-lg hover:bg-sky-600 transition-colors">
-                    Apply Now
-                  </button>
-                </div>
-                <p className="mt-4 text-gray-600 line-clamp-2">{job.description}</p>
-                <div className="mt-4 flex items-center justify-between">
-                  <span className="text-sm text-gray-500">
-                    Posted {new Date(job.postedAt).toLocaleDateString()}
-                  </span>
-                  <Link
-                    href={`/jobs/${job.id}`}
-                    className="text-sky-500 hover:text-sky-600 text-sm font-medium"
+                  <p className="text-gray-700 mb-4 line-clamp-3">{job.description}</p>
+                  {job.salary && (
+                    <p className="text-sky-600 font-medium mb-4">{job.salary}</p>
+                  )}
+                  <Link 
+                    href={`/jobs/job-details/${job.id}`}
+                    className="inline-block bg-sky-500 text-white px-4 py-2 rounded hover:bg-sky-600 transition-colors"
                   >
-                    View Details →
+                    View Details
                   </Link>
                 </div>
               </div>
@@ -138,5 +125,13 @@ export default function SearchResults() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function SearchResults() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SearchContent />
+    </Suspense>
   );
 } 
