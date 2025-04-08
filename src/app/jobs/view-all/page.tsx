@@ -2,12 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import JobCard from "../../../components/job/job-card";
 import FilterSidebar from "../../../components/job/filter-sidebar";
 import JobDetail from "../../../components/job/job-detail";
-import { Grid, List, Search, RefreshCw, Loader2, Bookmark } from "lucide-react";
+import { Grid, List, RefreshCw, Loader2, Bookmark, Search } from "lucide-react";
 import { JobPosting } from "../../models/jobPosting";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -193,89 +192,117 @@ const ViewJobs = () => {
           {/* Filter Section */}
           {isEmployeeView && (
             <div className="w-full md:w-1/4 lg:w-1/5 sticky top-6 self-start">
-              <Card className="p-4 shadow-md rounded-lg">
+              <Card className="shadow-md rounded-lg max-h-[calc(100vh-3rem)] overflow-y-auto">
                 <FilterSidebar
                   filterValues={filterValues}
                   onFilterChange={handleFilterChange}
+                  searchQuery={searchQuery}
+                  onSearchChange={setSearchQuery}
                 />
               </Card>
             </div>
           )}
 
           {/* Job List Section */}
-          <div className={`${isEmployeeView ? "w-full md:w-3/4 lg:w-4/5" : "w-full"} flex flex-col`}>
-            <Card className="p-4 shadow-md rounded-lg mb-2">
-              <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-                <div className="relative w-full md:w-3/4">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-                    <Input
-                      placeholder="Search by title, position, or description..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10 py-6 h-12 rounded-lg border-gray-200 focus:border-blue-500 focus:ring-blue-500"
-                    />
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-3">
-                  <Button 
-                    variant="outline" 
-                    size="icon" 
-                    onClick={fetchJobs}
-                    className="rounded-full"
-                    title="Refresh jobs"
-                  >
-                    <RefreshCw className="h-5 w-5" />
-                  </Button>
+          <div className={`${isEmployeeView ? "w-full md:w-3/4 lg:w-4/5" : "w-full"} flex flex-col h-[calc(100vh-6rem)]`}>
+            {/* Fixed Header with Tabs and Buttons */}
+            <div className="sticky top-0 bg-slate-50 z-10 pb-2">
+              {/* Tabs for All Jobs and Saved Jobs */}
+              {isEmployeeView && (
+                <div className="flex justify-between items-center mb-2">
+                  <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1">
+                    <TabsList className="grid grid-cols-2 w-full md:w-auto">
+                      <TabsTrigger value="all" className="flex items-center gap-2">
+                        <List className="h-4 w-4" />
+                        All Jobs
+                      </TabsTrigger>
+                      <TabsTrigger value="saved" className="flex items-center gap-2">
+                        <Bookmark className="h-4 w-4" />
+                        Saved Jobs
+                        {savedJobs.length > 0 && (
+                          <span className="ml-1 bg-blue-100 text-blue-800 text-xs font-medium px-2 py-0.5 rounded-full">
+                            {savedJobs.length}
+                          </span>
+                        )}
+                      </TabsTrigger>
+                    </TabsList>
+                  </Tabs>
                   
-                  <div className="flex gap-2 bg-gray-100 p-1 rounded-lg">
-                    <button
-                      onClick={() => setIsListView(true)}
-                      className={`p-2 rounded-md transition-colors ${
-                        isListView ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-700"
-                      }`}
-                      title="List view"
+                  <div className="flex items-center gap-2">
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      onClick={fetchJobs}
+                      className="h-8 w-8 rounded-full"
+                      title="Refresh jobs"
                     >
-                      <List className="h-5 w-5" />
-                    </button>
-                    <button
-                      onClick={() => setIsListView(false)}
-                      className={`p-2 rounded-md transition-colors ${
-                        !isListView ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-700"
-                      }`}
-                      title="Grid view"
-                    >
-                      <Grid className="h-5 w-5" />
-                    </button>
+                      <RefreshCw className="h-4 w-4" />
+                    </Button>
+                    
+                    <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
+                      <button
+                        onClick={() => setIsListView(true)}
+                        className={`p-1.5 rounded-md transition-colors ${
+                          isListView ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-700"
+                        }`}
+                        title="List view"
+                      >
+                        <List className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => setIsListView(false)}
+                        className={`p-1.5 rounded-md transition-colors ${
+                          !isListView ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-700"
+                        }`}
+                        title="Grid view"
+                      >
+                        <Grid className="h-4 w-4" />
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </Card>
+              )}
+              
+              {!isEmployeeView && (
+                <div className="flex justify-end items-center mb-2">
+                  <div className="flex items-center gap-2">
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      onClick={fetchJobs}
+                      className="h-8 w-8 rounded-full"
+                      title="Refresh jobs"
+                    >
+                      <RefreshCw className="h-4 w-4" />
+                    </Button>
+                    
+                    <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
+                      <button
+                        onClick={() => setIsListView(true)}
+                        className={`p-1.5 rounded-md transition-colors ${
+                          isListView ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-700"
+                        }`}
+                        title="List view"
+                      >
+                        <List className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => setIsListView(false)}
+                        className={`p-1.5 rounded-md transition-colors ${
+                          !isListView ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-700"
+                        }`}
+                        title="Grid view"
+                      >
+                        <Grid className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
 
-            {/* Tabs for All Jobs and Saved Jobs */}
-            {isEmployeeView && (
-              <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-2">
-                <TabsList className="grid grid-cols-2 w-full md:w-auto">
-                  <TabsTrigger value="all" className="flex items-center gap-2">
-                    <List className="h-4 w-4" />
-                    All Jobs
-                  </TabsTrigger>
-                  <TabsTrigger value="saved" className="flex items-center gap-2">
-                    <Bookmark className="h-4 w-4" />
-                    Saved Jobs
-                    {savedJobs.length > 0 && (
-                      <span className="ml-1 bg-blue-100 text-blue-800 text-xs font-medium px-2 py-0.5 rounded-full">
-                        {savedJobs.length}
-                      </span>
-                    )}
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
-            )}
-
-            {/* Job Listings */}
-            <div className="flex-1">
+            {/* Scrollable Job Listings */}
+            <div className="flex-1 overflow-y-auto">
               {isLoading ? (
                 <div className="flex justify-center items-center h-64">
                   <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
@@ -318,9 +345,9 @@ const ViewJobs = () => {
                   </div>
                 </Card>
               ) : (
-                <div className={`grid ${isListView ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'} gap-6`}>
+                <div className={`grid ${isListView ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'} gap-4`}>
                   {(activeTab === "saved" ? savedJobs : displayedJobs).map((job) => (
-                    <div key={job.id} className={isListView ? 'py-2' : 'h-full'}>
+                    <div key={job.id} className={isListView ? '' : 'h-full'}>
                       <JobCard 
                         job={job} 
                         isEmployer={!isEmployeeView} 

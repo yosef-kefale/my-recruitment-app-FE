@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { MapPin, X, Filter, DollarSign, Briefcase, Clock, Tag, GraduationCap, Building2, UserCog, ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react";
+import { MapPin, X, Filter, DollarSign, Briefcase, Clock, Tag, GraduationCap, Building2, UserCog, ChevronDown, ChevronUp, Plus, Trash2, Search } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -49,14 +49,17 @@ interface FilterValues {
   experienceLevel?: string;
   educationLevel?: string;
   employmentType?: string;
+  searchQuery?: string;
 }
 
 interface FilterSidebarProps {
   filterValues: FilterValues;
   onFilterChange: (values: FilterValues) => void;
+  searchQuery: string;
+  onSearchChange: (query: string) => void;
 }
 
-const FilterSidebar = ({ filterValues, onFilterChange }: FilterSidebarProps) => {
+const FilterSidebar = ({ filterValues, onFilterChange, searchQuery, onSearchChange }: FilterSidebarProps) => {
   const [salary, setSalary] = useState(filterValues.salary || 0);
   const [jobType, setJobType] = useState(filterValues.jobType || "");
   const [location, setLocation] = useState(filterValues.location || "");
@@ -117,11 +120,6 @@ const FilterSidebar = ({ filterValues, onFilterChange }: FilterSidebarProps) => 
     onFilterChange({ availability: updatedAvailability });
   };
 
-  const handleJobPreferenceChange = (value: string) => {
-    setJobPreference(value);
-    onFilterChange({ jobPreference: value });
-  };
-
   const handleIndustryChange = (value: string) => {
     setIndustry(value);
     onFilterChange({ industry: value });
@@ -161,16 +159,6 @@ const FilterSidebar = ({ filterValues, onFilterChange }: FilterSidebarProps) => 
     }
   };
 
-  const handleSpecialtyChange = (name: string) => {
-    const updatedSpecialties = specialties.map((spec: { name: string; checked: boolean }) =>
-      spec.name === name
-        ? { ...spec, checked: !spec.checked }
-        : spec
-    );
-    setSpecialties(updatedSpecialties);
-    onFilterChange({ specialties: updatedSpecialties });
-  };
-
   const handleRemoveSpecialty = (name: string) => {
     const updatedSpecialties = specialties.filter((spec: { name: string }) => spec.name !== name);
     setSpecialties(updatedSpecialties);
@@ -186,7 +174,7 @@ const FilterSidebar = ({ filterValues, onFilterChange }: FilterSidebarProps) => 
   };
 
   return (
-    <div className="p-4 sm:p-6 bg-white rounded-lg h-full overflow-y-auto">
+    <div className="p-2 sm:p-6 bg-white rounded-lg h-full overflow-y-auto">
       {/* Header */}
       <div className="flex justify-between items-center mb-4 sm:mb-6">
         <div className="flex items-center gap-2">
@@ -203,6 +191,27 @@ const FilterSidebar = ({ filterValues, onFilterChange }: FilterSidebarProps) => 
           <Trash2 className="h-4 w-4" />
         </Button>
       </div>
+
+      {/* Search Input - Only show when Job Type is "All" */}
+      {jobType === "All" && (
+        <>
+          <div className="relative mb-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Input
+                placeholder="Search jobs..."
+                value={searchQuery}
+                onChange={(e) => onSearchChange(e.target.value)}
+                className="pl-9 py-5 h-10 rounded-lg border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
+              />
+            </div>
+          </div>
+
+          <Separator className="mb-4" />
+        </>
+      )}
+
+      <Separator className="mb-4" />
 
       <div className="space-y-3 sm:space-y-4">
         {/* Job Type */}

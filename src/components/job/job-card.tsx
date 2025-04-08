@@ -2,7 +2,7 @@ import { Card } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { formatDistanceToNow } from "date-fns";
 import { useEffect, useState } from "react";
-import { MapPin, MoreVertical, Edit, Trash2, Bookmark, Building2, Briefcase, Users, DollarSign } from "lucide-react";
+import { MapPin, MoreVertical, Edit, Trash2, Bookmark, Building2, Briefcase } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
@@ -22,11 +22,8 @@ interface JobCardProps {
 const JobCard: React.FC<JobCardProps> = ({ job, isEmployer, onDelete }) => {
   const [mounted, setMounted] = useState(false);
   const [organization, setOrganization] = useState<Organization | null>(null);
-  const [showFullDescription, setShowFullDescription] = useState(false);
   const [isSaved, setIsSaved] = useState(job.isSaved || false);
   const [timeAgo, setTimeAgo] = useState<string>("Some time ago");
-  const maxChars = 800; // Limit for description
-  const maxSkillsToShow = 3; // Limit for skills displayed
 
   // Update timeAgo every minute
   useEffect(() => {
@@ -137,10 +134,10 @@ const JobCard: React.FC<JobCardProps> = ({ job, isEmployer, onDelete }) => {
 
   return (
     <Card 
-      className="group h-full p-3 sm:p-4 shadow-sm hover:shadow-md border-gray-200 border-t-0 rounded-lg transition-all relative flex flex-col overflow-hidden duration-300 cursor-pointer"
+      className="group h-full p-2 sm:p-3 shadow-sm hover:shadow-md border-gray-200 border-t-0 rounded-lg transition-all relative flex flex-col overflow-hidden duration-300 cursor-pointer"
     >
       {/* Header with time and actions */}
-      <div className="flex justify-between items-start mb-3">
+      <div className="flex justify-between items-start mb-2">
         <div className="flex items-center gap-2">
           <Badge
             className={`px-2 py-0.5 text-xs rounded-md ${
@@ -196,13 +193,13 @@ const JobCard: React.FC<JobCardProps> = ({ job, isEmployer, onDelete }) => {
       </div>
 
       {/* Title & Company Info */}
-      <div className="flex gap-3 items-start mb-3">
+      <div className="flex gap-2 items-start mb-2">
         <div className="flex-shrink-0">
           <Image
             src="/logo-demo.png"
             alt="Company Logo"
-            width={40}
-            height={40}
+            width={36}
+            height={36}
             className="rounded-md"
           />
         </div>
@@ -219,8 +216,8 @@ const JobCard: React.FC<JobCardProps> = ({ job, isEmployer, onDelete }) => {
         </div>
       </div>
 
-      {/* Key Information Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
+      {/* Key Information Grid - Simplified */}
+      <div className="grid grid-cols-2 gap-2 mb-2">
         <div className="flex items-center gap-1.5 text-xs text-gray-500">
           <MapPin className="w-3.5 h-3.5" />
           <span className="truncate">{job.location || job.city}</span>
@@ -229,49 +226,23 @@ const JobCard: React.FC<JobCardProps> = ({ job, isEmployer, onDelete }) => {
           <Briefcase className="w-3.5 h-3.5" />
           <span className="truncate">{job.experienceLevel || "Experience Level"}</span>
         </div>
-        <div className="flex items-center gap-1.5 text-xs text-gray-500">
-          <Users className="w-3.5 h-3.5" />
-          <span>{job?.applicationCount || 0} applicants</span>
-        </div>
-        {job?.salaryRange?.minimum && job?.salaryRange?.maximum && (
-          <div className="flex items-center gap-1.5 text-xs text-gray-500">
-            <DollarSign className="w-3.5 h-3.5" />
-            <span className="truncate">
-              ${job.salaryRange.minimum.toLocaleString()} - ${job.salaryRange.maximum.toLocaleString()}
-            </span>
-          </div>
-        )}
       </div>
 
-      {/* Description */}
+      {/* Description - Shorter */}
       <div className="text-gray-500 text-xs leading-relaxed flex-grow">
-        {showFullDescription ? (
-          <div
-            className="description-content"
-            dangerouslySetInnerHTML={{ __html: job.description }}
-          />
-        ) : (
-          <div
-            className="description-content line-clamp-2"
-            dangerouslySetInnerHTML={{
-              __html: `${job.description.slice(0, maxChars)}...`,
-            }}
-          />
-        )}
-
-        {job.description.length > maxChars && (
-          <button
-            className="text-sky-600 text-xs font-medium mt-1 hover:underline"
-            onClick={() => setShowFullDescription(!showFullDescription)}
-          >
-            {showFullDescription ? "See Less" : "See More"}
-          </button>
-        )}
+        <div
+          className="description-content line-clamp-2"
+          dangerouslySetInnerHTML={{
+            __html: job.description.length > 150 
+              ? `${job.description.slice(0, 150)}...` 
+              : job.description,
+          }}
+        />
       </div>
 
-      {/* Skills */}
-      <div className="flex flex-wrap gap-1.5 mt-3 pt-3 border-t border-gray-100">
-        {job.skill.slice(0, maxSkillsToShow).map((skill) => (
+      {/* Skills - Simplified */}
+      <div className="flex flex-wrap gap-1 mt-2 pt-2 border-t border-gray-100">
+        {job.skill.slice(0, 2).map((skill) => (
           <Badge
             key={skill}
             className="bg-gray-50 text-gray-600 hover:bg-gray-100 px-2 py-0.5 rounded text-xs truncate max-w-[100px]"
@@ -280,9 +251,9 @@ const JobCard: React.FC<JobCardProps> = ({ job, isEmployer, onDelete }) => {
             {skill.length > 12 ? `${skill.slice(0, 12)}...` : skill}
           </Badge>
         ))}
-        {job.skill.length > maxSkillsToShow && (
+        {job.skill.length > 2 && (
           <Badge className="bg-sky-50 text-sky-600 hover:bg-sky-100 px-2 py-0.5 rounded text-xs">
-            +{job.skill.length - maxSkillsToShow}
+            +{job.skill.length - 2}
           </Badge>
         )}
       </div>
