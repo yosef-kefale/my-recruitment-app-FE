@@ -1,11 +1,11 @@
 // Use environment variable for API URL with fallback
-export const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://196.188.249.24:3010/api";
+export const API_URL = process.env.NEXT_PUBLIC_API_URL || "/api/proxy";
 
 // Utility function to get the full API URL for a specific endpoint
 export const getApiUrl = (endpoint: string) => {
   // Remove leading slash if present to avoid double slashes
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint.substring(1) : endpoint;
-  return `${API_URL}/${cleanEndpoint}`;
+  return `${API_URL}?path=${cleanEndpoint}`;
 };
 
 // Utility function for making API requests with authentication

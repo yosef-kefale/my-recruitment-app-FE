@@ -195,7 +195,7 @@ const JobDetail = () => {
       };
   
       await axios.post(
-        "https://196.188.249.24:3010/api/applications/create-application",
+        getApiUrl("applications/create-application"),
         applicationData,
         config
       );
