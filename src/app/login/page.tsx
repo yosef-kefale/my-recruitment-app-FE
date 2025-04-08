@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
@@ -12,7 +12,7 @@ import { Toaster } from "../../components/ui/toaster";
 import { Label } from "../../components/ui/label";
 import { useSearchParams } from 'next/navigation';
 
-export default function LoginPage() {
+function LoginContent() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -31,7 +31,7 @@ export default function LoginPage() {
     if (token) {
       router.push("/dashboard");
     }
-  }, [router]);
+  }, [router, isEmployer]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,9 +62,7 @@ export default function LoginPage() {
 
       localStorage.setItem("token", data.accessToken);
       localStorage.setItem("refreshToken", data.refreshToken);
-
       localStorage.setItem("organization", JSON.stringify(data.organization));
-
       localStorage.setItem("role", isEmployee ? "employee" : "employer");
 
       toast({ title: "Login successful!", description: "Redirecting..." });
@@ -74,7 +72,6 @@ export default function LoginPage() {
       } else {
         router.push("/dashboard");
       }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast({
         title: "Error",
@@ -89,7 +86,6 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100 p-4">
       <nav className="flex justify-between items-center p-4 shadow-md bg-gray-100 fixed top-0 left-0 w-full z-50">
-        {/* Logo */}
         <Link href="/">
           <h1 className="text-2xl font-bold text-sky-600 cursor-pointer">
             TalentHub
@@ -98,7 +94,6 @@ export default function LoginPage() {
       </nav>
 
       <div className="flex w-full max-w-4xl bg-white shadow-lg rounded-lg overflow-hidden">
-        {/* Left Side - Image & Description */}
         <div className="w-1/2 hidden md:flex flex-col items-center justify-center p-6 bg-sky-200 text-white">
           <Image
             src={isEmployee ? "/employee-login.avif" : "/employer-login.jpg"}
@@ -116,7 +111,6 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* Right Side - Login Form */}
         <div className="w-full md:w-1/2 p-6">
           <Card className="w-full">
             <CardHeader className="text-center">
@@ -126,28 +120,6 @@ export default function LoginPage() {
               <p className="text-gray-500 text-sm">Sign in to your account</p>
             </CardHeader>
             <CardContent>
-              {/* <div className="flex justify-center mb-4">
-                <Button
-                  className={`mr-2 ${
-                    !isEmployee
-                      ? "bg-sky-300 text-white"
-                      : "bg-sky-100 text-muted-foreground"
-                  }`}
-                  onClick={() => setIsEmployee(false)}
-                >
-                  Employer
-                </Button>
-                <Button
-                  className={`${
-                    isEmployee
-                      ? "bg-sky-300 text-white"
-                      : "bg-sky-100 text-muted-foreground"
-                  }`}
-                  onClick={() => setIsEmployee(true)}
-                >
-                  Employee
-                </Button>
-              </div> */}
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid gap-2">
                   <Label htmlFor="email">Email</Label>
@@ -239,5 +211,13 @@ export default function LoginPage() {
       </div>
       <Toaster />
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <LoginContent />
+    </Suspense>
   );
 }
