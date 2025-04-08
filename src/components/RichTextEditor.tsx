@@ -19,8 +19,8 @@ const RichTextEditor = forwardRef<RichTextEditorHandle, RichTextEditorProps>(({ 
   const quillRef = useRef<Quill | null>(null);
 
   useEffect(() => {
-    // Only initialize if not already initialized
-    if (editorRef.current && !quillRef.current) {
+    // Only initialize if not already initialized and we're on the client side
+    if (editorRef.current && !quillRef.current && typeof window !== 'undefined') {
       // Create a custom toolbar container
       const toolbarOptions = [
         [{ header: [1, 2, 3, false] }],

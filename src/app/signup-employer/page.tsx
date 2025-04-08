@@ -15,7 +15,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import RichTextEditor, { RichTextEditorHandle } from "../../components/RichTextEditor";
+import DynamicRichTextEditor, { RichTextEditorHandle } from "../../components/DynamicRichTextEditor";
 
 
 const SignupEmployerPage = () => {
@@ -74,7 +74,7 @@ const SignupEmployerPage = () => {
         
         <div className="grid grid-cols-1">
           <Label className="pb-1">Job Description</Label>
-            <RichTextEditor ref={editorRef} />
+            <DynamicRichTextEditor ref={editorRef} />
         </div>
 
         <div className="grid grid-cols-2 gap-6">
