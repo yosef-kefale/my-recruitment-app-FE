@@ -17,7 +17,20 @@ export async function GET(request: NextRequest) {
       agent: new (require('https').Agent)({ rejectUnauthorized: false }),
     });
     
-    const data = await response.json();
+    // Check if the response is OK before trying to parse JSON
+    if (!response.ok) {
+      return NextResponse.json({ error: `API responded with status: ${response.status}` }, { status: response.status });
+    }
+    
+    // Try to parse the response as JSON, but handle non-JSON responses
+    let data;
+    try {
+      data = await response.json();
+    } catch (error) {
+      console.error('Error parsing JSON response:', error);
+      return NextResponse.json({ error: 'Invalid JSON response from API' }, { status: 500 });
+    }
+    
     return NextResponse.json(data);
   } catch (error) {
     console.error('Proxy error:', error);
@@ -43,7 +56,20 @@ export async function POST(request: NextRequest) {
       agent: new (require('https').Agent)({ rejectUnauthorized: false }),
     });
     
-    const data = await response.json();
+    // Check if the response is OK before trying to parse JSON
+    if (!response.ok) {
+      return NextResponse.json({ error: `API responded with status: ${response.status}` }, { status: response.status });
+    }
+    
+    // Try to parse the response as JSON, but handle non-JSON responses
+    let data;
+    try {
+      data = await response.json();
+    } catch (error) {
+      console.error('Error parsing JSON response:', error);
+      return NextResponse.json({ error: 'Invalid JSON response from API' }, { status: 500 });
+    }
+    
     return NextResponse.json(data);
   } catch (error) {
     console.error('Proxy error:', error);
@@ -51,5 +77,80 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Add other HTTP methods as needed (PUT, DELETE, etc.)
+export async function PUT(request: NextRequest) {
+  const url = new URL(request.url);
+  const path = url.searchParams.get('path') || '';
+  
+  try {
+    const body = await request.json();
+    
+    const response = await fetch(`${API_SERVER_URL}/${path}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...Object.fromEntries(request.headers),
+      },
+      body: JSON.stringify(body),
+      // @ts-ignore - Node.js specific option
+      agent: new (require('https').Agent)({ rejectUnauthorized: false }),
+    });
+    
+    // Check if the response is OK before trying to parse JSON
+    if (!response.ok) {
+      return NextResponse.json({ error: `API responded with status: ${response.status}` }, { status: response.status });
+    }
+    
+    // Try to parse the response as JSON, but handle non-JSON responses
+    let data;
+    try {
+      data = await response.json();
+    } catch (error) {
+      console.error('Error parsing JSON response:', error);
+      return NextResponse.json({ error: 'Invalid JSON response from API' }, { status: 500 });
+    }
+    
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error('Proxy error:', error);
+    return NextResponse.json({ error: 'Failed to update data' }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  const url = new URL(request.url);
+  const path = url.searchParams.get('path') || '';
+  
+  try {
+    const response = await fetch(`${API_SERVER_URL}/${path}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        ...Object.fromEntries(request.headers),
+      },
+      // @ts-ignore - Node.js specific option
+      agent: new (require('https').Agent)({ rejectUnauthorized: false }),
+    });
+    
+    // Check if the response is OK before trying to parse JSON
+    if (!response.ok) {
+      return NextResponse.json({ error: `API responded with status: ${response.status}` }, { status: response.status });
+    }
+    
+    // Try to parse the response as JSON, but handle non-JSON responses
+    let data;
+    try {
+      data = await response.json();
+    } catch (error) {
+      console.error('Error parsing JSON response:', error);
+      return NextResponse.json({ error: 'Invalid JSON response from API' }, { status: 500 });
+    }
+    
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error('Proxy error:', error);
+    return NextResponse.json({ error: 'Failed to delete data' }, { status: 500 });
+  }
+}
+
+// Add other HTTP methods as needed
   
