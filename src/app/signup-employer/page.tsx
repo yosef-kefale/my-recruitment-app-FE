@@ -38,7 +38,7 @@ const SignupEmployerPage = () => {
     try {
         data.jobDescription = editorContent;
     //   const response = await axios.post(
-    //     "http://196.188.249.24:3010/api/Organizations/create-account",
+    //     "https://196.188.249.24:3010/api/Organizations/create-account",
     //     data
     //   );
       console.log("Response:", data);

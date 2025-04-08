@@ -147,7 +147,7 @@ const JobPostingForm = () => {
         setTest(data);
         delete data.requiredSkills;
         const res = await fetch(
-          "http://196.188.249.24:3010/api/jobs/create-job-posting",
+          "https://196.188.249.24:3010/api/jobs/create-job-posting",
           {
             method: "POST",
             headers: {

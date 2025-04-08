@@ -13,6 +13,7 @@ import { FaFacebook, FaXTwitter, FaLinkedin } from "react-icons/fa6";
 import axios from "axios";
 import { CVUploadSection } from "@/components/job/cv-upload-section";
 import { format, parseISO } from "date-fns";
+import { getApiUrl, apiRequest } from "@/lib/api";
 
 interface UserData {
   id: string;
@@ -92,20 +93,8 @@ const JobDetail = () => {
 
   const fetchScreeningQuestions = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const apiUrl = `http://196.188.249.24:3010/api/pre-screening-questions?q=w=jobPostId:=:${id}`;
-
-      const res = await fetch(apiUrl, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!res.ok) throw new Error("Failed to fetch screening questions");
-
-      const data = await res.json() as ScreeningQuestionsResponse;
+      const apiUrl = getApiUrl(`pre-screening-questions?q=w=jobPostId:=:${id}`);
+      const data = await apiRequest(apiUrl) as ScreeningQuestionsResponse;
       console.log("Screening questions:", data);
 
       if (data && data.items && Array.isArray(data.items)) {
@@ -127,23 +116,8 @@ const JobDetail = () => {
 
   const fetchJob = async () => {
     try {
-      const token = localStorage.getItem("token");
-
-      const apiUrl = `http://196.188.249.24:3010/api/jobs/${id}`;
-
-      const res = await fetch(apiUrl, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!res.ok) throw new Error("Failed to fetch jobs");
-
-      const data = await res.json();
+      const data = await apiRequest(`jobs/${id}`);
       console.log(data);
-
       setJob(data);
     } catch (error) {
       console.error("Error fetching job:", error);
@@ -152,23 +126,13 @@ const JobDetail = () => {
 
   const handleSaveJob = async () => {
     try {
-      const token = localStorage.getItem("token");
-
-      const response = await fetch("http://196.188.249.24:3010/api/save-jobs", {
+      await apiRequest("save-jobs", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
         body: JSON.stringify({
           jobPostId: job?.id,
           userId: organization?.id,
         }),
       });
-
-      if (!response.ok) {
-        throw new Error("Failed to save job");
-      }
 
       // Update the job state to reflect the saved status
       setJob(prev => prev ? {...prev, isSaved: true} : null);
@@ -231,7 +195,7 @@ const JobDetail = () => {
       };
   
       await axios.post(
-        "http://196.188.249.24:3010/api/applications/create-application",
+        "https://196.188.249.24:3010/api/applications/create-application",
         applicationData,
         config
       );

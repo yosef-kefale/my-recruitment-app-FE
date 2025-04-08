@@ -107,9 +107,9 @@ export default function SignupPage() {
     const endpoint =
       userType === "employer"
         ? useEtrade
-          ? "http://196.188.249.24:3010/api/Organizations/register-organization-with-etrade"
-          : "http://196.188.249.24:3010/api/Organizations/create-account"
-        : "http://196.188.249.24:3010/api/users";
+          ? "https://196.188.249.24:3010/api/Organizations/register-organization-with-etrade"
+          : "https://196.188.249.24:3010/api/Organizations/create-account"
+        : "https://196.188.249.24:3010/api/users";
 
     try {
       const res = await fetch(endpoint, {

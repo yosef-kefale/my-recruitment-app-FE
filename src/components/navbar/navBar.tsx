@@ -33,7 +33,7 @@ export default function Navbar() {
       // Fetch user data
       const fetchUserData = async () => {
         try {
-          const response = await axios.get(`http://196.188.249.24:3010/api/users/${user.id}`, {
+          const response = await axios.get(`https://196.188.249.24:3010/api/users/${user.id}`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           setUserData(response.data);

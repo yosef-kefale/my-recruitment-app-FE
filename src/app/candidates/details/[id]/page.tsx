@@ -58,7 +58,7 @@ export default function CandidateDetails({ params }: { params: { id: string } })
         return;
       }
 
-      const response = await fetch(`http://196.188.249.24:3010/api/applications/${params.id}`, {
+      const response = await fetch(`https://196.188.249.24:3010/api/applications/${params.id}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -127,7 +127,7 @@ export default function CandidateDetails({ params }: { params: { id: string } })
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
-      await fetch(`http://196.188.249.24:3010/api/applications/${candidate.id}/status`, {
+      await fetch(`https://196.188.249.24:3010/api/applications/${candidate.id}/status`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

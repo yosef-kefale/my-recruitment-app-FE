@@ -70,7 +70,7 @@ const JobCard: React.FC<JobCardProps> = ({ job, isEmployer, onDelete }) => {
           onClick: async () => {
             try {
               const token = localStorage.getItem("token");
-              const apiUrl = `http://196.188.249.24:3010/api/jobs/${job.id}`;
+              const apiUrl = `https://196.188.249.24:3010/api/jobs/${job.id}`;
 
               const res = await fetch(apiUrl, {
                 method: "DELETE",
@@ -102,7 +102,7 @@ const JobCard: React.FC<JobCardProps> = ({ job, isEmployer, onDelete }) => {
     try {
       const token = localStorage.getItem("token");
 
-      const response = await fetch("http://196.188.249.24:3010/api/save-jobs", {
+      const response = await fetch("https://196.188.249.24:3010/api/save-jobs", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -22,7 +22,7 @@ export function PublicProfile({ userId, className }: PublicProfileProps) {
       try {
         setLoading(true);
         const token = localStorage.getItem("token");
-        const response = await axios.get(`http://196.188.249.24:3010/api/users/${userId}`, {
+        const response = await axios.get(`https://196.188.249.24:3010/api/users/${userId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

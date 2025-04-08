@@ -225,7 +225,7 @@ function UserProfileContent() {
     async function fetchUser() {
       try {
         if (!user?.id || !token) return;
-        const response = await axios.get(`http://196.188.249.24:3010/api/users/${user.id}`);
+        const response = await axios.get(`https://196.188.249.24:3010/api/users/${user.id}`);
         const userData = response.data;
         
         console.log(userData);
@@ -259,7 +259,7 @@ function UserProfileContent() {
 
         // Fetch profile completeness score
         const completenessResponse = await axios.get(
-          `http://196.188.249.24:3010/api/users/get-profile-completeness/${user.id}`,
+          `https://196.188.249.24:3010/api/users/get-profile-completeness/${user.id}`,
           {
             headers: { Authorization: `Bearer ${token}` }
           }
@@ -297,7 +297,7 @@ function UserProfileContent() {
       };
       
       const response = await axios.put(
-        `http://196.188.249.24:3010/api/users/${user.id}`,
+        `https://196.188.249.24:3010/api/users/${user.id}`,
         formattedData,
         config
       );
@@ -389,7 +389,7 @@ function UserProfileContent() {
       };
 
       const response = await axios.post(
-        `http://196.188.249.24:3010/api/users/upload-resume/${user.id}`,
+        `https://196.188.249.24:3010/api/users/upload-resume/${user.id}`,
         formData,
         config
       );
@@ -431,7 +431,7 @@ function UserProfileContent() {
       
       // Call the API to generate the resume
       const response = await axios.post(
-        `http://196.188.249.24:3010/api/users/generate-cv-in-pdf-2`,
+        `https://196.188.249.24:3010/api/users/generate-cv-in-pdf-2`,
         resumeData,
         {
           headers: { 
@@ -503,7 +503,7 @@ function UserProfileContent() {
       };
 
       const response = await axios.post(
-        `http://196.188.249.24:3010/api/users/upload-profile/${user.id}`,
+        `https://196.188.249.24:3010/api/users/upload-profile/${user.id}`,
         formData,
         config
       );

@@ -131,7 +131,7 @@ export default function Home() {
     setError(null);
     
     try {
-      const response = await fetch(`http://196.188.249.24:3010/api/jobs/get-all-job-postings?q=${encodeURIComponent(searchQuery)}`);
+      const response = await fetch(`https://196.188.249.24:3010/api/jobs/get-all-job-postings?q=${encodeURIComponent(searchQuery)}`);
       
       if (!response.ok) {
         throw new Error('Failed to fetch jobs');

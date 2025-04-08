@@ -42,7 +42,7 @@ function SearchContent() {
       setError(null);
       
       try {
-        const response = await fetch(`http://196.188.249.24:3010/api/jobs/get-all-job-postings?q=${encodeURIComponent(query)}`);
+        const response = await fetch(`https://196.188.249.24:3010/api/jobs/get-all-job-postings?q=${encodeURIComponent(query)}`);
         if (!response.ok) throw new Error('Failed to fetch jobs');
         const data = await response.json();
         setJobs(data);

@@ -11,6 +11,7 @@ import Image from "next/image";
 import { Toaster } from "../../components/ui/toaster";
 import { Label } from "../../components/ui/label";
 import { useSearchParams } from 'next/navigation';
+import { getApiUrl } from "@/lib/api";
 
 function LoginContent() {
   const [username, setUsername] = useState("");
@@ -38,8 +39,8 @@ function LoginContent() {
     setLoading(true);
 
     const endpoint = isEmployee
-      ? "http://196.188.249.24:3010/api/auth/employee-login"
-      : "http://196.188.249.24:3010/api/auth/login";
+      ? getApiUrl("auth/employee-login")
+      : getApiUrl("auth/login");
 
     try {
       const res = await fetch(endpoint, {

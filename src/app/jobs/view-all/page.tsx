@@ -38,8 +38,8 @@ const ViewJobs = () => {
       // Determine the correct API endpoint
       const apiUrl =
         filterValues.jobType === "For me"
-          ? "http://196.188.249.24:3010/api/jobs/get-all-job-postings-by-skills"
-          : "http://196.188.249.24:3010/api/jobs/get-all-job-postings";
+          ? "https://196.188.249.24:3010/api/jobs/get-all-job-postings-by-skills"
+          : "https://196.188.249.24:3010/api/jobs/get-all-job-postings";
 
       const res = await fetch(apiUrl, {
         method: "GET",
@@ -62,7 +62,7 @@ const ViewJobs = () => {
       // If user is an employee, fetch saved jobs to update the isSaved property
       if (isEmployee) {
         try {
-          const savedJobsRes = await fetch("http://196.188.249.24:3010/api/save-jobs", {
+          const savedJobsRes = await fetch("https://196.188.249.24:3010/api/save-jobs", {
             method: "GET",
             headers: {
               "Content-Type": "application/json",

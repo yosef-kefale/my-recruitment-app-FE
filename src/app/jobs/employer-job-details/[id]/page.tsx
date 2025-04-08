@@ -85,7 +85,7 @@ const EmployerJobDetail = () => {
   const fetchJobDetails = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.get(`http://196.188.249.24:3010/api/jobs/${id}`, {
+      const response = await axios.get(`https://196.188.249.24:3010/api/jobs/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -100,7 +100,7 @@ const EmployerJobDetail = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        `http://196.188.249.24:3010/api/applications?q=i=JobPost%26%26w=JobPostId:=:${id}`,
+        `https://196.188.249.24:3010/api/applications?q=i=JobPost%26%26w=JobPostId:=:${id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`
@@ -133,7 +133,7 @@ const EmployerJobDetail = () => {
       const token = localStorage.getItem("token");
       console.log("Fetching screening questions for job ID:", id);
       const response = await axios.get(
-        `http://196.188.249.24:3010/api/pre-screening-questions?q=w=jobPostId:=:${id}`,
+        `https://196.188.249.24:3010/api/pre-screening-questions?q=w=jobPostId:=:${id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -204,7 +204,7 @@ const EmployerJobDetail = () => {
       console.log("Adding new screening question:", questionData);
       
       const response = await axios.post(
-        "http://196.188.249.24:3010/api/pre-screening-questions",
+        "https://196.188.249.24:3010/api/pre-screening-questions",
         questionData,
         {
           headers: {
@@ -260,7 +260,7 @@ const EmployerJobDetail = () => {
     try {
       const token = localStorage.getItem("token");
       await axios.patch(
-        `http://196.188.249.24:3010/api/applications/${applicationId}`,
+        `https://196.188.249.24:3010/api/applications/${applicationId}`,
         { status: newStatus },
         {
           headers: {
@@ -307,7 +307,7 @@ const EmployerJobDetail = () => {
     try {
       const token = localStorage.getItem("token");
       await axios.delete(
-        `http://196.188.249.24:3010/api/pre-screening-questions/${questionId}`,
+        `https://196.188.249.24:3010/api/pre-screening-questions/${questionId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
