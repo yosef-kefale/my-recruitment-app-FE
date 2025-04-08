@@ -16,13 +16,14 @@ interface JobCardProps {
   job: JobPosting;
   isEmployer: boolean;
   onDelete?: (id: string) => void;
+  onClick?: (job: JobPosting) => void;
 }
 
-const JobCard: React.FC<JobCardProps> = ({ job, isEmployer, onDelete }) => {
+const JobCard: React.FC<JobCardProps> = ({ job, isEmployer, onDelete, onClick }) => {
   const [mounted, setMounted] = useState(false);
   const [organization, setOrganization] = useState<Organization | null>(null);
   const [showFullDescription, setShowFullDescription] = useState(false);
-  const [isSaved, setIsSaved] = useState(false);
+  const [isSaved, setIsSaved] = useState(job.isSaved || false);
   const maxChars = 800; // Limit for description
   const maxSkillsToShow = 3; // Limit for skills displayed
 
@@ -37,6 +38,11 @@ const JobCard: React.FC<JobCardProps> = ({ job, isEmployer, onDelete }) => {
       setOrganization(JSON.parse(org) as Organization);
     }
   }, []);
+
+  // Update isSaved state when job.isSaved changes
+  useEffect(() => {
+    setIsSaved(job.isSaved || false);
+  }, [job.isSaved]);
 
   const handleEdit = () => {
     console.log("Editing job:", job.id);
@@ -78,7 +84,9 @@ const JobCard: React.FC<JobCardProps> = ({ job, isEmployer, onDelete }) => {
     });
   };
 
-  const handleSaveJob = async () => {
+  const handleSaveJob = async (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent card click event
+    
     try {
       const token = localStorage.getItem("token");
 
@@ -98,11 +106,26 @@ const JobCard: React.FC<JobCardProps> = ({ job, isEmployer, onDelete }) => {
         throw new Error("Failed to save job");
       }
 
-      setIsSaved(true);
-      alert("Job saved successfully!");
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      setIsSaved(!isSaved);
+      
+      // Update the job object to reflect the new saved state
+      job.isSaved = !isSaved;
     } catch (error) {
-      alert("Error saving job. Please try again.");
+      console.error("Error saving job:", error);
+    }
+  };
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Prevent click event if clicking on action buttons
+    if (
+      (e.target as HTMLElement).closest('.job-actions') ||
+      (e.target as HTMLElement).closest('button')
+    ) {
+      return;
+    }
+    
+    if (onClick) {
+      onClick(job);
     }
   };
 
@@ -112,7 +135,10 @@ const JobCard: React.FC<JobCardProps> = ({ job, isEmployer, onDelete }) => {
   }
 
   return (
-    <Card className="h-full py-6 px-4 sm:px-8 shadow-md border-gray-200 border-t-0 rounded-lg transition-all relative hover:shadow-lg flex flex-col">
+    <Card 
+      className="h-full py-6 px-4 sm:px-8 shadow-md border-gray-200 border-t-0 rounded-lg transition-all relative hover:shadow-lg flex flex-col overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer"
+      onClick={handleCardClick}
+    >
       {/* Header with time and actions */}
       <div className="flex justify-between items-start mb-3">
         <p className="text-gray-500 text-sm">{timeAgo}</p>
@@ -133,14 +159,16 @@ const JobCard: React.FC<JobCardProps> = ({ job, isEmployer, onDelete }) => {
             {job.employmentType}
           </Badge>
           
-          {/* Save Job Button */}
-          <button
-            onClick={handleSaveJob}
-            className="p-2 rounded-full text-gray-600 hover:bg-sky-100 hover:text-sky-600 transition-colors"
-            aria-label="Save job"
-          >
-            <Bookmark className={`w-5 h-5 ${isSaved ? 'fill-sky-500 text-sky-500' : ''}`} />
-          </button>
+          {/* Save Job Button - Only show for employees */}
+          {!isEmployer && (
+            <button
+              onClick={handleSaveJob}
+              className="p-2 rounded-full text-gray-600 hover:bg-sky-100 hover:text-sky-600 transition-colors"
+              aria-label="Save job"
+            >
+              <Bookmark className={`w-5 h-5 ${isSaved ? 'fill-sky-500 text-sky-500' : ''}`} />
+            </button>
+          )}
           
           {/* Employer Actions */}
           {isEmployer && (

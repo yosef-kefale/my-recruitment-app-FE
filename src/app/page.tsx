@@ -117,6 +117,7 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -168,38 +169,117 @@ export default function Home() {
     <div className="bg-gray-50 min-h-screen">
       {/* Navbar */}
       {!isLoggedIn ? (
-        <nav className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center p-6 bg-white/80 backdrop-blur-md shadow-sm">
-          <h1 className="text-2xl font-bold text-sky-600">TalentHub</h1>
-          <div className="space-x-6">
-            <Link href="#" className="text-gray-700 hover:text-sky-600">
-              Home
-            </Link>
-            <Link href="#" className="text-gray-700 hover:text-sky-600">
-              Find Jobs
-            </Link>
-            <Link
-              href="/signup-employer"
-              className="text-gray-700 hover:text-sky-600"
-            >
-              Find Candidates
-            </Link>
-            <Link href="#" className="text-gray-700 hover:text-sky-600">
-              Contact
-            </Link>
-          </div>
-          <div className="space-x-4">
-            <button
-              onClick={handleLoginClickEmployee}
-              className="text-gray-700 hover:text-sky-600"
-            >
-              Sign In
-            </button>
-            <button
-              onClick={handleLoginClickEmployer}
-              className="bg-sky-600 text-white px-4 py-2 rounded-lg hover:bg-sky-700 transition-colors"
-            >
-              For Companies
-            </button>
+        <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md shadow-sm">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center h-16">
+              {/* Logo */}
+              <Link href="/" className="flex items-center">
+                <h1 className="text-2xl font-bold text-sky-600">TalentHub</h1>
+              </Link>
+
+              {/* Desktop Navigation */}
+              <div className="hidden md:flex items-center space-x-8">
+                <Link href="/" className="text-gray-700 hover:text-sky-600 font-medium">
+                  Home
+                </Link>
+                <Link href="/search" className="text-gray-700 hover:text-sky-600 font-medium">
+                  Find Jobs
+                </Link>
+                <Link
+                  href="/signup-employer"
+                  className="text-gray-700 hover:text-sky-600 font-medium"
+                >
+                  For Employers
+                </Link>
+                <Link href="/contact" className="text-gray-700 hover:text-sky-600 font-medium">
+                  Contact
+                </Link>
+              </div>
+
+              {/* Auth Buttons */}
+              <div className="hidden md:flex items-center space-x-4">
+                <button
+                  onClick={handleLoginClickEmployee}
+                  className="text-gray-700 hover:text-sky-600 font-medium px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors"
+                >
+                  Sign In
+                </button>
+                <button
+                  onClick={handleLoginClickEmployer}
+                  className="bg-sky-600 text-white px-4 py-2 rounded-lg hover:bg-sky-700 transition-colors font-medium shadow-sm"
+                >
+                  Post a Job
+                </button>
+              </div>
+
+              {/* Mobile menu button */}
+              <div className="md:hidden">
+                <button
+                  onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                  className="text-gray-700 hover:text-sky-600 p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                >
+                  <svg
+                    className="h-6 w-6"
+                    fill="none"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    {isMobileMenuOpen ? (
+                      <path d="M6 18L18 6M6 6l12 12" />
+                    ) : (
+                      <path d="M4 6h16M4 12h16M4 18h16" />
+                    )}
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            {/* Mobile menu */}
+            {isMobileMenuOpen && (
+              <div className="md:hidden py-4 space-y-4">
+                <Link
+                  href="/"
+                  className="block text-gray-700 hover:text-sky-600 font-medium px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors"
+                >
+                  Home
+                </Link>
+                <Link
+                  href="/search"
+                  className="block text-gray-700 hover:text-sky-600 font-medium px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors"
+                >
+                  Find Jobs
+                </Link>
+                <Link
+                  href="/signup-employer"
+                  className="block text-gray-700 hover:text-sky-600 font-medium px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors"
+                >
+                  For Employers
+                </Link>
+                <Link
+                  href="/contact"
+                  className="block text-gray-700 hover:text-sky-600 font-medium px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors"
+                >
+                  Contact
+                </Link>
+                <div className="pt-4 space-y-2">
+                  <button
+                    onClick={handleLoginClickEmployee}
+                    className="w-full text-gray-700 hover:text-sky-600 font-medium px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors"
+                  >
+                    Sign In
+                  </button>
+                  <button
+                    onClick={handleLoginClickEmployer}
+                    className="w-full bg-sky-600 text-white px-4 py-2 rounded-lg hover:bg-sky-700 transition-colors font-medium shadow-sm"
+                  >
+                    Post a Job
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </nav>
       ) : (

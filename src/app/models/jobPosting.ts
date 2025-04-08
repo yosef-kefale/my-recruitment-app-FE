@@ -44,4 +44,5 @@ export interface JobPosting {
   createdAt?: string;
   updatedAt?: string;
   remotePolicy: string;
+  isSaved?: boolean; // Whether the job is saved by the current user
 }

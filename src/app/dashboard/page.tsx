@@ -1,10 +1,8 @@
 "use client";
 
 import { Card, CardContent } from "@/components/ui/card";
-
-import { CalendarIcon, Download } from "lucide-react";
-import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
   PopoverTrigger,
@@ -20,7 +18,10 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart";
-import { CartesianGrid, XAxis, Bar, BarChart } from "recharts";
+import { CartesianGrid, XAxis, Bar, BarChart, PieChart, Pie, Cell } from "recharts";
+import { CalendarIcon, Download, Briefcase, Users, Calendar as CalendarIcon2, CheckCircle } from "lucide-react";
+
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
 const chartData = [
   { month: "Jan", jobPostings: 120, applications: 30 },
@@ -37,44 +38,83 @@ const chartData = [
   { month: "Dec", jobPostings: 135, applications: 33 },
 ];
 
-const recentApplications = [
-  {
-    name: "Emma Johnson",
-    email: "emma.johnson@email.com",
-    position: "Software Engineer",
-  },
-  {
-    name: "Liam Smith",
-    email: "liam.smith@email.com",
-    position: "Product Manager",
-  },
-  {
-    name: "Sophia Williams",
-    email: "sophia.williams@email.com",
-    position: "UI/UX Designer",
-  },
-  {
-    name: "Noah Brown",
-    email: "noah.brown@email.com",
-    position: "Data Analyst",
-  },
-  {
-    name: "Ava Martinez",
-    email: "ava.martinez@email.com",
-    position: "Marketing Specialist",
-  },
+const applicationStatusData = [
+  { name: 'Pending', value: 45 },
+  { name: 'Reviewed', value: 30 },
+  { name: 'Shortlisted', value: 15 },
+  { name: 'Rejected', value: 8 },
+  { name: 'Hired', value: 2 },
 ];
 
 const chartConfig = {
-  desktop: {
-    label: "Desktop",
-    color: "#2563eb",
+  jobPostings: {
+    label: "Job Postings",
+    color: "#4F46E5",
   },
-  mobile: {
-    label: "Mobile",
-    color: "#60a5fa",
+  applications: {
+    label: "Applications",
+    color: "#10B981",
+  },
+  interviews: {
+    label: "Interviews",
+    color: "#F59E0B",
+  },
+  pending: {
+    label: "Pending",
+    color: "#0088FE",
+  },
+  reviewed: {
+    label: "Reviewed",
+    color: "#00C49F",
+  },
+  shortlisted: {
+    label: "Shortlisted",
+    color: "#FFBB28",
+  },
+  rejected: {
+    label: "Rejected",
+    color: "#FF8042",
+  },
+  hired: {
+    label: "Hired",
+    color: "#8884D8",
   },
 } satisfies ChartConfig;
+
+const statsData = [
+  {
+    title: "Total Job Postings",
+    value: "1,234",
+    change: "+15%",
+    trend: "up",
+    icon: Briefcase,
+    gradient: "from-indigo-500 to-indigo-600",
+  },
+  {
+    title: "New Applications",
+    value: "3,450",
+    change: "+25%",
+    trend: "up",
+    icon: Users,
+    gradient: "from-emerald-500 to-emerald-600",
+  },
+  {
+    title: "Interviews Scheduled",
+    value: "456",
+    change: "+10%",
+    trend: "up",
+    icon: CalendarIcon2,
+    gradient: "from-amber-500 to-amber-600",
+  },
+  {
+    title: "Hires This Month",
+    value: "87",
+    change: "+5%",
+    trend: "up",
+    icon: CheckCircle,
+    gradient: "from-purple-500 to-purple-600",
+  },
+];
 
 export default function Dashboard() {
   const [date, setDate] = React.useState<DateRange | undefined>({
@@ -83,21 +123,25 @@ export default function Dashboard() {
   });
 
   return (
-    <div className="w-full p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-semibold">Recruitment Dashboard</h2>
-        <div className="flex items-center space-x-2">
+    <div className="w-full p-6 space-y-8">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">Recruitment Dashboard</h2>
+          <p className="text-muted-foreground mt-1">Monitor your recruitment metrics and manage applications</p>
+        </div>
+        <div className="flex items-center gap-3">
           <Popover>
             <PopoverTrigger asChild>
               <Button
                 id="date"
-                variant={"outline"}
+                variant="outline"
                 className={cn(
                   "w-[300px] justify-start text-left font-normal",
                   !date && "text-muted-foreground"
                 )}
               >
-                <CalendarIcon />
+                <CalendarIcon className="mr-2 h-4 w-4" />
                 {date?.from ? (
                   date.to ? (
                     <>
@@ -108,103 +152,114 @@ export default function Dashboard() {
                     format(date.from, "LLL dd, y")
                   )
                 ) : (
-                  <span>Pick a date</span>
+                  <span>Pick a date range</span>
                 )}
               </Button>
             </PopoverTrigger>
-            <PopoverContent
-              className="w-auto p-0 bg-white shadow-md rounded-md border pr-2"
-              align="start"
-            >
+            <PopoverContent className="w-auto p-0" align="end">
               <Calendar
                 initialFocus
                 mode="range"
                 defaultMonth={date?.from}
                 selected={date}
-                onSelect={(range) => setDate(range)}
+                onSelect={setDate}
                 numberOfMonths={2}
               />
             </PopoverContent>
           </Popover>
-          <Button>
-            <Download className="h-5 w-5 mr-2" /> Download Report
+          <Button variant="default">
+            <Download className="mr-2 h-4 w-4" /> Export Report
           </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <p className="text-sm text-gray-500">Total Job Postings</p>
-            <h3 className="text-2xl font-bold">1,234</h3>
-            <p className="text-xs text-green-500">+15% from last month</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <p className="text-sm text-gray-500">New Applications</p>
-            <h3 className="text-2xl font-bold">+3,450</h3>
-            <p className="text-xs text-green-500">+25% from last month</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <p className="text-sm text-gray-500">Interviews Scheduled</p>
-            <h3 className="text-2xl font-bold">+456</h3>
-            <p className="text-xs text-green-500">+10% from last month</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <p className="text-sm text-gray-500">Hires This Month</p>
-            <h3 className="text-2xl font-bold">+87</h3>
-            <p className="text-xs text-green-500">+5% from last month</p>
-          </CardContent>
-        </Card>
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {statsData.map((stat, index) => (
+          <Card key={index} className="relative overflow-hidden">
+            <CardContent className="p-6">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">{stat.title}</p>
+                  <h3 className="text-2xl font-bold mt-2">{stat.value}</h3>
+                  <p className={cn(
+                    "text-xs mt-1",
+                    stat.trend === "up" ? "text-green-500" : "text-red-500"
+                  )}>
+                    {stat.change} from last month
+                  </p>
+                </div>
+                <div className={cn(
+                  "h-12 w-12 rounded-full flex items-center justify-center",
+                  `bg-gradient-to-br ${stat.gradient}`
+                )}>
+                  <stat.icon className="h-6 w-6 text-white" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-      <Card>
-  <CardContent className="p-4">
-    <h3 className="text-lg font-semibold">Job Posting Overview</h3>
-    <ChartContainer config={chartConfig} className="h-[340px] w-full">
-      <BarChart data={chartData}>
-        <CartesianGrid vertical={false} />
-        <XAxis
-          dataKey="month"
-          tickLine={false}
-          tickMargin={10}
-          axisLine={false}
-          tickFormatter={(value) => value.slice(0, 3)}
-        />
-        <ChartTooltip content={<ChartTooltipContent />} />
-        <Bar dataKey="jobPostings" fill="var(--color-desktop)" radius={4} />
-        <Bar dataKey="applications" fill="var(--color-mobile)" radius={4} />
-      </BarChart>
-    </ChartContainer>
-  </CardContent>
-</Card>
+      {/* Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h3 className="text-lg font-semibold">Recruitment Overview</h3>
+                <p className="text-sm text-muted-foreground">Monthly job postings and applications</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm">Monthly</Button>
+                <Button variant="outline" size="sm">Weekly</Button>
+              </div>
+            </div>
+            <ChartContainer config={chartConfig} className="h-[340px] w-full">
+              <BarChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <XAxis
+                  dataKey="month"
+                  tickLine={false}
+                  tickMargin={10}
+                  axisLine={false}
+                  tickFormatter={(value) => value.slice(0, 3)}
+                />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Bar dataKey="jobPostings" fill="var(--color-jobPostings)" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="applications" fill="var(--color-applications)" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ChartContainer>
+          </CardContent>
+        </Card>
 
         <Card>
-          <CardContent className="p-4">
-            <h3 className="text-lg font-semibold">Recent Applications</h3>
-            <p className="text-sm text-gray-500">
-              You received 345 new applications this month.
-            </p>
-            <ul className="mt-4 space-y-4">
-              {recentApplications.map((applicant, index) => (
-                <li
-                  key={index}
-                  className="flex justify-between items-center border-b pb-2"
+          <CardContent className="p-6">
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h3 className="text-lg font-semibold">Application Status</h3>
+                <p className="text-sm text-muted-foreground">Distribution of applications by status</p>
+              </div>
+            </div>
+            <ChartContainer config={chartConfig} className="h-[340px] w-full">
+              <PieChart>
+                <Pie
+                  data={applicationStatusData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  outerRadius={120}
+                  fill="#8884d8"
+                  dataKey="value"
+                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                 >
-                  <div>
-                    <p className="font-medium">{applicant.name}</p>
-                    <p className="text-xs text-gray-500">{applicant.email}</p>
-                  </div>
-                  <p className="text-sm font-bold">{applicant.position}</p>
-                </li>
-              ))}
-            </ul>
+                  {applicationStatusData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <ChartTooltip content={<ChartTooltipContent />} />
+              </PieChart>
+            </ChartContainer>
           </CardContent>
         </Card>
       </div>

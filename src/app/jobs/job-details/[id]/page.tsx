@@ -11,10 +11,28 @@ import { CheckCircle } from "lucide-react";
 import { Organization } from "../../../models/organization";
 import { FaFacebook, FaXTwitter, FaLinkedin } from "react-icons/fa6";
 import axios from "axios";
+import { CVUploadSection } from "@/components/job/cv-upload-section";
+
+interface UserData {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: string;
+  organization: Organization;
+  profile: {
+    cv?: string;
+  } | null;
+  resume?: {
+    path?: string;
+    filename?: string;
+  } | null;
+}
 
 const JobDetail = () => {
   const params = useParams();
   const id = params.id as string;
+  const [mounted, setMounted] = useState(false);
 
   if (!id) return notFound();
 
@@ -32,6 +50,7 @@ const JobDetail = () => {
   const [screeningQuestions, setScreeningQuestions] = useState<string[]>([]);
   const [screeningAnswers, setScreeningAnswers] = useState<Record<number, string>>({});
   const applySectionRef = useRef<HTMLDivElement | null>(null);
+  const [userData, setUserData] = useState<UserData | null>(null);
 
   // Sample screening questions for demonstration
   const sampleScreeningQuestions = [
@@ -45,11 +64,14 @@ const JobDetail = () => {
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
+    setMounted(true);
     setJobUrl(window.location.href);
     const org = localStorage.getItem("organization");
     if (org) {
-      setOrganization(JSON.parse(org) as Organization);
-      console.log(JSON.parse(org)); // Check if data is retrieved
+      const userData = JSON.parse(org) as UserData;
+      setOrganization(userData.organization);
+      setUserData(userData);
+      console.log(userData);
     }
 
     fetchJob();
@@ -145,10 +167,8 @@ const JobDetail = () => {
     }, 100); // Small delay for smooth transition
   };
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files[0]) {
-      setCv(event.target.files[0]);
-    }
+  const handleCVSelect = (file: File | null) => {
+    setCv(file);
   };
 
   const handleSubmitApplication = async () => {
@@ -210,6 +230,11 @@ const JobDetail = () => {
       [index]: answer
     }));
   };
+
+  // Don't render anything until after hydration
+  if (!mounted) {
+    return <div className="flex justify-center items-center h-screen">Loading...</div>;
+  }
 
   return (
     <div className="w-full bg-gray-100">
@@ -515,6 +540,18 @@ const JobDetail = () => {
             onChange={(e) => setCoverLetter(e.target.value)}
           />
 
+          {/* CV Upload Section */}
+          <div className="mb-6">
+            <label className="block text-gray-700 font-medium mb-2">
+              CV / Resume
+            </label>
+            <CVUploadSection
+              existingCV={userData?.resume?.path || userData?.profile?.cv}
+              onCVSelect={handleCVSelect}
+              selectedCV={cv}
+            />
+          </div>
+
           {/* Screening Questions */}
           {screeningQuestions.length > 0 && (
             <div className="mb-6">
@@ -566,21 +603,6 @@ const JobDetail = () => {
               ))}
             </div>
           )}
-
-          {/* File Upload */}
-          <label className="block text-gray-700 font-medium mb-2">
-            Upload CV
-          </label>
-          <div className="relative w-full border border-gray-300 rounded-lg flex items-center p-3 bg-gray-100 hover:bg-gray-200 transition">
-            <input
-              type="file"
-              onChange={handleFileChange}
-              className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
-            />
-            <span className="text-gray-600">
-              {cv ? cv.name : "Choose a file (PDF, DOC, DOCX)"}
-            </span>
-          </div>
 
           {/* Submit Button */}
           <button

@@ -13,13 +13,15 @@ import { INDUSTRIES } from "@/lib/enums";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import { PublicProfile } from "./public-profile";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useSearchParams } from "next/navigation";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Progress } from "@/components/ui/progress";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 // Validation Schema
 const userSchema = z.object({
@@ -61,6 +63,106 @@ const userSchema = z.object({
 });
 
 type FormValues = z.infer<typeof userSchema>;
+
+// Add these interfaces for the resume generation
+interface Profile {
+  fullName: string;
+  title: string;
+  slogan: string;
+  email: string;
+  phone: string;
+  address: string;
+  profilePicture: string;
+  linkedin: string;
+  github: string;
+  twitter: string;
+  website: string;
+  skills: string[];
+  experience: Experience[];
+  education: Education[];
+  certificates: Certificate[];
+  publications: Publication[];
+  projects: Project[];
+  awards: Award[];
+  interests: string[];
+  volunteer: Volunteer[];
+  references: Reference[];
+}
+
+interface Experience {
+  position: string;
+  company: string;
+  location: string;
+  startDate: string; // ISO date string
+  endDate: string;
+  isCurrent: boolean;
+  responsibilities: string[];
+  achievements?: string[];
+}
+
+interface Education {
+  degree: string;
+  fieldOfStudy: string;
+  institution: string;
+  location: string;
+  startDate: string;
+  endDate: string;
+  isCurrent: boolean;
+  gpa?: number;
+  honors?: string[];
+}
+
+interface Certificate {
+  title: string;
+  issuingOrganization: string;
+  issueDate: string;
+  expirationDate?: string;
+  isPermanent: boolean;
+  credentialID?: string;
+  credentialURL?: string;
+}
+
+interface Publication {
+  title: string;
+  authors: string[];
+  journal: string;
+  publisher: string;
+  publicationDate: string;
+  doi?: string;
+  url?: string;
+  summary?: string;
+}
+
+interface Project {
+  name: string;
+  description: string;
+  technologies: string[];
+  startDate: string;
+  endDate?: string;
+  isOngoing: boolean;
+  role: string;
+  repository?: string;
+  demoURL?: string;
+}
+
+interface Award {
+  title: string;
+  organization: string;
+  dateReceived: string;
+  description: string;
+}
+
+interface Volunteer {
+  role: string;
+  organization: string;
+  year: string;
+}
+
+interface Reference {
+  name: string;
+  relation: string;
+  contact: string;
+}
 
 const UserProfileUpdate = () => {
   const { toast } = useToast();
@@ -111,6 +213,13 @@ const UserProfileUpdate = () => {
   const [uploadingResume, setUploadingResume] = useState(false);
   const user = JSON.parse(localStorage.getItem("organization") || "null");
   const token = localStorage.getItem("token");
+  const [isGeneratingResume, setIsGeneratingResume] = useState(false);
+  const [resumeGenerationStep, setResumeGenerationStep] = useState(0);
+  const [resumeGenerationProgress, setResumeGenerationProgress] = useState(0);
+  const [resumeData, setResumeData] = useState<Partial<Profile>>({});
+  const [showResumeDialog, setShowResumeDialog] = useState(false);
+  const [uploadingProfilePic, setUploadingProfilePic] = useState(false);
+  const [profilePicUrl, setProfilePicUrl] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchUser() {
@@ -118,6 +227,13 @@ const UserProfileUpdate = () => {
         if (!user?.id || !token) return;
         const response = await axios.get(`http://196.188.249.24:3010/api/users/${user.id}`);
         const userData = response.data;
+        
+        console.log(userData);
+        
+        // Set profile picture URL if available
+        if (userData.profile && userData.profile.path) {
+          setProfilePicUrl(userData.profile.path);
+        }
         
         // Type-safe way to set form values
         if (userData.phone) setValue('phone', userData.phone);
@@ -297,13 +413,137 @@ const UserProfileUpdate = () => {
     }
   };
 
+  const handleGenerateResume = async () => {
+    try {
+      setIsGeneratingResume(true);
+      setResumeGenerationProgress(0);
+      
+      // Simulate progress updates
+      const progressInterval = setInterval(() => {
+        setResumeGenerationProgress(prev => {
+          if (prev >= 90) {
+            clearInterval(progressInterval);
+            return 90;
+          }
+          return prev + 10;
+        });
+      }, 500);
+      
+      // Call the API to generate the resume
+      const response = await axios.post(
+        `http://196.188.249.24:3010/api/users/generate-cv-in-pdf-2`,
+        resumeData,
+        {
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          responseType: 'blob'
+        }
+      );
+      
+      clearInterval(progressInterval);
+      setResumeGenerationProgress(100);
+      
+      // Create a download link for the PDF
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'generated-resume.pdf');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      
+      toast({
+        title: "Success",
+        description: "Resume generated successfully!",
+        variant: "default",
+      });
+      
+      setShowResumeDialog(false);
+    } catch (error) {
+      console.error("Error generating resume:", error);
+      toast({
+        title: "Error",
+        description: "Failed to generate resume. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingResume(false);
+      setResumeGenerationProgress(0);
+    }
+  };
+  
+  const handleResumeStepChange = (step: number) => {
+    setResumeGenerationStep(step);
+  };
+  
+  const handleResumeDataChange = (field: string, value: unknown) => {
+    setResumeData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  // Add this function to handle profile picture upload
+  const handleProfilePicUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user?.id) return;
+
+    try {
+      setUploadingProfilePic(true);
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const config = {
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      };
+
+      const response = await axios.post(
+        `http://196.188.249.24:3010/api/users/upload-profile/${user.id}`,
+        formData,
+        config
+      );
+
+      if (response.data && response.data.profile && response.data.profile.path) {
+        // Set the profile picture URL from the path property
+        setProfilePicUrl(response.data.profile.path);
+        
+        toast({
+          title: "Success",
+          description: "Profile picture uploaded successfully",
+          variant: "default",
+        });
+      }
+    } catch (error) {
+      console.error("Error uploading profile picture:", error);
+      toast({
+        title: "Error",
+        description: "Failed to upload profile picture. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setUploadingProfilePic(false);
+    }
+  };
+
   return (
     <div className="container mx-auto py-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Profile</h1>
+        <div>
+          <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">Profile</h1>
+          <p className="text-gray-500 mt-1">Manage your personal information</p>
+        </div>
         <Dialog>
           <DialogTrigger asChild>
-            <Button variant="outline">
+            <Button variant="outline" className="flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
               View Public Profile
             </Button>
           </DialogTrigger>
@@ -317,78 +557,134 @@ const UserProfileUpdate = () => {
       </div>
 
       <div className="max-w-5xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
-        <div className="p-6 border-b">
-          <RadioGroup 
-            defaultValue="active" 
-            className="flex flex-col md:flex-row md:space-x-4 space-y-2 md:space-y-0"
-          >
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="active" id="active" />
-              <Label htmlFor="active" className="font-medium">Active search</Label>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-6 w-6">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-500">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                      </svg>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Talenthub will show you as an active candidate for all recruiters and send you messages for every contact</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+        <div className="p-6 border-b flex flex-col md:flex-row gap-6">
+          {/* Profile Picture Section */}
+          <div className="flex flex-col items-center md:w-1/3">
+            <div className="relative group mb-4">
+              <Avatar className="h-32 w-32 border-4 border-white shadow-lg transition-all duration-300 group-hover:shadow-xl group-hover:scale-105">
+                <AvatarImage 
+                  src={profilePicUrl || ""} 
+                  alt="Profile" 
+                  className="object-cover"
+                />
+                <AvatarFallback className="text-3xl bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                  {user?.firstName?.charAt(0) || "U"}
+                </AvatarFallback>
+              </Avatar>
+              <div className="absolute bottom-0 right-0 transform translate-x-1 translate-y-1">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleProfilePicUpload}
+                  className="hidden"
+                  id="profile-pic-upload"
+                  disabled={uploadingProfilePic}
+                />
+                <label
+                  htmlFor="profile-pic-upload"
+                  className={`inline-flex items-center justify-center h-10 w-10 rounded-full bg-white shadow-md text-blue-600 cursor-pointer hover:bg-blue-50 transition-all duration-300 hover:scale-110 ${
+                    uploadingProfilePic ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
+                >
+                  {uploadingProfilePic ? (
+                    <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                      <polyline points="17 8 12 3 7 8"></polyline>
+                      <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                  )}
+                </label>
+              </div>
+              <div className="absolute inset-0 rounded-full bg-black bg-opacity-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                <span className="text-white text-sm font-medium">Change Photo</span>
+              </div>
             </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="passive" id="passive" />
-              <Label htmlFor="passive" className="font-medium">Passive search</Label>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-6 w-6">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-500">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                      </svg>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Talenthub will not show you as an active candidate, but recruiters can write to you</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="offline" id="offline" />
-              <Label htmlFor="offline" className="font-medium">Offline</Label>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-6 w-6">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-500">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                      </svg>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Talenthub will not show you as an active candidate and recruiters can not write to you</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </div>
-          </RadioGroup>
-          <Button 
-            disabled={loading} 
-            className="mt-4 bg-blue-600 hover:bg-blue-700 text-white"
-          >
-            {loading ? "Saving..." : "Save Status"}
-          </Button>
+            <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">
+              {user?.firstName} {user?.lastName}
+            </h2>
+            <p className="text-gray-500 text-sm">{user?.email}</p>
+          </div>
+
+          {/* Status Section */}
+          <div className="md:w-2/3">
+            <h3 className="text-lg font-semibold mb-4">Job Search Status</h3>
+            <RadioGroup 
+              defaultValue="active" 
+              className="flex flex-col space-y-2"
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="active" id="active" />
+                <Label htmlFor="active" className="font-medium">Active search</Label>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-6 w-6">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-500">
+                          <circle cx="12" cy="12" r="10"></circle>
+                          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                          <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Talenthub will show you as an active candidate for all recruiters and send you messages for every contact</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="passive" id="passive" />
+                <Label htmlFor="passive" className="font-medium">Passive search</Label>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-6 w-6">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-500">
+                          <circle cx="12" cy="12" r="10"></circle>
+                          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                          <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Talenthub will not show you as an active candidate, but recruiters can write to you</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="offline" id="offline" />
+                <Label htmlFor="offline" className="font-medium">Offline</Label>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-6 w-6">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-500">
+                          <circle cx="12" cy="12" r="10"></circle>
+                          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                          <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Talenthub will not show you as an active candidate and recruiters can not write to you</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+            </RadioGroup>
+            <Button 
+              disabled={loading} 
+              className="mt-4 bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              {loading ? "Saving..." : "Save Status"}
+            </Button>
+          </div>
         </div>
 
         <Tabs defaultValue={activeTab} className="w-full">
@@ -759,6 +1055,668 @@ const UserProfileUpdate = () => {
                   >
                     {uploadingResume ? 'Uploading...' : 'Upload Resume'}
                   </label>
+                  
+                  <Dialog open={showResumeDialog} onOpenChange={setShowResumeDialog}>
+                    <DialogTrigger asChild>
+                      <Button 
+                        variant="outline" 
+                        className="bg-green-50 text-green-700 border-green-200 hover:bg-green-100"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+                          <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                        </svg>
+                        Generate with AI
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+                      <DialogHeader>
+                        <DialogTitle>Generate Resume with AI</DialogTitle>
+                      </DialogHeader>
+                      
+                      {isGeneratingResume ? (
+                        <div className="py-8 space-y-4">
+                          <div className="text-center">
+                            <svg className="animate-spin h-10 w-10 text-blue-500 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <h3 className="mt-4 text-lg font-medium">Generating your resume...</h3>
+                            <p className="mt-2 text-sm text-gray-500">This may take a minute. Please don&apos;t close this window.</p>
+                          </div>
+                          <Progress value={resumeGenerationProgress} className="w-full" />
+                        </div>
+                      ) : (
+                        <div className="space-y-6 py-4">
+                          {/* TESTING BUTTON - REMOVE IN PRODUCTION */}
+                          <div className="bg-yellow-50 p-3 rounded-md border border-yellow-200 mb-4">
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm font-medium text-yellow-800">Testing Mode</span>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                className="bg-yellow-100 text-yellow-800 border-yellow-300 hover:bg-yellow-200"
+                                onClick={() => {
+                                  // Sample data for testing
+                                  setResumeData({
+                                    fullName: "John Doe",
+                                    title: "Senior Software Engineer",
+                                    slogan: "Passionate about creating innovative solutions",
+                                    email: "john.doe@example.com",
+                                    phone: "+1 (555) 123-4567",
+                                    address: "123 Main St, San Francisco, CA 94105",
+                                    linkedin: "linkedin.com/in/johndoe",
+                                    github: "github.com/johndoe",
+                                    twitter: "twitter.com/johndoe",
+                                    website: "johndoe.com",
+                                    skills: ["JavaScript", "React", "Node.js", "TypeScript", "AWS", "Docker", "CI/CD", "Agile"],
+                                    experience: [
+                                      {
+                                        position: "Senior Software Engineer",
+                                        company: "TechCorp Inc.",
+                                        location: "San Francisco, CA",
+                                        startDate: "2020-01-15",
+                                        endDate: "",
+                                        isCurrent: true,
+                                        responsibilities: [
+                                          "Led a team of 5 developers in building a microservices architecture",
+                                          "Implemented CI/CD pipelines reducing deployment time by 60%",
+                                          "Developed a new feature that increased user engagement by 25%"
+                                        ]
+                                      },
+                                      {
+                                        position: "Software Engineer",
+                                        company: "StartupX",
+                                        location: "New York, NY",
+                                        startDate: "2018-03-10",
+                                        endDate: "2019-12-31",
+                                        isCurrent: false,
+                                        responsibilities: [
+                                          "Built and maintained the company's main web application",
+                                          "Optimized database queries improving performance by 40%",
+                                          "Collaborated with UX team to implement responsive designs"
+                                        ]
+                                      }
+                                    ],
+                                    education: [
+                                      {
+                                        degree: "Master of Science",
+                                        fieldOfStudy: "Computer Science",
+                                        institution: "Stanford University",
+                                        location: "Stanford, CA",
+                                        startDate: "2016-09-01",
+                                        endDate: "2018-05-15",
+                                        isCurrent: false,
+                                        gpa: 3.8,
+                                        honors: ["Dean's List", "Best Thesis Award"]
+                                      },
+                                      {
+                                        degree: "Bachelor of Science",
+                                        fieldOfStudy: "Software Engineering",
+                                        institution: "MIT",
+                                        location: "Cambridge, MA",
+                                        startDate: "2012-09-01",
+                                        endDate: "2016-05-15",
+                                        isCurrent: false,
+                                        gpa: 3.7
+                                      }
+                                    ],
+                                    certificates: [
+                                      {
+                                        title: "AWS Certified Solutions Architect",
+                                        issuingOrganization: "Amazon Web Services",
+                                        issueDate: "2021-06-15",
+                                        expirationDate: "2024-06-15",
+                                        isPermanent: false,
+                                        credentialID: "AWS-123456",
+                                        credentialURL: "https://aws.amazon.com/verification"
+                                      }
+                                    ],
+                                    projects: [
+                                      {
+                                        name: "E-commerce Platform",
+                                        description: "Built a full-stack e-commerce platform with React and Node.js",
+                                        technologies: ["React", "Node.js", "MongoDB", "Express", "Redux"],
+                                        startDate: "2020-10-01",
+                                        endDate: "2021-02-15",
+                                        isOngoing: false,
+                                        role: "Lead Developer",
+                                        repository: "github.com/johndoe/ecommerce",
+                                        demoURL: "demo.ecommerce.com"
+                                      }
+                                    ]
+                                  });
+                                  
+                                  toast({
+                                    title: "Test Data Loaded",
+                                    description: "All fields have been filled with sample data for testing.",
+                                    variant: "default",
+                                  });
+                                }}
+                              >
+                                Fill Test Data
+                              </Button>
+                            </div>
+                          </div>
+                          
+                          <div className="flex justify-between mb-4">
+                            <Button 
+                              variant="outline" 
+                              onClick={() => handleResumeStepChange(0)}
+                              className={resumeGenerationStep === 0 ? "bg-blue-50 text-blue-700" : ""}
+                            >
+                              Basic Info
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              onClick={() => handleResumeStepChange(1)}
+                              className={resumeGenerationStep === 1 ? "bg-blue-50 text-blue-700" : ""}
+                            >
+                              Experience
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              onClick={() => handleResumeStepChange(2)}
+                              className={resumeGenerationStep === 2 ? "bg-blue-50 text-blue-700" : ""}
+                            >
+                              Education
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              onClick={() => handleResumeStepChange(3)}
+                              className={resumeGenerationStep === 3 ? "bg-blue-50 text-blue-700" : ""}
+                            >
+                              Skills
+                            </Button>
+                          </div>
+                          
+                          {resumeGenerationStep === 0 && (
+                            <div className="space-y-4">
+                              <div className="space-y-2">
+                                <label className="block text-sm font-medium">Full Name</label>
+                                <Input 
+                                  value={resumeData.fullName || ""} 
+                                  onChange={(e) => handleResumeDataChange("fullName", e.target.value)}
+                                  placeholder="John Doe"
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <label className="block text-sm font-medium">Professional Title</label>
+                                <Input 
+                                  value={resumeData.title || ""} 
+                                  onChange={(e) => handleResumeDataChange("title", e.target.value)}
+                                  placeholder="Senior Software Engineer"
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <label className="block text-sm font-medium">Professional Slogan</label>
+                                <Input 
+                                  value={resumeData.slogan || ""} 
+                                  onChange={(e) => handleResumeDataChange("slogan", e.target.value)}
+                                  placeholder="Passionate about creating innovative solutions"
+                                />
+                              </div>
+                              <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                  <label className="block text-sm font-medium">Email</label>
+                                  <Input 
+                                    value={resumeData.email || ""} 
+                                    onChange={(e) => handleResumeDataChange("email", e.target.value)}
+                                    placeholder="john.doe@example.com"
+                                  />
+                                </div>
+                                <div className="space-y-2">
+                                  <label className="block text-sm font-medium">Phone</label>
+                                  <Input 
+                                    value={resumeData.phone || ""} 
+                                    onChange={(e) => handleResumeDataChange("phone", e.target.value)}
+                                    placeholder="+1 (555) 123-4567"
+                                  />
+                                </div>
+                              </div>
+                              <div className="space-y-2">
+                                <label className="block text-sm font-medium">Address</label>
+                                <Input 
+                                  value={resumeData.address || ""} 
+                                  onChange={(e) => handleResumeDataChange("address", e.target.value)}
+                                  placeholder="123 Main St, City, Country"
+                                />
+                              </div>
+                              <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                  <label className="block text-sm font-medium">LinkedIn</label>
+                                  <Input 
+                                    value={resumeData.linkedin || ""} 
+                                    onChange={(e) => handleResumeDataChange("linkedin", e.target.value)}
+                                    placeholder="linkedin.com/in/johndoe"
+                                  />
+                                </div>
+                                <div className="space-y-2">
+                                  <label className="block text-sm font-medium">GitHub</label>
+                                  <Input 
+                                    value={resumeData.github || ""} 
+                                    onChange={(e) => handleResumeDataChange("github", e.target.value)}
+                                    placeholder="github.com/johndoe"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                          
+                          {resumeGenerationStep === 1 && (
+                            <div className="space-y-4">
+                              <div className="flex justify-between items-center">
+                                <h3 className="text-lg font-medium">Work Experience</h3>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => {
+                                    const experiences = resumeData.experience || [];
+                                    handleResumeDataChange("experience", [
+                                      ...experiences,
+                                      {
+                                        position: "",
+                                        company: "",
+                                        location: "",
+                                        startDate: "",
+                                        endDate: "",
+                                        isCurrent: false,
+                                        responsibilities: []
+                                      }
+                                    ]);
+                                  }}
+                                >
+                                  Add Experience
+                                </Button>
+                              </div>
+                              
+                              {resumeData.experience?.map((exp, index) => (
+                                <Card key={index} className="p-4">
+                                  <div className="space-y-4">
+                                    <div className="grid grid-cols-2 gap-4">
+                                      <div className="space-y-2">
+                                        <label className="block text-sm font-medium">Position</label>
+                                        <Input 
+                                          value={exp.position} 
+                                          onChange={(e) => {
+                                            const experiences = [...(resumeData.experience || [])];
+                                            experiences[index].position = e.target.value;
+                                            handleResumeDataChange("experience", experiences);
+                                          }}
+                                          placeholder="Senior Developer"
+                                        />
+                                      </div>
+                                      <div className="space-y-2">
+                                        <label className="block text-sm font-medium">Company</label>
+                                        <Input 
+                                          value={exp.company} 
+                                          onChange={(e) => {
+                                            const experiences = [...(resumeData.experience || [])];
+                                            experiences[index].company = e.target.value;
+                                            handleResumeDataChange("experience", experiences);
+                                          }}
+                                          placeholder="Tech Corp"
+                                        />
+                                      </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                      <div className="space-y-2">
+                                        <label className="block text-sm font-medium">Location</label>
+                                        <Input 
+                                          value={exp.location} 
+                                          onChange={(e) => {
+                                            const experiences = [...(resumeData.experience || [])];
+                                            experiences[index].location = e.target.value;
+                                            handleResumeDataChange("experience", experiences);
+                                          }}
+                                          placeholder="San Francisco, CA"
+                                        />
+                                      </div>
+                                      <div className="space-y-2">
+                                        <label className="block text-sm font-medium">Duration</label>
+                                        <div className="flex gap-2">
+                                          <Input 
+                                            type="date"
+                                            value={exp.startDate} 
+                                            onChange={(e) => {
+                                              const experiences = [...(resumeData.experience || [])];
+                                              experiences[index].startDate = e.target.value;
+                                              handleResumeDataChange("experience", experiences);
+                                            }}
+                                          />
+                                          <Input 
+                                            type="date"
+                                            value={exp.endDate} 
+                                            onChange={(e) => {
+                                              const experiences = [...(resumeData.experience || [])];
+                                              experiences[index].endDate = e.target.value;
+                                              handleResumeDataChange("experience", experiences);
+                                            }}
+                                            disabled={exp.isCurrent}
+                                          />
+                                        </div>
+                                        <div className="flex items-center mt-2">
+                                          <input 
+                                            type="checkbox" 
+                                            id={`current-${index}`}
+                                            checked={exp.isCurrent}
+                                            onChange={(e) => {
+                                              const experiences = [...(resumeData.experience || [])];
+                                              experiences[index].isCurrent = e.target.checked;
+                                              if (e.target.checked) {
+                                                experiences[index].endDate = "";
+                                              }
+                                              handleResumeDataChange("experience", experiences);
+                                            }}
+                                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                          />
+                                          <label htmlFor={`current-${index}`} className="ml-2 block text-sm text-gray-700">
+                                            I currently work here
+                                          </label>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                      <label className="block text-sm font-medium">Responsibilities</label>
+                                      <div className="space-y-2">
+                                        {(exp.responsibilities || []).map((resp, respIndex) => (
+                                          <div key={respIndex} className="flex gap-2">
+                                            <Input 
+                                              value={resp} 
+                                              onChange={(e) => {
+                                                const experiences = [...(resumeData.experience || [])];
+                                                experiences[index].responsibilities[respIndex] = e.target.value;
+                                                handleResumeDataChange("experience", experiences);
+                                              }}
+                                              placeholder="Led a team of 5 developers..."
+                                            />
+                                            <Button 
+                                              variant="ghost" 
+                                              size="icon"
+                                              onClick={() => {
+                                                const experiences = [...(resumeData.experience || [])];
+                                                experiences[index].responsibilities = experiences[index].responsibilities.filter((_, i) => i !== respIndex);
+                                                handleResumeDataChange("experience", experiences);
+                                              }}
+                                            >
+                                              ×
+                                            </Button>
+                                          </div>
+                                        ))}
+                                        <Button 
+                                          variant="outline" 
+                                          size="sm"
+                                          onClick={() => {
+                                            const experiences = [...(resumeData.experience || [])];
+                                            experiences[index].responsibilities = [...(experiences[index].responsibilities || []), ""];
+                                            handleResumeDataChange("experience", experiences);
+                                          }}
+                                        >
+                                          Add Responsibility
+                                        </Button>
+                                      </div>
+                                    </div>
+                                    <div className="flex justify-end">
+                                      <Button 
+                                        variant="ghost" 
+                                        size="sm"
+                                        onClick={() => {
+                                          const experiences = [...(resumeData.experience || [])];
+                                          experiences.splice(index, 1);
+                                          handleResumeDataChange("experience", experiences);
+                                        }}
+                                      >
+                                        Remove Experience
+                                      </Button>
+                                    </div>
+                                  </div>
+                                </Card>
+                              ))}
+                            </div>
+                          )}
+                          
+                          {resumeGenerationStep === 2 && (
+                            <div className="space-y-4">
+                              <div className="flex justify-between items-center">
+                                <h3 className="text-lg font-medium">Education</h3>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => {
+                                    const education = resumeData.education || [];
+                                    handleResumeDataChange("education", [
+                                      ...education,
+                                      {
+                                        degree: "",
+                                        fieldOfStudy: "",
+                                        institution: "",
+                                        location: "",
+                                        startDate: "",
+                                        endDate: "",
+                                        isCurrent: false
+                                      }
+                                    ]);
+                                  }}
+                                >
+                                  Add Education
+                                </Button>
+                              </div>
+                              
+                              {resumeData.education?.map((edu, index) => (
+                                <Card key={index} className="p-4">
+                                  <div className="space-y-4">
+                                    <div className="grid grid-cols-2 gap-4">
+                                      <div className="space-y-2">
+                                        <label className="block text-sm font-medium">Degree</label>
+                                        <Input 
+                                          value={edu.degree} 
+                                          onChange={(e) => {
+                                            const education = [...(resumeData.education || [])];
+                                            education[index].degree = e.target.value;
+                                            handleResumeDataChange("education", education);
+                                          }}
+                                          placeholder="Bachelor of Science"
+                                        />
+                                      </div>
+                                      <div className="space-y-2">
+                                        <label className="block text-sm font-medium">Field of Study</label>
+                                        <Input 
+                                          value={edu.fieldOfStudy} 
+                                          onChange={(e) => {
+                                            const education = [...(resumeData.education || [])];
+                                            education[index].fieldOfStudy = e.target.value;
+                                            handleResumeDataChange("education", education);
+                                          }}
+                                          placeholder="Computer Science"
+                                        />
+                                      </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                      <div className="space-y-2">
+                                        <label className="block text-sm font-medium">Institution</label>
+                                        <Input 
+                                          value={edu.institution} 
+                                          onChange={(e) => {
+                                            const education = [...(resumeData.education || [])];
+                                            education[index].institution = e.target.value;
+                                            handleResumeDataChange("education", education);
+                                          }}
+                                          placeholder="University of Technology"
+                                        />
+                                      </div>
+                                      <div className="space-y-2">
+                                        <label className="block text-sm font-medium">Location</label>
+                                        <Input 
+                                          value={edu.location} 
+                                          onChange={(e) => {
+                                            const education = [...(resumeData.education || [])];
+                                            education[index].location = e.target.value;
+                                            handleResumeDataChange("education", education);
+                                          }}
+                                          placeholder="New York, NY"
+                                        />
+                                      </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                      <div className="space-y-2">
+                                        <label className="block text-sm font-medium">Duration</label>
+                                        <div className="flex gap-2">
+                                          <Input 
+                                            type="date"
+                                            value={edu.startDate} 
+                                            onChange={(e) => {
+                                              const education = [...(resumeData.education || [])];
+                                              education[index].startDate = e.target.value;
+                                              handleResumeDataChange("education", education);
+                                            }}
+                                          />
+                                          <Input 
+                                            type="date"
+                                            value={edu.endDate} 
+                                            onChange={(e) => {
+                                              const education = [...(resumeData.education || [])];
+                                              education[index].endDate = e.target.value;
+                                              handleResumeDataChange("education", education);
+                                            }}
+                                            disabled={edu.isCurrent}
+                                          />
+                                        </div>
+                                        <div className="flex items-center mt-2">
+                                          <input 
+                                            type="checkbox" 
+                                            id={`edu-current-${index}`}
+                                            checked={edu.isCurrent}
+                                            onChange={(e) => {
+                                              const education = [...(resumeData.education || [])];
+                                              education[index].isCurrent = e.target.checked;
+                                              if (e.target.checked) {
+                                                education[index].endDate = "";
+                                              }
+                                              handleResumeDataChange("education", education);
+                                            }}
+                                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                          />
+                                          <label htmlFor={`edu-current-${index}`} className="ml-2 block text-sm text-gray-700">
+                                            I&apos;m currently studying here
+                                          </label>
+                                        </div>
+                                      </div>
+                                      <div className="space-y-2">
+                                        <label className="block text-sm font-medium">GPA (Optional)</label>
+                                        <Input 
+                                          type="number"
+                                          step="0.01"
+                                          min="0"
+                                          max="4"
+                                          value={edu.gpa || ""} 
+                                          onChange={(e) => {
+                                            const education = [...(resumeData.education || [])];
+                                            education[index].gpa = e.target.value ? parseFloat(e.target.value) : undefined;
+                                            handleResumeDataChange("education", education);
+                                          }}
+                                          placeholder="3.8"
+                                        />
+                                      </div>
+                                    </div>
+                                    <div className="flex justify-end">
+                                      <Button 
+                                        variant="ghost" 
+                                        size="sm"
+                                        onClick={() => {
+                                          const education = [...(resumeData.education || [])];
+                                          education.splice(index, 1);
+                                          handleResumeDataChange("education", education);
+                                        }}
+                                      >
+                                        Remove Education
+                                      </Button>
+                                    </div>
+                                  </div>
+                                </Card>
+                              ))}
+                            </div>
+                          )}
+                          
+                          {resumeGenerationStep === 3 && (
+                            <div className="space-y-4">
+                              <div className="space-y-2">
+                                <label className="block text-sm font-medium">Skills</label>
+                                <div className="flex gap-2">
+                                  <Input
+                                    placeholder="Add a skill"
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') {
+                                        const input = e.target as HTMLInputElement;
+                                        const skill = input.value.trim();
+                                        if (skill) {
+                                          const skills = [...(resumeData.skills || [])];
+                                          if (!skills.includes(skill)) {
+                                            handleResumeDataChange("skills", [...skills, skill]);
+                                          }
+                                          input.value = '';
+                                        }
+                                      }
+                                    }}
+                                  />
+                                  <Button 
+                                    variant="outline"
+                                    onClick={(e) => {
+                                      const input = e.currentTarget.previousElementSibling as HTMLInputElement;
+                                      const skill = input.value.trim();
+                                      if (skill) {
+                                        const skills = [...(resumeData.skills || [])];
+                                        if (!skills.includes(skill)) {
+                                          handleResumeDataChange("skills", [...skills, skill]);
+                                        }
+                                        input.value = '';
+                                      }
+                                    }}
+                                  >
+                                    Add
+                                  </Button>
+                                </div>
+                                <div className="flex flex-wrap gap-2 mt-2 p-3 border rounded-lg bg-gray-50">
+                                  {resumeData.skills?.map((skill, index) => (
+                                    <Badge key={index} variant="secondary" className="flex items-center gap-2 bg-blue-100 text-blue-800">
+                                      {skill}
+                                      <Button
+                                        size="icon"
+                                        variant="ghost"
+                                        className="h-4 w-4 p-0 hover:bg-blue-200"
+                                        onClick={() => {
+                                          const skills = [...(resumeData.skills || [])];
+                                          skills.splice(index, 1);
+                                          handleResumeDataChange("skills", skills);
+                                        }}
+                                      >
+                                        ×
+                                      </Button>
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                          
+                          <DialogFooter className="mt-6">
+                            <Button 
+                              variant="outline" 
+                              onClick={() => setShowResumeDialog(false)}
+                            >
+                              Cancel
+                            </Button>
+                            <Button 
+                              onClick={handleGenerateResume}
+                              disabled={isGeneratingResume || resumeGenerationStep !== 3}
+                              className="bg-blue-600 text-white hover:bg-blue-700"
+                            >
+                              Generate Resume
+                            </Button>
+                          </DialogFooter>
+                        </div>
+                      )}
+                    </DialogContent>
+                  </Dialog>
+                  
                   <span className="text-sm text-gray-500">
                     Accepted formats: PDF, DOC, DOCX
                   </span>

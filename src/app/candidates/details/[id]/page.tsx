@@ -49,57 +49,16 @@ export default function CandidateDetails({ params }: { params: { id: string } })
       setLoading(true);
       const token = localStorage.getItem("token");
 
-      // Create sample candidate data
-      const createSampleCandidate = (id: string): Application => ({
-        id: id,
-        userId: `user-${id.slice(0, 8)}`,
-        jobId: id.split('-')[0],
-        status: "pending",
-        coverLetter: "I am excited to apply for this position. I have 5 years of experience in this field and I am confident that I would be a great fit for this role.",
-        screeningScore: 8,
-        applicationInformation: {
-          appliedAt: "2024-01-15T00:00:00.000Z",
-          lastUpdated: "2024-01-15T00:00:00.000Z",
-          notes: "Candidate shows strong potential and relevant experience."
-        },
-        candidateInformation: {
-          name: "John Smith",
-          email: "john.smith@example.com",
-          phone: "+1 (555) 123-4567",
-          location: "San Francisco, CA",
-          currentCompany: "Tech Solutions Inc.",
-          currentPosition: "Senior Developer",
-          experience: 5,
-          education: "Bachelor's in Computer Science",
-          skills: ["JavaScript", "React", "Node.js", "TypeScript", "AWS"]
-        },
-        interviewInformation: {
-          scheduled: true,
-          date: "2024-02-01",
-          time: "10:00 AM",
-          type: "video",
-          notes: "Initial technical interview scheduled",
-          feedback: "Candidate demonstrated strong technical knowledge and communication skills."
-        }
-      });
-
-      // Always use sample data for now to ensure it works
-      console.log("Using sample data for candidate details");
-      const sampleCandidate = createSampleCandidate(params.id);
-      setCandidate(sampleCandidate);
-      setLoading(false);
-      return;
-
-      // The code below is commented out to ensure we always use sample data
-      /*
       if (!token) {
-        console.log("No token found, using sample data");
-        const sampleCandidate = createSampleCandidate(params.id);
-        setCandidate(sampleCandidate);
+        toast({
+          title: "Error",
+          description: "No authentication token found. Please log in again.",
+          variant: "destructive",
+        });
         return;
       }
 
-      const response = await fetch(`http://196.188.249.24:3010/api/applications/details/${params.id}`, {
+      const response = await fetch(`http://196.188.249.24:3010/api/applications/${params.id}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -111,48 +70,27 @@ export default function CandidateDetails({ params }: { params: { id: string } })
         throw new Error(`Failed to fetch candidate details: ${response.status} ${response.statusText}`);
       }
 
-      // Check if the response is empty
-      const responseText = await response.text();
-      if (!responseText || responseText.trim() === '') {
-        console.log("Empty response received from API");
-        // Use sample data when API returns empty response
-        const sampleCandidate = createSampleCandidate(params.id);
-        setCandidate(sampleCandidate);
-        return;
-      }
-
-      // Try to parse the response as JSON
-      let data;
-      try {
-        data = JSON.parse(responseText);
-      } catch (parseError) {
-        console.error("Error parsing JSON response:", parseError);
-        // Use sample data when API returns invalid JSON
-        const sampleCandidate = createSampleCandidate(params.id);
-        setCandidate(sampleCandidate);
-        return;
-      }
-
+      const data = await response.json();
+      console.log("Candidate details API response:", data);
+      
       if (!data) {
         console.log("No data received from API");
-        // Use sample data when API returns no data
-        const sampleCandidate = createSampleCandidate(params.id);
-        setCandidate(sampleCandidate);
+        toast({
+          title: "Error",
+          description: "No candidate data found.",
+          variant: "destructive",
+        });
         return;
       }
 
       setCandidate(data);
-      */
     } catch (error) {
       console.error("Error fetching candidate details:", error);
       toast({
         title: "Error",
-        description: "Failed to fetch candidate details. Using sample data instead.",
+        description: "Failed to fetch candidate details. Please try again.",
         variant: "destructive",
       });
-      // Use sample data on error
-      const sampleCandidate = createSampleCandidate(params.id);
-      setCandidate(sampleCandidate);
     } finally {
       setLoading(false);
     }

@@ -1,19 +1,9 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { JobPosting } from "@/app/models/jobPosting";
 
 interface JobDetailProps {
-  job: {
-    title: string;
-    description: string;
-    position: string;
-    workLocation: string;
-    employmentType: string;
-    salary: number;
-    organizationId: string;
-    requirementId: string;
-    skill: string[];
-    status: string;
-  };
+  job: JobPosting;
   onClose: () => void;
 }
 

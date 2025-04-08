@@ -24,103 +24,6 @@ import {
 import { JobPosting } from "../../models/jobPosting";
 import { Application } from "../../models/application";
 
-// Sample data for testing
-const sampleJobs: JobPosting[] = [
-  {
-    id: "job-1",
-    title: "Senior Software Engineer",
-    description: "We are looking for a senior software engineer to join our team.",
-    position: "Software Engineer",
-    industry: "Technology",
-    type: "Full-time",
-    city: "San Francisco",
-    location: "San Francisco, CA",
-    employmentType: "Full-time",
-    salaryRange: { minimum: 120000, maximum: 180000 },
-    deadline: "2023-12-31T00:00:00.000Z",
-    requirementId: "req-1",
-    skill: ["JavaScript", "React", "Node.js", "TypeScript"],
-    benefits: ["Health Insurance", "401k", "Remote Work"],
-    responsibilities: ["Develop new features", "Code review", "Mentor junior developers"],
-    status: "Active",
-    gender: "Any",
-    minimumGPA: 3.0,
-    companyName: "TechCorp Inc.",
-    postedDate: "2023-01-01T00:00:00.000Z",
-    applicationURL: "https://techcorp.com/careers",
-    experienceLevel: "Senior",
-    fieldOfStudy: "Computer Science",
-    educationLevel: "Bachelor's Degree",
-    howToApply: "Submit your resume and cover letter",
-    applicationCount: 25,
-    createdAt: "2023-01-01T00:00:00.000Z",
-    updatedAt: "2023-01-01T00:00:00.000Z",
-    remotePolicy: "Hybrid"
-  },
-  {
-    id: "job-2",
-    title: "Product Designer",
-    description: "We are looking for a product designer to join our team.",
-    position: "Product Designer",
-    industry: "Design",
-    type: "Full-time",
-    city: "New York",
-    location: "New York, NY",
-    employmentType: "Full-time",
-    salaryRange: { minimum: 90000, maximum: 130000 },
-    deadline: "2023-12-31T00:00:00.000Z",
-    requirementId: "req-2",
-    skill: ["Figma", "Adobe XD", "UI/UX Design", "Prototyping"],
-    benefits: ["Health Insurance", "401k", "Remote Work"],
-    responsibilities: ["Design new features", "User research", "Prototype testing"],
-    status: "Active",
-    gender: "Any",
-    minimumGPA: 3.0,
-    companyName: "DesignStudio Inc.",
-    postedDate: "2023-01-01T00:00:00.000Z",
-    applicationURL: "https://designstudio.com/careers",
-    experienceLevel: "Mid-level",
-    fieldOfStudy: "Design",
-    educationLevel: "Bachelor's Degree",
-    howToApply: "Submit your portfolio and resume",
-    applicationCount: 15,
-    createdAt: "2023-01-01T00:00:00.000Z",
-    updatedAt: "2023-01-01T00:00:00.000Z",
-    remotePolicy: "Remote"
-  },
-  {
-    id: "job-3",
-    title: "Marketing Manager",
-    description: "We are looking for a marketing manager to join our team.",
-    position: "Marketing Manager",
-    industry: "Marketing",
-    type: "Full-time",
-    city: "Chicago",
-    location: "Chicago, IL",
-    employmentType: "Full-time",
-    salaryRange: { minimum: 80000, maximum: 120000 },
-    deadline: "2023-12-31T00:00:00.000Z",
-    requirementId: "req-3",
-    skill: ["Digital Marketing", "SEO", "Content Marketing", "Analytics"],
-    benefits: ["Health Insurance", "401k", "Remote Work"],
-    responsibilities: ["Develop marketing strategy", "Manage marketing campaigns", "Track performance metrics"],
-    status: "Active",
-    gender: "Any",
-    minimumGPA: 3.0,
-    companyName: "MarketingPro Inc.",
-    postedDate: "2023-01-01T00:00:00.000Z",
-    applicationURL: "https://marketingpro.com/careers",
-    experienceLevel: "Mid-level",
-    fieldOfStudy: "Marketing",
-    educationLevel: "Bachelor's Degree",
-    howToApply: "Submit your resume and cover letter",
-    applicationCount: 10,
-    createdAt: "2023-01-01T00:00:00.000Z",
-    updatedAt: "2023-01-01T00:00:00.000Z",
-    remotePolicy: "On-site"
-  }
-];
-
 export default function AllCandidates() {
   const router = useRouter();
   const { toast } = useToast();
@@ -163,8 +66,7 @@ export default function AllCandidates() {
           description: "No authentication token found. Please log in again.",
           variant: "destructive",
         });
-        // Use sample data when token is missing
-        setJobs(sampleJobs);
+        setJobs([]);
         return;
       }
 
@@ -182,26 +84,7 @@ export default function AllCandidates() {
         throw new Error(`Failed to fetch jobs: ${response.status} ${response.statusText}`);
       }
 
-      // Check if the response is empty
-      const responseText = await response.text();
-      if (!responseText || responseText.trim() === '') {
-        console.log("Empty response received from API");
-        // Use sample data when API returns empty response
-        setJobs(sampleJobs);
-        return;
-      }
-
-      // Try to parse the response as JSON
-      let data;
-      try {
-        data = JSON.parse(responseText);
-      } catch (parseError) {
-        console.error("Error parsing JSON response:", parseError);
-        // Use sample data when API returns invalid JSON
-        setJobs(sampleJobs);
-        return;
-      }
-      
+      const data = await response.json();
       console.log("Jobs API response:", data);
       
       // Check if data has an items property (like in view-all page)
@@ -209,21 +92,19 @@ export default function AllCandidates() {
       console.log("Processed jobs data:", jobsData);
       
       // Ensure jobsData is an array
-      if (Array.isArray(jobsData) && jobsData.length > 0) {
+      if (Array.isArray(jobsData)) {
         setJobs(jobsData);
       } else {
-        // Use sample data when API returns empty array
-        setJobs(sampleJobs);
+        setJobs([]);
       }
     } catch (error) {
       console.error("Error fetching jobs:", error);
       toast({
         title: "Error",
-        description: "Failed to fetch jobs. Using sample data instead.",
+        description: "Failed to fetch jobs. Please try again.",
         variant: "destructive",
       });
-      // Use sample data on error
-      setJobs(sampleJobs);
+      setJobs([]);
     } finally {
       setLoading(false);
     }
@@ -233,146 +114,56 @@ export default function AllCandidates() {
   const fetchCandidates = async (jobId: string) => {
     console.log(`fetchCandidates called with jobId: ${jobId}, type: ${typeof jobId}`);
     
-    // Create sample candidates for the actual job ID
-    const sampleCandidatesForJob: Application[] = [
-      {
-        id: `${jobId}-app1`,
-        userId: "user-1",
-        jobId: jobId,
-        status: "pending",
-        coverLetter: "I am excited to apply for this position. I have 5 years of experience in this field and I am confident that I would be a great fit for this role.",
-        screeningScore: 8,
-        applicationInformation: {
-          appliedAt: "2024-01-15T00:00:00.000Z",
-          lastUpdated: "2024-01-15T00:00:00.000Z"
-        }
-      },
-      {
-        id: `${jobId}-app2`,
-        userId: "user-2",
-        jobId: jobId,
-        status: "shortlisted",
-        coverLetter: "I am writing to express my interest in this position. With my background and experience, I believe I can contribute to your team's success.",
-        screeningScore: 9,
-        applicationInformation: {
-          appliedAt: "2024-01-10T00:00:00.000Z",
-          lastUpdated: "2024-01-12T00:00:00.000Z"
-        }
-      },
-      {
-        id: `${jobId}-app3`,
-        userId: "user-3",
-        jobId: jobId,
-        status: "rejected",
-        coverLetter: "I am interested in this position. I have relevant experience and I am looking forward to the opportunity to work with your team.",
-        screeningScore: 5,
-        applicationInformation: {
-          appliedAt: "2024-01-05T00:00:00.000Z",
-          lastUpdated: "2024-01-08T00:00:00.000Z"
-        }
-      },
-      {
-        id: `${jobId}-app4`,
-        userId: "user-4",
-        jobId: jobId,
-        status: "reviewed",
-        coverLetter: "I am excited to apply for this position. I have a strong background in the required skills and I am confident that I would be a great fit for this role.",
-        screeningScore: 7,
-        applicationInformation: {
-          appliedAt: "2024-01-20T00:00:00.000Z",
-          lastUpdated: "2024-01-22T00:00:00.000Z"
-        }
-      },
-      {
-        id: `${jobId}-app5`,
-        userId: "user-5",
-        jobId: jobId,
-        status: "hired",
-        coverLetter: "I am writing to express my interest in this position. With my experience and skills, I believe I can contribute to your team's success.",
-        screeningScore: 9,
-        applicationInformation: {
-          appliedAt: "2024-01-18T00:00:00.000Z",
-          lastUpdated: "2024-01-25T00:00:00.000Z"
-        }
-      }
-    ];
-    
     try {
       setLoading(true);
       console.log(`Starting to fetch candidates for job ID: ${jobId}`);
       
       const token = localStorage.getItem("token");
       if (!token) {
-        console.log("No token found, using sample data");
+        console.log("No token found");
         toast({
           title: "Error",
           description: "No authentication token found. Please log in again.",
           variant: "destructive",
         });
-        // Use sample data when token is missing
-        console.log(`Using ${sampleCandidatesForJob.length} sample candidates for job ID: ${jobId}`);
-        setCandidates(sampleCandidatesForJob);
+        setCandidates([]);
         return;
       }
 
       console.log(`Fetching candidates for job ID: ${jobId}`);
 
-      const response = await fetch(`http://196.188.249.24:3010/api/applications/${jobId}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        `http://196.188.249.24:3010/api/applications?q=i=JobPost%26%26w=JobPostId:=:${jobId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (!response.ok) {
         console.log(`API returned error status: ${response.status} ${response.statusText}`);
         throw new Error(`Failed to fetch candidates: ${response.status} ${response.statusText}`);
       }
 
-      // Check if the response is empty
-      const responseText = await response.text();
-      if (!responseText || responseText.trim() === '') {
-        console.log("Empty response received from API");
-        // Use sample data when API returns empty response
-        console.log(`Using ${sampleCandidatesForJob.length} sample candidates for job ID: ${jobId}`);
-        setCandidates(sampleCandidatesForJob);
-        return;
-      }
-
-      // Try to parse the response as JSON
-      let data;
-      try {
-        data = JSON.parse(responseText);
-      } catch (parseError) {
-        console.error("Error parsing JSON response:", parseError);
-        // Use sample data when API returns invalid JSON
-        console.log(`Using ${sampleCandidatesForJob.length} sample candidates for job ID: ${jobId}`);
-        setCandidates(sampleCandidatesForJob);
-        return;
-      }
-      
+      const data = await response.json();
       console.log("Candidates API response:", data);
       
-      // Check if data is an array and has items
-      if (Array.isArray(data) && data.length > 0) {
-        console.log(`Found ${data.length} candidates from API for job ID: ${jobId}`);
-        setCandidates(data);
-      } else {
-        // Use sample data when API returns empty array
-        console.log(`Using ${sampleCandidatesForJob.length} sample candidates for job ID: ${jobId}`);
-        setCandidates(sampleCandidatesForJob);
-      }
+      // Check if data has an items property
+      const candidatesData = data.items || [];
+      console.log(`Found ${candidatesData.length} candidates from API for job ID: ${jobId}`);
+      setCandidates(candidatesData);
+      
     } catch (error) {
       console.error("Error fetching candidates:", error);
       toast({
         title: "Error",
-        description: "Failed to fetch candidates. Using sample data instead.",
+        description: "Failed to fetch candidates. Please try again.",
         variant: "destructive",
       });
-      // Use sample data on error
-      console.log(`Using ${sampleCandidatesForJob.length} sample candidates for job ID: ${jobId}`);
-      setCandidates(sampleCandidatesForJob);
+      setCandidates([]);
     } finally {
       setLoading(false);
     }
