@@ -11,6 +11,7 @@ import { confirmAlert } from "react-confirm-alert"; // Import confirmation alert
 import "react-confirm-alert/src/react-confirm-alert.css"; // Import styles
 import { JobPosting } from "../../app/models/jobPosting";
 import { Organization } from "../../app/models/organization";
+import { getApiUrl, apiRequest } from "@/lib/api";
 
 interface JobCardProps {
   job: JobPosting;
@@ -70,7 +71,7 @@ const JobCard: React.FC<JobCardProps> = ({ job, isEmployer, onDelete }) => {
           onClick: async () => {
             try {
               const token = localStorage.getItem("token");
-              const apiUrl = `https://196.188.249.24:3010/api/jobs/${job.id}`;
+              const apiUrl = getApiUrl(`jobs/${job.id}`);
 
               const res = await fetch(apiUrl, {
                 method: "DELETE",
@@ -101,16 +102,13 @@ const JobCard: React.FC<JobCardProps> = ({ job, isEmployer, onDelete }) => {
     
     try {
       const token = localStorage.getItem("token");
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
 
-      const response = await fetch("https://196.188.249.24:3010/api/save-jobs", {
+      const response = await apiRequest("save-jobs", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
         body: JSON.stringify({
-          jobPostId: job?.id,
-          userId: organization?.id,
+          jobPostId: job.id,
+          userId: user.id,
         }),
       });
 

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// The actual API server URL (using HTTP since that's what the server is using)
-const API_SERVER_URL = 'http://196.188.249.24:3010/api';
+// The actual API server URL (using HTTPS for secure connections)
+const API_SERVER_URL = 'https://196.188.249.24:3010/api';
 
 export async function GET(request: NextRequest) {
   const url = new URL(request.url);
@@ -13,6 +13,8 @@ export async function GET(request: NextRequest) {
         'Content-Type': 'application/json',
         ...Object.fromEntries(request.headers),
       },
+      // @ts-ignore - Node.js specific option
+      agent: new (require('https').Agent)({ rejectUnauthorized: false }),
     });
     
     const data = await response.json();
@@ -37,6 +39,8 @@ export async function POST(request: NextRequest) {
         ...Object.fromEntries(request.headers),
       },
       body: JSON.stringify(body),
+      // @ts-ignore - Node.js specific option
+      agent: new (require('https').Agent)({ rejectUnauthorized: false }),
     });
     
     const data = await response.json();
