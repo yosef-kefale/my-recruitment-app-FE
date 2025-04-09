@@ -302,7 +302,7 @@ const ViewJobs = () => {
             </div>
 
             {/* Scrollable Job Listings */}
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto px-4">
               {isLoading ? (
                 <div className="flex justify-center items-center h-64">
                   <Loader2 className="h-8 w-8 animate-spin text-blue-500" />

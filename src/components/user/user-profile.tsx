@@ -429,10 +429,94 @@ const UserProfileUpdate = () => {
         });
       }, 500);
       
+      // Format data according to the Profile interface
+      const resumePayload = {
+        fullName: resumeData.fullName || '',
+        title: resumeData.title || '',
+        slogan: resumeData.slogan || '',
+        email: resumeData.email || '',
+        phone: resumeData.phone || '',
+        address: resumeData.address || '',
+        profilePicture: profilePicUrl || '',
+        linkedin: resumeData.linkedin || '',
+        github: resumeData.github || '',
+        twitter: resumeData.twitter || '',
+        website: resumeData.website || '',
+        skills: resumeData.skills || [],
+        experience: resumeData.experience?.map(exp => ({
+          position: exp.position || '',
+          company: exp.company || '',
+          location: exp.location || '',
+          startDate: exp.startDate || '',
+          endDate: exp.isCurrent ? 'Present' : exp.endDate || '',
+          isCurrent: exp.isCurrent || false,
+          responsibilities: exp.responsibilities || [],
+          achievements: exp.achievements || []
+        })) || [],
+        education: resumeData.education?.map(edu => ({
+          degree: edu.degree || '',
+          fieldOfStudy: edu.fieldOfStudy || '',
+          institution: edu.institution || '',
+          location: edu.location || '',
+          startDate: edu.startDate || '',
+          endDate: edu.isCurrent ? 'Present' : edu.endDate || '',
+          isCurrent: edu.isCurrent || false,
+          gpa: edu.gpa,
+          honors: edu.honors || []
+        })) || [],
+        certificates: resumeData.certificates?.map(cert => ({
+          title: cert.title || '',
+          issuingOrganization: cert.issuingOrganization || '',
+          issueDate: cert.issueDate || '',
+          expirationDate: cert.expirationDate,
+          isPermanent: cert.isPermanent || false,
+          credentialID: cert.credentialID,
+          credentialURL: cert.credentialURL
+        })) || [],
+        publications: resumeData.publications?.map(pub => ({
+          title: pub.title || '',
+          authors: pub.authors || [],
+          journal: pub.journal || '',
+          publisher: pub.publisher || '',
+          publicationDate: pub.publicationDate || '',
+          doi: pub.doi,
+          url: pub.url,
+          summary: pub.summary
+        })) || [],
+        projects: resumeData.projects?.map(proj => ({
+          name: proj.name || '',
+          description: proj.description || '',
+          technologies: proj.technologies || [],
+          startDate: proj.startDate || '',
+          endDate: proj.isOngoing ? 'Present' : proj.endDate || '',
+          isOngoing: proj.isOngoing || false,
+          role: proj.role || '',
+          repository: proj.repository,
+          demoURL: proj.demoURL
+        })) || [],
+        awards: resumeData.awards?.map(award => ({
+          title: award.title || '',
+          organization: award.organization || '',
+          dateReceived: award.dateReceived || '',
+          description: award.description
+        })) || [],
+        interests: resumeData.interests || [],
+        volunteer: resumeData.volunteer?.map(vol => ({
+          role: vol.role || '',
+          organization: vol.organization || '',
+          year: vol.year || ''
+        })) || [],
+        references: resumeData.references?.map(ref => ({
+          name: ref.name || '',
+          relation: ref.relation || '',
+          contact: ref.contact || ''
+        })) || []
+      };
+
       // Call the API to generate the resume
       const response = await axios.post(
-        `http://196.188.249.24:3010/api/users/generate-cv-in-pdf-2`,
-        resumeData,
+        `http://196.188.249.24:3010/api/users/generate-cv-in-pdf/EuroPass`,
+        resumePayload,
         {
           headers: { 
             Authorization: `Bearer ${token}`,
@@ -449,7 +533,7 @@ const UserProfileUpdate = () => {
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', 'generated-resume.pdf');
+      link.setAttribute('download', 'europass-resume.pdf');
       document.body.appendChild(link);
       link.click();
       link.remove();
