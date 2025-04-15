@@ -2,7 +2,7 @@ import { Card } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { formatDistanceToNow } from "date-fns";
 import { useEffect, useState } from "react";
-import { MapPin, MoreVertical, Edit, Trash2, Bookmark, Building2, Briefcase, Calendar, Users, DollarSign, GraduationCap, Globe2, Clock } from "lucide-react";
+import { MapPin, MoreVertical, Edit, Trash2, Bookmark, Building2, Briefcase, Calendar, Users, DollarSign, GraduationCap, Globe2, Clock, CheckCircle } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
@@ -168,12 +168,24 @@ const JobCard: React.FC<JobCardProps> = ({ job, isEmployer, onDelete }) => {
             </div>
           </div>
           <div className="flex-grow min-w-0">
-            <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
               <Link href={isEmployer ? `/jobs/employer-job-details/${job.id}` : `/jobs/job-details/${job.id}`}>
                 <h2 className="text-base font-semibold text-gray-900 group-hover:text-sky-600 transition-colors line-clamp-1">
                   {job.title}
                 </h2>
               </Link>
+              {job.skill && job.skill.length > 0 && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <CheckCircle className="w-6 h-6 mr-0.5 mb-2 text-amber-500" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Your skills match this job</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
             </div>
             <div className="flex items-center gap-2 text-gray-600 text-sm mb-1">
               {job.companyName && (
@@ -223,6 +235,31 @@ const JobCard: React.FC<JobCardProps> = ({ job, isEmployer, onDelete }) => {
                     </TooltipTrigger>
                     <TooltipContent>
                       <p>Number of applicants</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+              {job.salaryRange && (job.salaryRange.minimum || job.salaryRange.maximum) && 
+                (job.applicationCount !== undefined || job.location || job.city || job.companyName) && (
+                <span className="text-gray-300">•</span>
+              )}
+              {job.salaryRange && (job.salaryRange.minimum || job.salaryRange.maximum) && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex items-center gap-1">
+                        <DollarSign className="w-3.5 h-3.5" />
+                        <span>
+                          {job.salaryRange.minimum && job.salaryRange.maximum 
+                            ? `$${job.salaryRange.minimum}K-${job.salaryRange.maximum}K`
+                            : job.salaryRange.minimum 
+                            ? `$${job.salaryRange.minimum}K+`
+                            : `Up to $${job.salaryRange.maximum}K`}
+                        </span>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Salary range</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -280,29 +317,6 @@ const JobCard: React.FC<JobCardProps> = ({ job, isEmployer, onDelete }) => {
               </TooltipProvider>
             )}
           </div>
-          {job.salaryRange && (job.salaryRange.minimum || job.salaryRange.maximum) && (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="flex items-center gap-1 text-gray-600 text-sm whitespace-nowrap">
-                    <DollarSign className="w-3.5 h-3.5 text-gray-400" />
-                    <span>
-                      {job.salaryRange.minimum && job.salaryRange.maximum 
-                        ? `$${job.salaryRange.minimum}-${job.salaryRange.maximum}`
-                        : job.salaryRange.minimum 
-                        ? `From $${job.salaryRange.minimum}`
-                        : job.salaryRange.maximum 
-                        ? `Up to $${job.salaryRange.maximum}`
-                        : ''}
-                    </span>
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Salary range</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          )}
         </div>
 
         {/* Description */}

@@ -67,6 +67,7 @@ const JobDetail = () => {
   const [screeningAnswers, setScreeningAnswers] = useState<Record<number, string>>({});
   const applySectionRef = useRef<HTMLDivElement | null>(null);
   const [userData, setUserData] = useState<UserData | null>(null);
+  const [useProfileCV, setUseProfileCV] = useState(false);
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
@@ -181,6 +182,10 @@ const JobDetail = () => {
   // Scroll to the application form
   const handleApplyClick = () => {
     setShowForm(true);
+    // Set useProfileCV to true if user has a CV in their profile
+    if (userData?.profile?.cv || userData?.resume?.path) {
+      setUseProfileCV(true);
+    }
     setTimeout(() => {
       if (applySectionRef.current) {
         applySectionRef.current.scrollIntoView({ behavior: "smooth" });
@@ -193,7 +198,7 @@ const JobDetail = () => {
   };
 
   const handleSubmitApplication = async () => {
-    if (!coverLetter.trim() || !cv) {
+    if (!coverLetter.trim() || (!cv && !useProfileCV)) {
       setMessage("Please provide a cover letter and upload your CV.");
       return;
     }
@@ -209,31 +214,54 @@ const JobDetail = () => {
     setMessage("");
   
     const formData = new FormData();
-    formData.append("cv", cv);
+    
+    // If using profile CV, we need to fetch it first
+    if (useProfileCV && !cv) {
+      try {
+        // Fetch the CV file from the profile
+        const cvResponse = await fetch(userData?.profile?.cv || userData?.resume?.path || "", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        
+        if (!cvResponse.ok) {
+          throw new Error("Failed to fetch profile CV");
+        }
+        
+        const cvBlob = await cvResponse.blob();
+        const cvFile = new File([cvBlob], userData?.resume?.filename || "profile-cv.pdf", { type: cvBlob.type });
+        formData.append("file", cvFile);
+      } catch (error) {
+        console.error("Error fetching profile CV:", error);
+        setMessage("Error fetching your profile CV. Please upload a new one.");
+        setLoading(false);
+        return;
+      }
+    } else if (cv) {
+      // If a new CV was uploaded, use that
+      formData.append("file", cv);
+    }
+    
+    // Add other application data to formData
+    formData.append("userId", userData?.id || "");
+    formData.append("JobPostId", job?.id || "");
+    formData.append("coverLetter", coverLetter);
+    if (screeningQuestions.length > 0) {
+      formData.append("screeningAnswers", JSON.stringify(screeningAnswers));
+    }
   
     try {
-      const applicationData = {
-        userId: organization?.id,
-        JobPostId: job?.id,
-        coverLetter: coverLetter,
-        screeningAnswers: screeningAnswers,
-        applicationInformation: {
-          cv: cv,
-          appliedAt: new Date().toISOString(),
-        },
-      };
-  
-      const config = {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      };
-  
+      // Submit the application with CV included in the same request
       await axios.post(
         "http://196.188.249.24:3010/api/applications/create-application",
-        applicationData,
-        config
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
       );
   
       setMessage("Application submitted successfully!");
@@ -578,11 +606,39 @@ const JobDetail = () => {
                 <label className="block text-gray-700 font-medium mb-2 text-sm">
                   CV / Resume
                 </label>
-                <CVUploadSection
-                  existingCV={userData?.resume?.path || userData?.profile?.cv}
-                  onCVSelect={handleCVSelect}
-                  selectedCV={cv}
-                />
+                {userData?.profile?.cv || userData?.resume?.path ? (
+                  <div className="mb-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <input
+                        type="checkbox"
+                        id="useProfileCV"
+                        checked={useProfileCV}
+                        onChange={(e) => {
+                          setUseProfileCV(e.target.checked);
+                          if (e.target.checked) {
+                            setCv(null); // Clear any uploaded CV when using profile CV
+                          }
+                        }}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <label htmlFor="useProfileCV" className="text-sm text-gray-700">
+                        Use my profile CV
+                      </label>
+                    </div>
+                    {useProfileCV && (
+                      <div className="bg-blue-50 p-3 rounded-lg border border-blue-100 text-sm text-blue-700">
+                        <p>Using your profile CV: {userData?.resume?.filename || "CV"}</p>
+                      </div>
+                    )}
+                  </div>
+                ) : null}
+                {!useProfileCV && (
+                  <CVUploadSection
+                    existingCV={userData?.resume?.path || userData?.profile?.cv}
+                    onCVSelect={handleCVSelect}
+                    selectedCV={cv}
+                  />
+                )}
               </div>
 
               {/* Screening Questions */}

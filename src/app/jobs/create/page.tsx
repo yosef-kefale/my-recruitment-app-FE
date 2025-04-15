@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, useRef } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -34,6 +34,8 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Stepper, Step } from "@/components/ui/stepper";
+import RichTextEditor, { RichTextEditorHandle } from "@/components/RichTextEditor";
+import { API_URL } from "@/lib/api";
 
 type QuestionType = "text" | "multiple-choice" | "yes-no" | "boolean" | "essay";
 
@@ -55,6 +57,8 @@ interface ScreeningQuestion {
 
 export default function CreateJob() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const editJobId = searchParams.get('editJob');
   const { toast } = useToast();
   const [isSuggestingSkills, setIsSuggestingSkills] = useState(false);
   const [showSkillDialog, setShowSkillDialog] = useState(false);
@@ -115,6 +119,7 @@ export default function CreateJob() {
 
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const descriptionEditorRef = useRef<RichTextEditorHandle>(null);
 
   // Add state for form validation
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -150,35 +155,76 @@ export default function CreateJob() {
 
   const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null);
 
+  // Fetch job data if editing
   useEffect(() => {
-    // Check for AI-generated description
-    const aiGeneratedDescription = localStorage.getItem("aiGeneratedDescription");
-    if (aiGeneratedDescription) {
-      setDescription(aiGeneratedDescription);
-      // Clear the stored description after using it
-      localStorage.removeItem("aiGeneratedDescription");
-      console.log("AI description loaded:", aiGeneratedDescription);
-    }
-
-    // Check for stored form data
-    const storedFormData = localStorage.getItem("jobFormData");
-    if (storedFormData) {
-      const formData = JSON.parse(storedFormData);
-      if (formData.shouldRestore) {
-        // Restore the form data
-        if (formData.title) setTitle(formData.title);
-        if (formData.position) setPosition(formData.position);
-        if (formData.industry) setIndustry(formData.industry);
-        if (formData.type) setType(formData.type);
-        if (formData.employmentType) setEmploymentType(formData.employmentType);
-        if (formData.experienceLevel) setExperienceLevel(formData.experienceLevel);
-        
-        // Clear the stored form data after using it
-        localStorage.removeItem("jobFormData");
-        console.log("Form data restored:", formData);
+    const fetchJobData = async () => {
+      if (editJobId) {
+        try {
+          const token = localStorage.getItem("token");
+          const response = await fetch(`${API_URL}/jobs/${editJobId}`, {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          });
+          
+          if (!response.ok) {
+            throw new Error('Failed to fetch job data');
+          }
+          
+          const jobData = await response.json();
+          
+          // Update form fields with job data
+          setTitle(jobData.title || '');
+          setPosition(jobData.position || '');
+          setIndustry(jobData.industry || '');
+          setType(jobData.type || '');
+          setCity(jobData.city || '');
+          setLocation(jobData.location || '');
+          setEmploymentType(jobData.employmentType || '');
+          setSalaryRange(jobData.salaryRange || { minimum: '', maximum: '' });
+          setDeadline(jobData.deadline || '');
+          setSkill(jobData.skill || []);
+          setBenefits(jobData.benefits || []);
+          setResponsibilities(jobData.responsibilities || []);
+          setStatus(jobData.status || 'active');
+          setGender(jobData.gender || '');
+          setMinimumGPA(jobData.minimumGPA || '');
+          setApplicationURL(jobData.applicationURL || '');
+          setExperienceLevel(jobData.experienceLevel || '');
+          setFieldOfStudy(jobData.fieldOfStudy || '');
+          setEducationLevel(jobData.educationLevel || '');
+          setHowToApply(jobData.howToApply || '');
+          setJobPostRequirement(jobData.jobPostRequirement || []);
+          setPositions(jobData.positions || '');
+          setDescription(jobData.description || '');
+          
+          // Fetch screening questions
+          const questionsResponse = await fetch(
+            `${API_URL}/pre-screening-questions?q=w=jobPostId:=:${editJobId}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+          
+          if (questionsResponse.ok) {
+            const questionsData = await questionsResponse.json();
+            setScreeningQuestions(questionsData.items || []);
+          }
+        } catch (error) {
+          console.error('Error fetching job data:', error);
+          toast({
+            title: "Error",
+            description: "Failed to fetch job data. Please try again.",
+            variant: "destructive",
+          });
+        }
       }
-    }
-  }, []);
+    };
+    
+    fetchJobData();
+  }, [editJobId, toast]);
 
   // Function to validate the current step
   const validateCurrentStep = () => {
@@ -239,88 +285,92 @@ export default function CreateJob() {
     
     setIsSubmitting(true);
     try {
-      // Prepare job data
+      const token = localStorage.getItem("token");
+      const descriptionContent = descriptionEditorRef.current?.getContent() || description;
+
       const jobData = {
         title,
+        description: descriptionContent,
         position,
         industry,
         type,
         city,
         location,
         employmentType,
-        salaryRange,
-        deadline,
+        salaryRange: {
+          minimum: salaryRange.min,
+          maximum: salaryRange.max
+        },
+        deadline: deadline ? new Date(deadline).toISOString() : null,
         skill,
         benefits,
         responsibilities,
         status,
         gender,
-        minimumGPA,
+        minimumGPA: minimumGPA ? parseFloat(minimumGPA) : 0,
+        companyName: "", // This should be set from the employer's profile
+        companyLogo: null, // This should be set from the employer's profile
+        postedDate: new Date().toISOString(),
         applicationURL,
         experienceLevel,
         fieldOfStudy,
         educationLevel,
         howToApply,
+        onHoldDate: null,
         jobPostRequirement,
-        positions,
-        description
+        positionNumbers: positions,
+        paymentType: "salary", // Default value
+        id: editJobId || undefined
       };
 
-      // Make API call to create job
-      const response = await fetch('/api/jobs', {
-        method: 'POST',
+      const url = editJobId
+        ? `${API_URL}/jobs/${editJobId}`
+        : `${API_URL}/jobs`;
+
+      const method = editJobId ? "PUT" : "POST";
+
+      const response = await fetch(url, {
+        method,
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(jobData),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create job');
+        throw new Error("Failed to create job");
       }
 
       const data = await response.json();
-      
-      // Create screening questions if any exist
-      if (screeningQuestions.length > 0) {
-        try {
-          // Create each question with the new jobId
-          const questionPromises = screeningQuestions.map(question => {
-            const questionData = {
-              ...question,
-              jobPostId: data.id,
-              id: undefined // Remove temporary ID
-            };
-            
-            return fetch('/api/pre-screening-questions', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify(questionData),
-            });
-          });
 
-          await Promise.all(questionPromises);
-          
-          toast({
-            title: "Success",
-            description: "Job and screening questions created successfully",
-          });
-        } catch (error) {
-          console.error('Error creating screening questions:', error);
-          toast({
-            title: "Partial Success",
-            description: "Job created but failed to save screening questions. You can add them later.",
-            variant: "destructive",
-          });
-        }
+      // Handle screening questions
+      if (screeningQuestions.length > 0) {
+        const questionsToCreate = screeningQuestions.map((q) => ({
+          ...q,
+          jobPostId: editJobId || data.id,
+        }));
+
+        await fetch(`${API_URL}/pre-screening-questions`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(questionsToCreate),
+        });
       }
-      
-      // Redirect to job listings
-      router.push('/jobs');
+
+      toast({
+        title: "Success",
+        description: editJobId
+          ? "Job updated successfully"
+          : "Job created successfully",
+      });
+
+      router.push("/jobs");
     } catch (error) {
-      console.error('Error creating job:', error);
+      console.error("Error creating job:", error);
       toast({
         title: "Error",
         description: "Failed to create job. Please try again.",
@@ -915,6 +965,11 @@ We offer a competitive salary, comprehensive benefits package, and opportunities
     });
   };
 
+  // Update the description field in the form
+  const handleDescriptionChange = (content: string) => {
+    setDescription(content);
+  };
+
   return (
     <div className="container mx-auto py-4 px-4">
       <div className="flex justify-between items-center mb-2">
@@ -1248,26 +1303,32 @@ We offer a competitive salary, comprehensive benefits package, and opportunities
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
-                <div className="space-y-2">
-                  <Label htmlFor="description">Description *</Label>
-                  <div className="flex gap-2">
-                    <Textarea
-                      id="description"
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      placeholder="Enter a detailed job description that includes the role overview, key responsibilities, and what makes this position unique. For example: 'We are seeking a passionate Software Engineer to join our growing team. You will be responsible for developing high-quality software solutions, collaborating with cross-functional teams, and contributing to all phases of the development lifecycle. The ideal candidate will have strong problem-solving skills and a desire to work in a fast-paced environment.'"
-                      className="min-h-[200px]"
-                      required
-                    />
-                    <Button 
-                      type="button" 
-                      onClick={handleUseAI} 
-                      variant="outline"
-                      className="flex items-center gap-2 h-auto py-2"
-                    >
-                      <Wand2 className="h-4 w-4" />
-                      Generate with AI
-                    </Button>
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="description">Description *</Label>
+                    <div className="flex gap-2">
+                      <RichTextEditor
+                        ref={descriptionEditorRef}
+                        onChange={handleDescriptionChange}
+                        initialValue={description}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={handleUseAI}
+                        disabled={isGeneratingDescription}
+                      >
+                        {isGeneratingDescription ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Wand2 className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </div>
+                    {errors.description && (
+                      <p className="text-sm text-red-500 mt-1">{errors.description}</p>
+                    )}
                   </div>
                 </div>
 
@@ -1755,12 +1816,12 @@ We offer a competitive salary, comprehensive benefits package, and opportunities
                   {isSubmitting ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Saving...
+                      {editJobId ? 'Updating...' : 'Creating...'}
                     </>
                   ) : (
                     <>
                       <Save className="mr-2 h-4 w-4" />
-                      Create Job
+                      {editJobId ? 'Update Job' : 'Create Job'}
                     </>
                   )}
                 </Button>

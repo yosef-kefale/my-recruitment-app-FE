@@ -7,18 +7,22 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import ApplicationDetail from "./ApplicationDetail";
-import { Eye, Download, FileText, Calendar, CheckCircle, XCircle, Clock, AlertCircle, ExternalLink } from "lucide-react";
+import { Eye, Download, FileText, Calendar, CheckCircle, XCircle, Clock, AlertCircle, ExternalLink, CheckSquare } from "lucide-react";
 
 interface ApplicationsViewProps {
   applications: Application[];
   screeningQuestions: ScreeningQuestion[];
   onUpdateApplicationStatus: (applicationId: string, newStatus: string) => void;
+  showBulkEvaluation: boolean;
+  onToggleBulkEvaluation: () => void;
 }
 
 const ApplicationsView = ({ 
   applications, 
   screeningQuestions,
-  onUpdateApplicationStatus 
+  onUpdateApplicationStatus,
+  showBulkEvaluation,
+  onToggleBulkEvaluation
 }: ApplicationsViewProps) => {
   // Application filters
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -82,13 +86,9 @@ const ApplicationsView = ({
 
   return (
     <Card className="overflow-hidden">
-      <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b">
-        <CardTitle className="text-2xl text-blue-800">Applications</CardTitle>
-        <CardDescription>Review and manage applications for this job posting</CardDescription>
-      </CardHeader>
       <CardContent className="p-6">
         {/* Filters */}
-        <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -127,6 +127,17 @@ const ApplicationsView = ({
                 <SelectItem value="score">Screening Score</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+          
+          <div className="flex items-end">
+            <Button 
+              onClick={onToggleBulkEvaluation}
+              className="flex items-center justify-center gap-2"
+              variant={showBulkEvaluation ? "outline" : "default"}
+            >
+              <CheckSquare size={16} />
+              {showBulkEvaluation ? "Hide Bulk Evaluation" : "Show Bulk Evaluation"}
+            </Button>
           </div>
         </div>
         
