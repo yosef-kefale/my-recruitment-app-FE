@@ -36,6 +36,7 @@ import {
   BarChart2, 
   Settings
 } from "lucide-react";
+import { API_URL } from "@/lib/api";
 
 const EmployerJobDetail = () => {
   const params = useParams();
@@ -73,7 +74,7 @@ const EmployerJobDetail = () => {
   const fetchJobDetails = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.get(`http://196.188.249.24:3010/api/jobs/${id}`, {
+      const response = await axios.get(`${API_URL}/jobs/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -88,7 +89,7 @@ const EmployerJobDetail = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        `http://196.188.249.24:3010/api/applications?q=i=JobPost%26%26w=JobPostId:=:${id}`,
+        `${API_URL}/applications?q=i=JobPost%26%26w=JobPostId:=:${id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`
@@ -121,7 +122,7 @@ const EmployerJobDetail = () => {
       const token = localStorage.getItem("token");
       console.log("Fetching screening questions for job ID:", id);
       const response = await axios.get(
-        `http://196.188.249.24:3010/api/pre-screening-questions?q=w=jobPostId:=:${id}`,
+        `${API_URL}/pre-screening-questions?q=w=jobPostId:=:${id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -184,7 +185,7 @@ const EmployerJobDetail = () => {
     try {
       const token = localStorage.getItem("token");
       await axios.patch(
-        `http://196.188.249.24:3010/api/applications/${applicationId}`,
+        `${API_URL}/applications/${applicationId}`,
         { status: newStatus },
         {
           headers: {
@@ -229,7 +230,7 @@ const EmployerJobDetail = () => {
     try {
       const token = localStorage.getItem("token");
       await axios.delete(
-        `http://196.188.249.24:3010/api/pre-screening-questions/${questionId}`,
+        `${API_URL}/pre-screening-questions/${questionId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -523,72 +524,96 @@ const EmployerJobDetail = () => {
             <CardContent>
               <div className="space-y-4">
                 {screeningQuestions.length === 0 ? (
-                  <p className="text-center py-8">No screening questions added yet</p>
+                  <div className="text-center py-8">
+                    <p className="text-gray-500 mb-4">No screening questions added yet</p>
+                    {job?.status === 'draft' && (
+                      <Button
+                        onClick={() => router.push(`/jobs/create?editJob=${id}`)}
+                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                      >
+                        Add Screening Questions
+                      </Button>
+                    )}
+                  </div>
                 ) : (
-                  screeningQuestions.map((question, index) => (
-                    <Card key={question.id} className="p-4">
-                      <div className="flex flex-col md:flex-row justify-between gap-4">
-                        <div className="w-full md:w-4/5">
-                          <h3 className="font-semibold">Question {index + 1}</h3>
-                          <p className="mt-1">{question.question}</p>
-                          <div className="flex flex-wrap gap-2 mt-2">
-                            <Badge>{question.type}</Badge>
-                            {question.isKnockout && <Badge className="bg-red-100 text-red-800">Knockout</Badge>}
-                            <Badge>Weight: {question.weight}</Badge>
-                            {question.score !== undefined && <Badge>Score: {question.score}</Badge>}
-                          </div>
-                          {question.type === 'multiple-choice' && (
-                            <div className="mt-2">
-                              <p className="text-sm font-medium">Options:</p>
-                              <ul className="list-disc list-inside">
-                                {question.options?.map((option, i) => (
-                                  <li key={i}>{option}</li>
-                                ))}
-                              </ul>
-                              {question.selectedOptions && question.selectedOptions.length > 0 && (
-                                <div className="mt-2">
-                                  <p className="text-sm font-medium">Correct Options:</p>
-                                  <ul className="list-disc list-inside">
-                                    {question.selectedOptions.map((option, i) => (
-                                      <li key={i}>{option}</li>
-                                    ))}
-                                  </ul>
-                                </div>
-                              )}
-                            </div>
-                          )}
-                          {question.type === 'boolean' && question.booleanAnswer !== undefined && (
-                            <div className="mt-2">
-                              <p className="text-sm font-medium">Correct Answer:</p>
-                              <p>{question.booleanAnswer ? 'Yes' : 'No'}</p>
-                            </div>
-                          )}
-                          {question.type === 'essay' && question.essayAnswer && (
-                            <div className="mt-2">
-                              <p className="text-sm font-medium">Sample Answer:</p>
-                              <p>{question.essayAnswer}</p>
-                            </div>
-                          )}
-                        </div>
-                        <div className="w-full md:w-1/5 flex justify-end gap-2">
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => handleEditQuestion(question)}
-                          >
-                            Edit
-                          </Button>
-                          <Button 
-                            variant="destructive" 
-                            size="sm"
-                            onClick={() => handleDeleteQuestion(question.id)}
-                          >
-                            Delete
-                          </Button>
-                        </div>
+                  <>
+                    {job?.status === 'draft' && (
+                      <div className="flex justify-end mb-4">
+                        <Button
+                          onClick={() => router.push(`/jobs/create?editJob=${id}`)}
+                          className="bg-blue-600 hover:bg-blue-700 text-white"
+                        >
+                          Edit Screening Questions
+                        </Button>
                       </div>
-                    </Card>
-                  ))
+                    )}
+                    {screeningQuestions.map((question, index) => (
+                      <Card key={question.id} className="p-4">
+                        <div className="flex flex-col md:flex-row justify-between gap-4">
+                          <div className="w-full md:w-4/5">
+                            <h3 className="font-semibold">Question {index + 1}</h3>
+                            <p className="mt-1">{question.question}</p>
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              <Badge>{question.type}</Badge>
+                              {question.isKnockout && <Badge className="bg-red-100 text-red-800">Knockout</Badge>}
+                              <Badge>Weight: {question.weight}</Badge>
+                              {question.score !== undefined && <Badge>Score: {question.score}</Badge>}
+                            </div>
+                            {question.type === 'multiple-choice' && (
+                              <div className="mt-2">
+                                <p className="text-sm font-medium">Options:</p>
+                                <ul className="list-disc list-inside">
+                                  {question.options?.map((option, i) => (
+                                    <li key={i}>{option}</li>
+                                  ))}
+                                </ul>
+                                {question.selectedOptions && question.selectedOptions.length > 0 && (
+                                  <div className="mt-2">
+                                    <p className="text-sm font-medium">Correct Options:</p>
+                                    <ul className="list-disc list-inside">
+                                      {question.selectedOptions.map((option, i) => (
+                                        <li key={i}>{option}</li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                            {question.type === 'boolean' && question.booleanAnswer !== undefined && (
+                              <div className="mt-2">
+                                <p className="text-sm font-medium">Correct Answer:</p>
+                                <p>{question.booleanAnswer ? 'Yes' : 'No'}</p>
+                              </div>
+                            )}
+                            {question.type === 'essay' && question.essayAnswer && (
+                              <div className="mt-2">
+                                <p className="text-sm font-medium">Sample Answer:</p>
+                                <p>{question.essayAnswer}</p>
+                              </div>
+                            )}
+                          </div>
+                          {job?.status === 'draft' && (
+                            <div className="flex flex-col gap-2">
+                              <Button
+                                variant="outline"
+                                onClick={() => handleEditQuestion(question)}
+                                className="w-full"
+                              >
+                                Edit
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                onClick={() => handleDeleteQuestion(question.id)}
+                                className="w-full"
+                              >
+                                Delete
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      </Card>
+                    ))}
+                  </>
                 )}
               </div>
             </CardContent>

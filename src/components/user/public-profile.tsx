@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
+import { API_URL } from "@/lib/api";
 
 interface PublicProfileProps {
   userId: string;
@@ -22,7 +23,7 @@ export function PublicProfile({ userId, className }: PublicProfileProps) {
       try {
         setLoading(true);
         const token = localStorage.getItem("token");
-        const response = await axios.get(`http://196.188.249.24:3010/api/users/${userId}`, {
+        const response = await axios.get(`${API_URL}/users/${userId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

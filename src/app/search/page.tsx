@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import { API_URL } from "@/lib/api";
 
 interface JobPosting {
   id: string;
@@ -30,7 +31,7 @@ export default function SearchResults() {
       setError(null);
       
       try {
-        const response = await fetch(`http://196.188.249.24:3010/api/jobs/get-all-job-postings?q=${encodeURIComponent(query)}`);
+        const response = await fetch(`${API_URL}/jobs/get-all-job-postings?q=${encodeURIComponent(query)}`);
         
         if (!response.ok) {
           throw new Error('Failed to fetch jobs');

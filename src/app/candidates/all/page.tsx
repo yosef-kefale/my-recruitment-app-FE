@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { JobPosting } from "../../models/jobPosting";
 import { Application } from "../../models/application";
+import { API_URL } from "@/lib/api";
 
 export default function AllCandidates() {
   const router = useRouter();
@@ -72,7 +73,7 @@ export default function AllCandidates() {
 
       console.log("Fetching jobs with token:", token.substring(0, 10) + "...");
 
-      const response = await fetch("http://196.188.249.24:3010/api/jobs", {
+      const response = await fetch(`${API_URL}/jobs`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -132,16 +133,13 @@ export default function AllCandidates() {
 
       console.log(`Fetching candidates for job ID: ${jobId}`);
 
-      const response = await fetch(
-        `http://196.188.249.24:3010/api/applications?q=i=JobPost%26%26w=JobPostId:=:${jobId}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await fetch(`${API_URL}/applications?q=i=JobPost%26%26w=JobPostId:=:${jobId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       if (!response.ok) {
         console.log(`API returned error status: ${response.status} ${response.statusText}`);

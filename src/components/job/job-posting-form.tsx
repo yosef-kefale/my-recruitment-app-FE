@@ -22,6 +22,7 @@ import { Badge } from "../ui/badge";
 
 import ReactSlider from "react-slider";
 import { useRouter } from "next/navigation";
+import { API_URL } from "@/lib/api";
 
 const JobPostingForm = () => {
   const { register, handleSubmit, setValue } = useForm();
@@ -147,7 +148,7 @@ const JobPostingForm = () => {
         setTest(data);
         delete data.requiredSkills;
         const res = await fetch(
-          "http://196.188.249.24:3010/api/jobs/create-job-posting",
+          `${API_URL}/jobs/create-job-posting`,
           {
             method: "POST",
             headers: {

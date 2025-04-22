@@ -10,6 +10,7 @@ import { Grid, List, RefreshCw, Loader2, Bookmark, Search } from "lucide-react";
 import { JobPosting } from "../../models/jobPosting";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { API_URL } from "../../../lib/api";
 
 const ViewJobs = () => {
   const [filteredJobs, setFilteredJobs] = useState<JobPosting[]>([]);
@@ -38,8 +39,8 @@ const ViewJobs = () => {
       // Determine the correct API endpoint
       const apiUrl =
         filterValues.jobType === "For me"
-          ? "http://196.188.249.24:3010/api/jobs/get-all-job-postings-by-skills"
-          : "http://196.188.249.24:3010/api/jobs/get-all-job-postings";
+          ? `${API_URL}/jobs/get-all-job-postings-by-skills`
+          : `${API_URL}/jobs/get-all-job-postings`;
 
       const res = await fetch(apiUrl, {
         method: "GET",
@@ -62,7 +63,7 @@ const ViewJobs = () => {
       // If user is an employee, fetch saved jobs to update the isSaved property
       if (isEmployee) {
         try {
-          const savedJobsRes = await fetch("http://196.188.249.24:3010/api/save-jobs", {
+          const savedJobsRes = await fetch(`${API_URL}/save-jobs`, {
             method: "GET",
             headers: {
               "Content-Type": "application/json",

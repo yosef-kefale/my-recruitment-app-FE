@@ -30,6 +30,7 @@ import {
   MessageSquare
 } from "lucide-react";
 import { Application } from "../../../models/application";
+import { API_URL } from "@/lib/api";
 
 export default function CandidateDetails({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -58,7 +59,7 @@ export default function CandidateDetails({ params }: { params: { id: string } })
         return;
       }
 
-      const response = await fetch(`http://196.188.249.24:3010/api/applications/${params.id}`, {
+      const response = await fetch(`${API_URL}/applications/${params.id}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -127,7 +128,7 @@ export default function CandidateDetails({ params }: { params: { id: string } })
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
-      await fetch(`http://196.188.249.24:3010/api/applications/${candidate.id}/status`, {
+      await fetch(`${API_URL}/applications/${candidate.id}/status`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

@@ -4,6 +4,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import axios from "axios";
+import { API_URL } from "@/lib/api";
 
 interface UserData {
   id: string;
@@ -33,7 +34,7 @@ export default function Navbar() {
       // Fetch user data
       const fetchUserData = async () => {
         try {
-          const response = await axios.get(`http://196.188.249.24:3010/api/users/${user.id}`, {
+          const response = await axios.get(`${API_URL}/users/${user.id}`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           setUserData(response.data);

@@ -11,6 +11,7 @@ import Image from "next/image";
 import { Toaster } from "../../components/ui/toaster";
 import { Label } from "../../components/ui/label";
 import { useSearchParams } from 'next/navigation';
+import { API_URL, loginUser, saveToken, getToken } from "@/lib/api";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
@@ -25,7 +26,7 @@ export default function LoginPage() {
 
   // Redirect if already logged in
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = getToken();
     setIsEmployee(!isEmployer);
 
     if (token) {
@@ -37,34 +38,25 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
 
-    const endpoint = isEmployee
-      ? "http://196.188.249.24:3010/api/auth/employee-login"
-      : "http://196.188.249.24:3010/api/auth/login";
-
     try {
-      const res = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        toast({
-          title: "Login failed!",
-          description: data.message || "Invalid credentials",
-          variant: "destructive",
+      let data;
+      if (isEmployee) {
+        const res = await fetch(`${API_URL}/auth/employee-login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password }),
         });
-
-        throw new Error(data.message || "Login failed");
+        data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.message || "Login failed");
+        }
+      } else {
+        data = await loginUser(username, password);
       }
 
-      localStorage.setItem("token", data.accessToken);
+      saveToken(data.accessToken);
       localStorage.setItem("refreshToken", data.refreshToken);
-
       localStorage.setItem("organization", JSON.stringify(data.organization));
-
       localStorage.setItem("role", isEmployee ? "employee" : "employer");
 
       toast({ title: "Login successful!", description: "Redirecting..." });
@@ -74,11 +66,11 @@ export default function LoginPage() {
       } else {
         router.push("/dashboard");
       }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
       toast({
-        title: "Error",
-        description: error.message,
+        title: "Login failed!",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { API_URL } from "@/lib/api";
 
 // Job categories data with Ethiopian context
 const jobCategories = [
@@ -131,7 +132,7 @@ export default function Home() {
     setError(null);
     
     try {
-      const response = await fetch(`http://196.188.249.24:3010/api/jobs/get-all-job-postings?q=${encodeURIComponent(searchQuery)}`);
+      const response = await fetch(`${API_URL}/jobs/get-all-job-postings?q=${encodeURIComponent(searchQuery)}`);
       
       if (!response.ok) {
         throw new Error('Failed to fetch jobs');

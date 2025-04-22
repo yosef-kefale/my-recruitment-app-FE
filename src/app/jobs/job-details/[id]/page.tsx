@@ -13,6 +13,7 @@ import { FaFacebook, FaXTwitter, FaLinkedin } from "react-icons/fa6";
 import axios from "axios";
 import { CVUploadSection } from "@/components/job/cv-upload-section";
 import { format, parseISO } from "date-fns";
+import { API_URL } from "@/lib/api";
 
 interface UserData {
   id: string;
@@ -94,7 +95,7 @@ const JobDetail = () => {
   const fetchScreeningQuestions = async () => {
     try {
       const token = localStorage.getItem("token");
-      const apiUrl = `http://196.188.249.24:3010/api/pre-screening-questions?q=w=jobPostId:=:${id}`;
+      const apiUrl = `${API_URL}/pre-screening-questions?q=w=jobPostId:=:${id}`;
 
       const res = await fetch(apiUrl, {
         method: "GET",
@@ -130,7 +131,7 @@ const JobDetail = () => {
     try {
       const token = localStorage.getItem("token");
 
-      const apiUrl = `http://196.188.249.24:3010/api/jobs/${id}`;
+      const apiUrl = `${API_URL}/jobs/${id}`;
 
       const res = await fetch(apiUrl, {
         method: "GET",
@@ -155,7 +156,7 @@ const JobDetail = () => {
     try {
       const token = localStorage.getItem("token");
 
-      const response = await fetch("http://196.188.249.24:3010/api/save-jobs", {
+      const response = await fetch(`${API_URL}/save-jobs`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -254,7 +255,7 @@ const JobDetail = () => {
     try {
       // Submit the application with CV included in the same request
       await axios.post(
-        "http://196.188.249.24:3010/api/applications/create-application",
+        `${API_URL}/applications/create-application`,
         formData,
         {
           headers: {

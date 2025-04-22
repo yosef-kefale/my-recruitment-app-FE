@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
-import { Switch } from "@/components/ui/switch"; // Import switch component
+import { Switch } from "@/components/ui/switch";
 import { INDUSTRIES } from "../../lib/enums";
 import {
   Popover,
@@ -17,6 +17,7 @@ import {
 import { Label } from "../../components/ui/label";
 import { Checkbox } from "../../components/ui/checkbox";
 import { ScrollArea } from "../../components/ui/scroll-area";
+import { registerOrganizationWithEtrade, createOrganizationAccount, createUser } from "@/lib/api";
 
 export default function SignupPage() {
   const [userType, setUserType] = useState("");
@@ -28,7 +29,7 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
-  const [useEtrade, setUseEtrade] = useState(true); // Default to eTrade signup
+  const [useEtrade, setUseEtrade] = useState(true);
   const [selectedIndustries, setSelectedIndustries] = useState<string[]>([]);
 
   // Default form data based on user type
@@ -72,10 +73,11 @@ export default function SignupPage() {
         }
   );
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSelect = (industry: string) => {
@@ -93,44 +95,80 @@ export default function SignupPage() {
     });
   };
   
-
   const testData = () => {
     console.log(formData);
     console.log(selectedIndustries);
-    
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     setLoading(true);
-    const endpoint =
-      userType === "employer"
-        ? useEtrade
-          ? "http://196.188.249.24:3010/api/Organizations/register-organization-with-etrade"
-          : "http://196.188.249.24:3010/api/Organizations/create-account"
-        : "http://196.188.249.24:3010/api/users";
 
     try {
-      const res = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Signup failed");
+      if (userType === "employer") {
+        if (useEtrade) {
+          if (!formData.tin || !formData.licenseNumber) {
+            throw new Error("TIN and License Number are required");
+          }
+          await registerOrganizationWithEtrade({
+            tin: formData.tin,
+            licenseNumber: formData.licenseNumber,
+          });
+        } else {
+          if (!formData.companyName || !formData.email || !formData.phone) {
+            throw new Error("Company Name, Email, and Phone are required");
+          }
+          await createOrganizationAccount({
+            companyName: formData.companyName,
+            industry: formData.industry || [],
+            email: formData.email,
+            phone: formData.phone,
+            companySize: formData.companySize || "",
+            website: formData.website || "",
+            description: formData.description || "",
+            companyLogo: formData.companyLogo,
+            address: formData.address || "",
+          });
+        }
+      } else {
+        if (!formData.email || !formData.firstName || !formData.lastName || !formData.password) {
+          throw new Error("Email, First Name, Last Name, and Password are required");
+        }
+        await createUser({
+          phone: formData.phone || "",
+          email: formData.email,
+          firstName: formData.firstName,
+          middleName: formData.middleName || "",
+          lastName: formData.lastName,
+          gender: formData.gender || "",
+          status: formData.status || "Active",
+          password: formData.password,
+          birthDate: formData.birthDate || "",
+          linkedinUrl: formData.linkedinUrl || "",
+          portfolioUrl: formData.portfolioUrl || "",
+          yearOfExperience: formData.yearOfExperience || "",
+          industry: formData.industry || [],
+          telegramUserId: formData.telegramUserId || "",
+          preferredJobLocation: formData.preferredJobLocation || [],
+          highestLevelOfEducation: formData.highestLevelOfEducation || "Diploma",
+          salaryExpectations: formData.salaryExpectations || "",
+          aiGeneratedJobFitScore: formData.aiGeneratedJobFitScore || 0,
+          skills: formData.skills || [],
+          profile: formData.profile,
+          resume: formData.resume,
+        });
+      }
 
       toast({
         title: "Signup successful!",
         description: "Redirecting to login...",
       });
       router.push("/login");
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
       toast({
         title: "Error",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -192,14 +230,14 @@ export default function SignupPage() {
                         name="tin"
                         placeholder="TIN Number"
                         value={formData.tin}
-                        onChange={handleChange}
+                        onChange={handleInputChange}
                         required
                       />
                       <Input
                         name="licenseNumber"
                         placeholder="License Number"
                         value={formData.licenseNumber}
-                        onChange={handleChange}
+                        onChange={handleInputChange}
                         required
                       />
                     </>
@@ -209,7 +247,7 @@ export default function SignupPage() {
                         name="companyName"
                         placeholder="Company Name"
                         value={formData.companyName}
-                        onChange={handleChange}
+                        onChange={handleInputChange}
                         required
                       />
 
@@ -259,7 +297,7 @@ export default function SignupPage() {
                         name="email"
                         placeholder="Email"
                         value={formData.email}
-                        onChange={handleChange}
+                        onChange={handleInputChange}
                         required
                       />
                       <Input
@@ -267,33 +305,33 @@ export default function SignupPage() {
                         name="phone"
                         placeholder="Phone"
                         value={formData.phone}
-                        onChange={handleChange}
+                        onChange={handleInputChange}
                         required
                       />
                       <Input
                         name="companySize"
                         placeholder="Company Size"
                         value={formData.companySize}
-                        onChange={handleChange}
+                        onChange={handleInputChange}
                       />
                       <Input
                         name="website"
                         placeholder="Website"
                         value={formData.website}
-                        onChange={handleChange}
+                        onChange={handleInputChange}
                       />
                       <textarea
                         name="description"
                         placeholder="Company Description"
                         value={formData.description}
-                        onChange={handleChange}
+                        onChange={handleInputChange}
                         className="w-full p-3 border rounded"
                       ></textarea>
                       <Input
                         name="address"
                         placeholder="Address"
                         value={formData.address}
-                        onChange={handleChange}
+                        onChange={handleInputChange}
                       />
                     </>
                   )
@@ -303,20 +341,20 @@ export default function SignupPage() {
                       name="firstName"
                       placeholder="First Name"
                       value={formData.firstName}
-                      onChange={handleChange}
+                      onChange={handleInputChange}
                       required
                     />
                     <Input
                       name="middleName"
                       placeholder="Middle Name"
                       value={formData.middleName}
-                      onChange={handleChange}
+                      onChange={handleInputChange}
                     />
                     <Input
                       name="lastName"
                       placeholder="Last Name"
                       value={formData.lastName}
-                      onChange={handleChange}
+                      onChange={handleInputChange}
                       required
                     />
                     <Input
@@ -324,7 +362,7 @@ export default function SignupPage() {
                       name="email"
                       placeholder="Email"
                       value={formData.email}
-                      onChange={handleChange}
+                      onChange={handleInputChange}
                       required
                     />
                     <Input
@@ -332,7 +370,7 @@ export default function SignupPage() {
                       name="phone"
                       placeholder="Phone"
                       value={formData.phone}
-                      onChange={handleChange}
+                      onChange={handleInputChange}
                       required
                     />
                     <Input
@@ -340,41 +378,41 @@ export default function SignupPage() {
                       name="password"
                       placeholder="Password"
                       value={formData.password}
-                      onChange={handleChange}
+                      onChange={handleInputChange}
                       required
                     />
                     <Input
                       name="birthDate"
                       type="date"
                       value={formData.birthDate}
-                      onChange={handleChange}
+                      onChange={handleInputChange}
                       required
                     />
                     <Input
                       name="linkedinUrl"
                       placeholder="LinkedIn URL"
                       value={formData.linkedinUrl}
-                      onChange={handleChange}
+                      onChange={handleInputChange}
                     />
                     <Input
                       name="portfolioUrl"
                       placeholder="Portfolio URL"
                       value={formData.portfolioUrl}
-                      onChange={handleChange}
+                      onChange={handleInputChange}
                     />
                     <Input
                       name="yearOfExperience"
                       type="number"
                       placeholder="Years of Experience"
                       value={formData.yearOfExperience}
-                      onChange={handleChange}
+                      onChange={handleInputChange}
                     />
                     <Input
                       name="salaryExpectations"
                       type="number"
                       placeholder="Salary Expectations"
                       value={formData.salaryExpectations}
-                      onChange={handleChange}
+                      onChange={handleInputChange}
                     />
                   </>
                 )}

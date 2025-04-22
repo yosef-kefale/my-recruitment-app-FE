@@ -37,6 +37,95 @@ import { Stepper, Step } from "@/components/ui/stepper";
 import RichTextEditor, { RichTextEditorHandle } from "@/components/RichTextEditor";
 import { API_URL } from "@/lib/api";
 
+// Enums to match backend
+export enum JobIndustryEnums {
+  InformationTechnology = "InformationTechnology",
+  Finance = "Finance",
+  Healthcare = "Healthcare",
+  Education = "Education",
+  Manufacturing = "Manufacturing",
+  Retail = "Retail",
+  Marketing = "Marketing",
+  Other = "Other"
+}
+
+export enum WorkTypeEnums {
+  Remote = "Remote",
+  OnSite = "On-site",
+  Hybrid = "Hybrid"
+}
+
+export enum EmploymentTypeEnums {
+  FullTime = "Full-Time",
+  PartTime = "Part-Time",
+  Contract = "Contract",
+  Freelance = "Freelance",
+  Internship = "Internship",
+  Temporary = "Temporary"
+}
+
+export enum JobPostingStatusEnums {
+  Active = "active",
+  Inactive = "inactive",
+  OnHold = "onHold",
+  Closed = "closed"
+}
+
+export enum PaymentTypeEnums {
+  Salary = "salary",
+  Hourly = "hourly",
+  Commission = "commission",
+  Contract = "contract"
+}
+
+interface SalaryRange {
+  minimum?: number;
+  maximum?: number;
+  currency?: string;
+}
+
+interface FileDto {
+  id?: string;
+  fileName: string;
+  filePath: string;
+  fileType: string;
+  fileSize: number;
+}
+
+export interface JobPostingModel {
+  id?: string;
+  title: string;
+  description: string;
+  position: string;
+  industry: JobIndustryEnums;
+  type: WorkTypeEnums;
+  city: string;
+  location: string;
+  employmentType: EmploymentTypeEnums;
+  salaryRange: SalaryRange;
+  organizationId: string;
+  deadline: Date;
+  requirementId: string;
+  skill: string[];
+  benefits: string[];
+  responsibilities: string[];
+  status: JobPostingStatusEnums;
+  gender: string;
+  minimumGPA: number;
+  companyName: string;
+  companyLogo: FileDto;
+  postedDate: Date;
+  applicationURL: string;
+  experienceLevel: string;
+  fieldOfStudy: string;
+  educationLevel: string;
+  howToApply: string;
+  onHoldDate: Date | null;
+  jobPostRequirement: string[];
+  positionNumbers: number;
+  paymentType: PaymentTypeEnums;
+}
+
 type QuestionType = "text" | "multiple-choice" | "yes-no" | "boolean" | "essay";
 
 interface ScreeningQuestion {
@@ -105,7 +194,7 @@ export default function CreateJob() {
   const [newBenefit, setNewBenefit] = useState("");
   const [responsibilities, setResponsibilities] = useState<string[]>([]);
   const [newResponsibility, setNewResponsibility] = useState("");
-  const [status, setStatus] = useState("active");
+  const [status, setStatus] = useState("draft");
   const [gender, setGender] = useState("");
   const [minimumGPA, setMinimumGPA] = useState("");
   const [applicationURL, setApplicationURL] = useState("");
@@ -117,12 +206,105 @@ export default function CreateJob() {
   const [newRequirement, setNewRequirement] = useState("");
   const [positions, setPositions] = useState(1);
 
-  const [currentStep, setCurrentStep] = useState(0);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const descriptionEditorRef = useRef<RichTextEditorHandle>(null);
+  // Add new state variables for missing fields
+  const [organizationId, setOrganizationId] = useState("");
+  const [companyName, setCompanyName] = useState("");
+  const [companyLogo, setCompanyLogo] = useState<FileDto>({
+    fileName: "",
+    filePath: "",
+    fileType: "",
+    fileSize: 0
+  });
+  const [postedDate] = useState(new Date()); // Remove setter since it's auto-set
+  const [onHoldDate, setOnHoldDate] = useState<Date | null>(null);
+  const [paymentType, setPaymentType] = useState<PaymentTypeEnums>(PaymentTypeEnums.Salary);
 
   // Add state for form validation
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Initialize organization data from localStorage
+  useEffect(() => {
+    const org = localStorage.getItem("organization");
+    if (org) {
+      const orgData = JSON.parse(org);
+      setOrganizationId(orgData.id || "");
+      setCompanyName(orgData.name || "");
+      if (orgData.logo) {
+        setCompanyLogo(orgData.logo);
+      }
+    }
+  }, []);
+
+  // Add function to populate sample data
+  const populateSampleData = () => {
+    setTitle("Senior Software Engineer");
+    setPosition("Software Engineer");
+    setIndustry("InformationTechnology");
+    setType("Remote");
+    setCity("Addis Ababa");
+    setLocation("Bole Road, Addis Ababa, Ethiopia");
+    setEmploymentType("Full-Time");
+    setSalaryRange({ min: "50000", max: "100000" });
+    setDeadline("2024-12-31");
+    setSkill(["JavaScript", "React", "Node.js", "TypeScript", "AWS"]);
+    setBenefits([
+      "Health Insurance",
+      "401(k) Matching",
+      "Flexible Work Hours",
+      "Remote Work Options",
+      "Professional Development"
+    ]);
+    setResponsibilities([
+      "Develop and maintain web applications using React and Node.js",
+      "Write clean, maintainable, and well-documented code",
+      "Collaborate with team members to solve technical challenges",
+      "Participate in code reviews and provide constructive feedback",
+      "Learn and adapt to new technologies and frameworks"
+    ]);
+    setStatus("draft");
+    setGender("Male");
+    setMinimumGPA("3.0");
+    setApplicationURL("https://example.com/apply");
+    setExperienceLevel("Senior");
+    setFieldOfStudy("Computer Science");
+    setEducationLevel("Bachelor");
+    setHowToApply("To apply for this position, please submit your resume and a cover letter explaining why you are a good fit for this role. Applications should be sent to careers@company.com with the subject line 'Application for Senior Software Engineer'. All applications will be reviewed within 5 business days.");
+    setJobPostRequirement([
+      "Bachelor's degree in Computer Science or related field",
+      "5+ years of experience in software development",
+      "Strong proficiency in JavaScript, React, and Node.js",
+      "Experience with cloud platforms (AWS, Azure, or GCP)",
+      "Excellent problem-solving and communication skills"
+    ]);
+    setPositions(2);
+    setDescription(`We are seeking a Senior Software Engineer to join our dynamic team. The ideal candidate will be responsible for developing and maintaining high-quality software solutions, collaborating with cross-functional teams, and contributing to all phases of the development lifecycle.
+
+Key Responsibilities:
+• Design, develop, and maintain software applications
+• Collaborate with product managers, designers, and other engineers
+• Write clean, maintainable, and efficient code
+• Participate in code reviews and provide constructive feedback
+• Troubleshoot, debug, and upgrade existing systems
+• Stay up-to-date with emerging technologies and industry trends
+
+Required Skills:
+• Strong proficiency in JavaScript, React, and Node.js
+• Experience with cloud platforms (AWS, Azure, or GCP)
+• Excellent problem-solving and analytical skills
+• Strong communication and teamwork abilities
+• Attention to detail and a commitment to quality
+
+Education and Experience:
+• Bachelor's degree in Computer Science or related field
+• 5+ years of experience in software development
+• Experience in Information Technology industry is a plus
+
+We offer a competitive salary, comprehensive benefits package, and opportunities for professional growth and development. If you are passionate about technology and looking for a challenging and rewarding career, we encourage you to apply.`);
+  };
+
+  const [currentStep, setCurrentStep] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const descriptionEditorRef = useRef<RichTextEditorHandle>(null);
 
   // Define steps for the stepper
   const steps: Step[] = [
@@ -186,7 +368,7 @@ export default function CreateJob() {
           setSkill(jobData.skill || []);
           setBenefits(jobData.benefits || []);
           setResponsibilities(jobData.responsibilities || []);
-          setStatus(jobData.status || 'active');
+          setStatus(jobData.status || 'draft');
           setGender(jobData.gender || '');
           setMinimumGPA(jobData.minimumGPA || '');
           setApplicationURL(jobData.applicationURL || '');
@@ -288,44 +470,42 @@ export default function CreateJob() {
       const token = localStorage.getItem("token");
       const descriptionContent = descriptionEditorRef.current?.getContent() || description;
 
-      const jobData = {
+      const jobData: JobPostingModel = {
         title,
         description: descriptionContent,
         position,
-        industry,
-        type,
+        industry: industry as JobIndustryEnums,
+        type: type as WorkTypeEnums,
         city,
         location,
-        employmentType,
-        salaryRange: {
-          minimum: salaryRange.min,
-          maximum: salaryRange.max
-        },
-        deadline: deadline ? new Date(deadline).toISOString() : null,
+        employmentType: employmentType as EmploymentTypeEnums,
+        salaryRange: {},
+        organizationId,
+        deadline: new Date(deadline),
+        requirementId: "default-requirement",
         skill,
         benefits,
         responsibilities,
-        status,
+        status: status as JobPostingStatusEnums,
         gender,
         minimumGPA: minimumGPA ? parseFloat(minimumGPA) : 0,
-        companyName: "", // This should be set from the employer's profile
-        companyLogo: null, // This should be set from the employer's profile
-        postedDate: new Date().toISOString(),
+        companyName,
+        companyLogo,
+        postedDate,
         applicationURL,
         experienceLevel,
         fieldOfStudy,
         educationLevel,
         howToApply,
-        onHoldDate: null,
+        onHoldDate,
         jobPostRequirement,
-        positionNumbers: positions,
-        paymentType: "salary", // Default value
-        id: editJobId || undefined
+        positionNumbers: Number(positions) || 0,
+        paymentType
       };
 
       const url = editJobId
         ? `${API_URL}/jobs/${editJobId}`
-        : `${API_URL}/jobs`;
+        : `${API_URL}/jobs/create-job-posting`;
 
       const method = editJobId ? "PUT" : "POST";
 
@@ -368,7 +548,7 @@ export default function CreateJob() {
           : "Job created successfully",
       });
 
-      router.push("/jobs");
+      router.push("/jobs/view-all");
     } catch (error) {
       console.error("Error creating job:", error);
       toast({
@@ -1019,10 +1199,23 @@ We offer a competitive salary, comprehensive benefits package, and opportunities
           {currentStep === 0 && (
             <Card className="mb-2">
               <CardHeader className="pb-2">
-                <CardTitle className="text-lg">Basic Job Information</CardTitle>
-                <CardDescription className="text-sm">
-                  Provide the basic information about the job.
-                </CardDescription>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle className="text-lg">Basic Job Information</CardTitle>
+                    <CardDescription className="text-sm">
+                      Provide the basic information about the job.
+                    </CardDescription>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={populateSampleData}
+                    className="flex items-center gap-2"
+                  >
+                    <Wand2 className="h-4 w-4" />
+                    Populate Sample Data
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -1207,13 +1400,30 @@ We offer a competitive salary, comprehensive benefits package, and opportunities
                         <SelectValue placeholder="Select status" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="active">Active</SelectItem>
-                        <SelectItem value="inactive">Inactive</SelectItem>
-                        <SelectItem value="onHold">On Hold</SelectItem>
-                        <SelectItem value="closed">Closed</SelectItem>
+                        <SelectItem value={JobPostingStatusEnums.Active}>Active</SelectItem>
+                        <SelectItem value={JobPostingStatusEnums.Inactive}>Inactive</SelectItem>
+                        <SelectItem value={JobPostingStatusEnums.OnHold}>On Hold</SelectItem>
+                        <SelectItem value={JobPostingStatusEnums.Closed}>Closed</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="paymentType">Payment Type</Label>
+                    <Select value={paymentType} onValueChange={(value) => setPaymentType(value as PaymentTypeEnums)}>
+                      <SelectTrigger id="paymentType">
+                        <SelectValue placeholder="Select payment type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value={PaymentTypeEnums.Salary}>Salary</SelectItem>
+                        <SelectItem value={PaymentTypeEnums.Hourly}>Hourly</SelectItem>
+                        <SelectItem value={PaymentTypeEnums.Commission}>Commission</SelectItem>
+                        <SelectItem value={PaymentTypeEnums.Contract}>Contract</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div className="space-y-2">
                     <Label htmlFor="gender">Gender</Label>
                     <Select value={gender} onValueChange={setGender}>
@@ -1227,9 +1437,6 @@ We offer a competitive salary, comprehensive benefits package, and opportunities
                       </SelectContent>
                     </Select>
                   </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div className="space-y-2">
                     <Label htmlFor="minimumGPA">Minimum GPA</Label>
                     <Input
@@ -1243,6 +1450,9 @@ We offer a competitive salary, comprehensive benefits package, and opportunities
                       placeholder="e.g., 3.0"
                     />
                   </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div className="space-y-2">
                     <Label htmlFor="educationLevel">Education Level</Label>
                     <Select value={educationLevel} onValueChange={setEducationLevel}>
@@ -1258,16 +1468,15 @@ We offer a competitive salary, comprehensive benefits package, and opportunities
                       </SelectContent>
                     </Select>
                   </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="applicationURL">Application URL</Label>
-                  <Input
-                    id="applicationURL"
-                    value={applicationURL}
-                    onChange={(e) => setApplicationURL(e.target.value)}
-                    placeholder="e.g., https://example.com/apply"
-                  />
+                  <div className="space-y-2">
+                    <Label htmlFor="applicationURL">Application URL</Label>
+                    <Input
+                      id="applicationURL"
+                      value={applicationURL}
+                      onChange={(e) => setApplicationURL(e.target.value)}
+                      placeholder="e.g., https://example.com/apply"
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-2">
