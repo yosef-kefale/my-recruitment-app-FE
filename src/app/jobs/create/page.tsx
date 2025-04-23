@@ -129,19 +129,16 @@ export interface JobPostingModel {
 type QuestionType = "text" | "multiple-choice" | "yes-no" | "boolean" | "essay";
 
 interface ScreeningQuestion {
-  id: string;
   jobPostId: string;
   question: string;
-  type: QuestionType;
-  options?: string[];
+  type: string;
+  options: string[];
   isKnockout: boolean;
   weight: number;
   booleanAnswer?: boolean;
   selectedOptions?: string[];
   essayAnswer?: string;
   score?: number;
-  createdAt: string;
-  updatedAt: string;
 }
 
 export default function CreateJob() {
@@ -323,10 +320,10 @@ We offer a competitive salary, comprehensive benefits package, and opportunities
   ];
 
   const [screeningQuestions, setScreeningQuestions] = useState<ScreeningQuestion[]>([]);
-  const [newQuestion, setNewQuestion] = useState<Omit<ScreeningQuestion, 'id' | 'jobPostId' | 'createdAt' | 'updatedAt'>>({
+  const [newQuestion, setNewQuestion] = useState<Omit<ScreeningQuestion, 'jobPostId'>>({
     question: "",
-    type: "text" as QuestionType,
-    options: [""],
+    type: "text",
+    options: [],
     isKnockout: false,
     weight: 1,
     booleanAnswer: false,
@@ -524,21 +521,36 @@ We offer a competitive salary, comprehensive benefits package, and opportunities
 
       const data = await response.json();
 
-      // Handle screening questions
+      // Handle screening questions one at a time
       if (screeningQuestions.length > 0) {
-        const questionsToCreate = screeningQuestions.map((q) => ({
-          ...q,
-          jobPostId: editJobId || data.id,
-        }));
+        for (const question of screeningQuestions) {
+          try {
+            const questionToCreate = {
+              ...question,
+              jobPostId: editJobId || data.id,
+            };
 
-        await fetch(`${API_URL}/pre-screening-questions`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(questionsToCreate),
-        });
+            const questionResponse = await fetch(`${API_URL}/pre-screening-questions`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify(questionToCreate),
+            });
+
+            if (!questionResponse.ok) {
+              throw new Error(`Failed to create question: ${question.question}`);
+            }
+          } catch (error) {
+            console.error("Error creating question:", error);
+            toast({
+              title: "Error",
+              description: `Failed to create question: ${question.question}. Please try again.`,
+              variant: "destructive",
+            });
+          }
+        }
       }
 
       toast({
@@ -934,12 +946,9 @@ We offer a competitive salary, comprehensive benefits package, and opportunities
 
   const handleAddQuestion = () => {
     // Add the new question to the local array
-    const questionToAdd = {
+    const questionToAdd: ScreeningQuestion = {
       ...newQuestion,
-      id: `temp-${Date.now()}`, // Temporary ID for local management
       jobPostId: "", // Will be set when job is created
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
     };
     
     setScreeningQuestions([...screeningQuestions, questionToAdd]);
@@ -947,8 +956,8 @@ We offer a competitive salary, comprehensive benefits package, and opportunities
     // Reset the form
     setNewQuestion({
       question: "",
-      type: "text" as QuestionType,
-      options: [""],
+      type: "text",
+      options: [],
       isKnockout: false,
       weight: 1,
       booleanAnswer: false,
@@ -994,94 +1003,84 @@ We offer a competitive salary, comprehensive benefits package, and opportunities
 
   const generateSampleQuestions = () => {
     // This is a mock implementation. In a real app, this would call an AI service
-    const baseQuestions = [
+    const baseQuestions: ScreeningQuestion[] = [
       {
-        id: `temp-${Date.now()}-1`,
         jobPostId: "",
         question: "What is your experience with the technologies mentioned in the job description?",
-        type: "essay" as QuestionType,
+        type: "essay",
+        options: [],
         isKnockout: false,
         weight: 3,
         score: 100,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        essayAnswer: ""
       },
       {
-        id: `temp-${Date.now()}-2`,
         jobPostId: "",
         question: "Describe a challenging project you worked on and how you handled it.",
-        type: "essay" as QuestionType,
+        type: "essay",
+        options: [],
         isKnockout: false,
         weight: 2,
         score: 100,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        essayAnswer: ""
       },
       {
-        id: `temp-${Date.now()}-3`,
         jobPostId: "",
         question: "Are you comfortable working in a team environment?",
-        type: "yes-no" as QuestionType,
+        type: "yes-no",
+        options: [],
         isKnockout: true,
         weight: 1,
         score: 100,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        booleanAnswer: true
       },
       {
-        id: `temp-${Date.now()}-4`,
         jobPostId: "",
         question: "What is your preferred development methodology?",
-        type: "multiple-choice" as QuestionType,
+        type: "multiple-choice",
         options: ["Agile", "Waterfall", "Scrum", "Kanban"],
         selectedOptions: ["Agile", "Scrum"],
         isKnockout: false,
         weight: 2,
-        score: 100,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        score: 100
       },
       {
-        id: `temp-${Date.now()}-5`,
         jobPostId: "",
         question: "Do you have experience with version control systems?",
-        type: "boolean" as QuestionType,
+        type: "boolean",
+        options: [],
         booleanAnswer: true,
         isKnockout: true,
         weight: 1,
-        score: 100,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        score: 100
       }
     ];
 
     // Add industry-specific questions
     if (industry === "InformationTechnology") {
       baseQuestions.push({
-        id: `temp-${Date.now()}-6`,
         jobPostId: "",
         question: "How do you stay updated with the latest technology trends?",
-        type: "essay" as QuestionType,
+        type: "essay",
+        options: [],
         isKnockout: false,
         weight: 2,
         score: 100,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        essayAnswer: ""
       });
     }
 
     // Add experience-level specific questions
     if (experienceLevel === "Senior") {
       baseQuestions.push({
-        id: `temp-${Date.now()}-7`,
         jobPostId: "",
         question: "Describe your experience in mentoring junior developers.",
-        type: "essay" as QuestionType,
+        type: "essay",
+        options: [],
         isKnockout: false,
         weight: 3,
         score: 100,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        essayAnswer: ""
       });
     }
 
@@ -1101,7 +1100,7 @@ We offer a competitive salary, comprehensive benefits package, and opportunities
     setNewQuestion({
       question: question.question,
       type: question.type,
-      options: question.options || [""],
+      options: question.options || [],
       isKnockout: question.isKnockout,
       weight: question.weight,
       booleanAnswer: question.booleanAnswer || false,
@@ -1109,40 +1108,63 @@ We offer a competitive salary, comprehensive benefits package, and opportunities
       essayAnswer: question.essayAnswer || "",
       score: question.score || 0
     });
-    setEditingQuestionId(question.id);
+    setEditingQuestionId(question.jobPostId);
   };
 
-  const handleUpdateQuestion = () => {
+  const handleUpdateQuestion = async () => {
     if (!editingQuestionId) return;
     
-    setScreeningQuestions(questions => 
-      questions.map(q => q.id === editingQuestionId ? {
+    try {
+      const token = localStorage.getItem("token");
+      const questionToUpdate = {
         ...newQuestion,
-        id: editingQuestionId,
-        jobPostId: q.jobPostId,
-        createdAt: q.createdAt,
-        updatedAt: new Date().toISOString()
-      } : q)
-    );
-    
-    // Reset form and editing state
-    setNewQuestion({
-      question: "",
-      type: "text" as QuestionType,
-      options: [""],
-      isKnockout: false,
-      weight: 1,
-      booleanAnswer: false,
-      selectedOptions: [],
-      essayAnswer: "",
-      score: 0
-    });
-    setEditingQuestionId(null);
-    
-    toast({
-      title: "Question Updated",
-      description: "The question has been updated successfully.",
-    });
+        jobPostId: editingQuestionId
+      };
+
+      const response = await fetch(`${API_URL}/pre-screening-questions/${editingQuestionId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(questionToUpdate),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update question");
+      }
+
+      // Update the local state
+      setScreeningQuestions(questions => 
+        questions.map(q => q.jobPostId === editingQuestionId ? questionToUpdate : q)
+      );
+      
+      // Reset form and editing state
+      setNewQuestion({
+        question: "",
+        type: "text",
+        options: [],
+        isKnockout: false,
+        weight: 1,
+        booleanAnswer: false,
+        selectedOptions: [],
+        essayAnswer: "",
+        score: 0
+      });
+      setEditingQuestionId(null);
+      
+      toast({
+        title: "Question Updated",
+        description: "The question has been updated successfully.",
+      });
+    } catch (error) {
+      console.error("Error updating question:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update question. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   // Update the description field in the form
@@ -1778,7 +1800,7 @@ We offer a competitive salary, comprehensive benefits package, and opportunities
                         </div>
                       ) : (
                         screeningQuestions.map((question, index) => (
-                          <Card key={question.id} className="p-4 hover:shadow-md transition-shadow">
+                          <Card key={question.jobPostId} className="p-4 hover:shadow-md transition-shadow">
                             <div className="flex flex-col gap-2">
                               <div className="flex justify-between items-start">
                                 <h4 className="font-medium">Question {index + 1}</h4>
@@ -1827,7 +1849,9 @@ We offer a competitive salary, comprehensive benefits package, and opportunities
 
                   {/* Add Question Form - Right Side */}
                   <div className="space-y-4 bg-gray-50 p-4 rounded-lg sticky top-4">
-                    <h3 className="font-semibold text-lg">Add New Question</h3>
+                    <h3 className="font-semibold text-lg">
+                      {editingQuestionId ? "Edit Question" : "Add New Question"}
+                    </h3>
                     <div className="space-y-4">
                       <div>
                         <Label className="text-sm font-medium">Question</Label>
@@ -2329,16 +2353,16 @@ We offer a competitive salary, comprehensive benefits package, and opportunities
               </div>
               <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-4">
                 {suggestedQuestions.map((question, index) => (
-                  <Card key={question.id} className="p-4">
+                  <Card key={question.jobPostId} className="p-4">
                     <div className="flex items-start gap-4">
                       <Checkbox 
                         id={`question-${index}`}
-                        checked={selectedSuggestedQuestions.some(q => q.id === question.id)}
+                        checked={selectedSuggestedQuestions.some(q => q.jobPostId === question.jobPostId)}
                         onCheckedChange={(checked) => {
                           if (checked) {
                             setSelectedSuggestedQuestions([...selectedSuggestedQuestions, question]);
                           } else {
-                            setSelectedSuggestedQuestions(selectedSuggestedQuestions.filter(q => q.id !== question.id));
+                            setSelectedSuggestedQuestions(selectedSuggestedQuestions.filter(q => q.jobPostId !== question.jobPostId));
                           }
                         }}
                       />
