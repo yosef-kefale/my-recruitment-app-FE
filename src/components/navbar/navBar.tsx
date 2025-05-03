@@ -88,9 +88,9 @@ export default function Navbar() {
               Jobs
             </Link>
             <Link
-              href="/jobs/applications"
+              href="/applications"
               className={`text-white text-lg font-bold ${
-                pathname === "/jobs/applications" ? "text-sky-100 border-b-2 border-sky-100" : ""
+                pathname === "/applications" ? "text-sky-100 border-b-2 border-sky-100" : ""
               }`}
             >
               Applications

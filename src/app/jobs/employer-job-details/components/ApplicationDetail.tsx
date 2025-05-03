@@ -134,7 +134,11 @@ const ApplicationDetail = ({
                     </div>
                     <div>
                       <p className="text-sm font-medium text-gray-500">Applied On</p>
-                      <p className="text-base">{new Date(application.applicationInformation.appliedAt).toLocaleDateString()}</p>
+                      <p className="text-base">
+                        {application.applicationInformation?.appliedAt 
+                          ? new Date(application.applicationInformation.appliedAt).toLocaleDateString()
+                          : "Not available"}
+                      </p>
                     </div>
                   </div>
                   
@@ -189,7 +193,7 @@ const ApplicationDetail = ({
                   <div className="space-y-6">
                     {screeningQuestions.map((question, index) => {
                       // Find the answer for this question
-                      const answer = application.applicationInformation.screeningAnswers?.find(
+                      const answer = application.applicationInformation?.screeningAnswers?.find(
                         (a) => a.questionId === question.id
                       );
                       

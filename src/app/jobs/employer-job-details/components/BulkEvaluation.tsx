@@ -519,7 +519,9 @@ const BulkEvaluation = ({
                       <TableCell>{userExperience}</TableCell>
                       <TableCell>{userEducation}</TableCell>
                       <TableCell>
-                        {new Date(application.applicationInformation.appliedAt).toLocaleDateString()}
+                        {application.applicationInformation?.appliedAt 
+                          ? new Date(application.applicationInformation.appliedAt).toLocaleDateString()
+                          : "Not available"}
                       </TableCell>
                     </TableRow>
                   );

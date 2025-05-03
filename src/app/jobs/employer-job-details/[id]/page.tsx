@@ -37,6 +37,7 @@ import {
   Settings
 } from "lucide-react";
 import { API_URL } from "@/lib/api";
+import { ScreeningQuestionsForm } from "@/components/jobs/screening-questions/ScreeningQuestionsForm";
 
 const EmployerJobDetail = () => {
   const params = useParams();
@@ -120,8 +121,7 @@ const EmployerJobDetail = () => {
   const fetchScreeningQuestions = async () => {
     try {
       const token = localStorage.getItem("token");
-      console.log("Fetching screening questions for job ID:", id);
-      const response = await axios.get(
+      const response = await fetch(
         `${API_URL}/pre-screening-questions?q=w=jobPostId:=:${id}`,
         {
           headers: {
@@ -129,17 +129,15 @@ const EmployerJobDetail = () => {
           },
         }
       );
-      console.log("Screening questions response:", response.data);
-      setScreeningQuestions(response.data.items || []);
+      
+      if (!response.ok) {
+        throw new Error("Failed to fetch screening questions");
+      }
+      
+      const data = await response.json();
+      setScreeningQuestions(data.items || []);
     } catch (error) {
       console.error("Error fetching screening questions:", error);
-      if (axios.isAxiosError(error)) {
-        console.error("Axios error details:", {
-          status: error.response?.status,
-          statusText: error.response?.statusText,
-          data: error.response?.data
-        });
-      }
       toast({
         title: "Error",
         description: "Failed to fetch screening questions. Please try again.",
@@ -522,100 +520,11 @@ const EmployerJobDetail = () => {
               <CardDescription>Manage screening questions for applicants</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {screeningQuestions.length === 0 ? (
-                  <div className="text-center py-8">
-                    <p className="text-gray-500 mb-4">No screening questions added yet</p>
-                    {job?.status === 'draft' && (
-                      <Button
-                        onClick={() => router.push(`/jobs/create?editJob=${id}`)}
-                        className="bg-blue-600 hover:bg-blue-700 text-white"
-                      >
-                        Add Screening Questions
-                      </Button>
-                    )}
-                  </div>
-                ) : (
-                  <>
-                    {job?.status === 'draft' && (
-                      <div className="flex justify-end mb-4">
-                        <Button
-                          onClick={() => router.push(`/jobs/create?editJob=${id}`)}
-                          className="bg-blue-600 hover:bg-blue-700 text-white"
-                        >
-                          Edit Screening Questions
-                        </Button>
-                      </div>
-                    )}
-                    {screeningQuestions.map((question, index) => (
-                      <Card key={question.id} className="p-4">
-                        <div className="flex flex-col md:flex-row justify-between gap-4">
-                          <div className="w-full md:w-4/5">
-                            <h3 className="font-semibold">Question {index + 1}</h3>
-                            <p className="mt-1">{question.question}</p>
-                            <div className="flex flex-wrap gap-2 mt-2">
-                              <Badge>{question.type}</Badge>
-                              {question.isKnockout && <Badge className="bg-red-100 text-red-800">Knockout</Badge>}
-                              <Badge>Weight: {question.weight}</Badge>
-                              {question.score !== undefined && <Badge>Score: {question.score}</Badge>}
-                            </div>
-                            {question.type === 'multiple-choice' && (
-                              <div className="mt-2">
-                                <p className="text-sm font-medium">Options:</p>
-                                <ul className="list-disc list-inside">
-                                  {question.options?.map((option, i) => (
-                                    <li key={i}>{option}</li>
-                                  ))}
-                                </ul>
-                                {question.selectedOptions && question.selectedOptions.length > 0 && (
-                                  <div className="mt-2">
-                                    <p className="text-sm font-medium">Correct Options:</p>
-                                    <ul className="list-disc list-inside">
-                                      {question.selectedOptions.map((option, i) => (
-                                        <li key={i}>{option}</li>
-                                      ))}
-                                    </ul>
-                                  </div>
-                                )}
-                              </div>
-                            )}
-                            {question.type === 'boolean' && question.booleanAnswer !== undefined && (
-                              <div className="mt-2">
-                                <p className="text-sm font-medium">Correct Answer:</p>
-                                <p>{question.booleanAnswer ? 'Yes' : 'No'}</p>
-                              </div>
-                            )}
-                            {question.type === 'essay' && question.essayAnswer && (
-                              <div className="mt-2">
-                                <p className="text-sm font-medium">Sample Answer:</p>
-                                <p>{question.essayAnswer}</p>
-                              </div>
-                            )}
-                          </div>
-                          {job?.status === 'draft' && (
-                            <div className="flex flex-col gap-2">
-                              <Button
-                                variant="outline"
-                                onClick={() => handleEditQuestion(question)}
-                                className="w-full"
-                              >
-                                Edit
-                              </Button>
-                              <Button
-                                variant="destructive"
-                                onClick={() => handleDeleteQuestion(question.id)}
-                                className="w-full"
-                              >
-                                Delete
-                              </Button>
-                            </div>
-                          )}
-                        </div>
-                      </Card>
-                    ))}
-                  </>
-                )}
-              </div>
+              <ScreeningQuestionsForm
+                jobId={id}
+                questions={screeningQuestions}
+                onQuestionsChange={setScreeningQuestions}
+              />
             </CardContent>
           </Card>
         </div>
