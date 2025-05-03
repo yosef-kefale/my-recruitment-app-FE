@@ -28,16 +28,16 @@ const BulkEvaluation = ({
   
   // State for filters
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [scoreRange, setScoreRange] = useState<[number, number]>([0, 10]);
+  const [scoreRange, setScoreRange] = useState<number[]>([0, 10]);
   const [locationFilter, setLocationFilter] = useState<string>("all");
   const [genderFilter, setGenderFilter] = useState<string>("all");
   const [experienceFilter, setExperienceFilter] = useState<string>("all");
   const [educationFilter, setEducationFilter] = useState<string>("all");
-  const [salaryRange, setSalaryRange] = useState<[number, number]>([0, 200000]);
+  const [salaryRange, setSalaryRange] = useState<number[]>([0, 200000]);
   const [technicalSkillFilter, setTechnicalSkillFilter] = useState<string>("all");
   const [softSkillFilter, setSoftSkillFilter] = useState<string>("all");
   const [industryFilter, setIndustryFilter] = useState<string>("all");
-  const [yearOfExperienceRange, setYearOfExperienceRange] = useState<[number, number]>([0, 20]);
+  const [yearOfExperienceRange, setYearOfExperienceRange] = useState<number[]>([0, 20]);
   
   // State for selected applications
   const [selectedApplications, setSelectedApplications] = useState<string[]>([]);
@@ -269,11 +269,10 @@ const BulkEvaluation = ({
               <div className="pt-2">
                 <Slider
                   value={scoreRange}
-                  onValueChange={setScoreRange}
+                  onValueChange={(value) => setScoreRange(value)}
                   min={0}
                   max={10}
                   step={1}
-                  className="w-full"
                 />
                 <div className="flex justify-between mt-1">
                   <span className="text-xs text-gray-500">{scoreRange[0]}</span>
@@ -347,11 +346,10 @@ const BulkEvaluation = ({
               <div className="pt-2">
                 <Slider
                   value={salaryRange}
-                  onValueChange={setSalaryRange}
+                  onValueChange={(value) => setSalaryRange(value)}
                   min={0}
                   max={200000}
-                  step={10000}
-                  className="w-full"
+                  step={1000}
                 />
                 <div className="flex justify-between mt-1">
                   <span className="text-xs text-gray-500">${salaryRange[0].toLocaleString()}</span>
@@ -410,11 +408,10 @@ const BulkEvaluation = ({
               <div className="pt-2">
                 <Slider
                   value={yearOfExperienceRange}
-                  onValueChange={setYearOfExperienceRange}
+                  onValueChange={(value) => setYearOfExperienceRange(value)}
                   min={0}
                   max={20}
                   step={1}
-                  className="w-full"
                 />
                 <div className="flex justify-between mt-1">
                   <span className="text-xs text-gray-500">{yearOfExperienceRange[0]} years</span>

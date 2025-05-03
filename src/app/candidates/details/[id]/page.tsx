@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -32,7 +32,9 @@ import {
 import { Application } from "../../../models/application";
 import { API_URL } from "@/lib/api";
 
-export default function CandidateDetails({ params }: { params: { id: string } }) {
+export default function CandidateDetails() {
+  const params = useParams();
+  const id = params.id as string;
   const router = useRouter();
   const { toast } = useToast();
   const [candidate, setCandidate] = useState<Application | null>(null);
@@ -42,7 +44,7 @@ export default function CandidateDetails({ params }: { params: { id: string } })
   // Fetch candidate details on component mount
   useEffect(() => {
     fetchCandidateDetails();
-  }, [params.id]);
+  }, [id]);
   
   // Fetch candidate details from API
   const fetchCandidateDetails = async () => {
@@ -59,7 +61,7 @@ export default function CandidateDetails({ params }: { params: { id: string } })
         return;
       }
 
-      const response = await fetch(`${API_URL}/applications/${params.id}`, {
+      const response = await fetch(`${API_URL}/applications/${id}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

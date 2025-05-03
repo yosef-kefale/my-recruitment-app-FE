@@ -6,10 +6,12 @@ export interface Application {
   coverLetter: string;
   resumeUrl?: string;
   screeningScore?: number;
+  evaluationNotes?: string;
   applicationInformation: {
     appliedAt: string;
     lastUpdated?: string;
     notes?: string;
+    screeningAnswers?: ScreeningAnswer[];
   };
   candidateInformation?: {
     name?: string;

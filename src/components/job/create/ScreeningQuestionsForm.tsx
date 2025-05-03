@@ -40,7 +40,7 @@ interface ScreeningQuestion {
 
 interface ScreeningQuestionsFormProps {
   screeningQuestions: ScreeningQuestion[];
-  setScreeningQuestions: (questions: ScreeningQuestion[]) => void;
+  setScreeningQuestions: (questions: ScreeningQuestion[] | ((prev: ScreeningQuestion[]) => ScreeningQuestion[])) => void;
   newQuestion: Omit<ScreeningQuestion, 'id' | 'jobPostId' | 'createdAt' | 'updatedAt'>;
   setNewQuestion: (question: Omit<ScreeningQuestion, 'id' | 'jobPostId' | 'createdAt' | 'updatedAt'>) => void;
   editingQuestionId: string | null;

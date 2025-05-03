@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Card,
@@ -36,47 +36,13 @@ import { Badge } from "@/components/ui/badge";
 import { Stepper, Step } from "@/components/ui/stepper";
 import RichTextEditor, { RichTextEditorHandle } from "@/components/RichTextEditor";
 import { API_URL } from "@/lib/api";
-
-// Enums to match backend
-export enum JobIndustryEnums {
-  InformationTechnology = "InformationTechnology",
-  Finance = "Finance",
-  Healthcare = "Healthcare",
-  Education = "Education",
-  Manufacturing = "Manufacturing",
-  Retail = "Retail",
-  Marketing = "Marketing",
-  Other = "Other"
-}
-
-export enum WorkTypeEnums {
-  Remote = "Remote",
-  OnSite = "On-site",
-  Hybrid = "Hybrid"
-}
-
-export enum EmploymentTypeEnums {
-  FullTime = "Full-Time",
-  PartTime = "Part-Time",
-  Contract = "Contract",
-  Freelance = "Freelance",
-  Internship = "Internship",
-  Temporary = "Temporary"
-}
-
-export enum JobPostingStatusEnums {
-  Active = "active",
-  Inactive = "inactive",
-  OnHold = "onHold",
-  Closed = "closed"
-}
-
-export enum PaymentTypeEnums {
-  Salary = "salary",
-  Hourly = "hourly",
-  Commission = "commission",
-  Contract = "contract"
-}
+import { 
+  JobIndustryEnums, 
+  WorkTypeEnums, 
+  EmploymentTypeEnums, 
+  JobPostingStatusEnums, 
+  PaymentTypeEnums 
+} from "@/types/job";
 
 interface SalaryRange {
   minimum?: number;
@@ -141,7 +107,7 @@ interface ScreeningQuestion {
   score?: number;
 }
 
-export default function CreateJob() {
+function CreateJobContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const editJobId = searchParams.get('editJob');
@@ -221,13 +187,15 @@ export default function CreateJob() {
 
   // Initialize organization data from localStorage
   useEffect(() => {
-    const org = localStorage.getItem("organization");
-    if (org) {
-      const orgData = JSON.parse(org);
-      setOrganizationId(orgData.id || "");
-      setCompanyName(orgData.name || "");
-      if (orgData.logo) {
-        setCompanyLogo(orgData.logo);
+    if (typeof window !== 'undefined') {
+      const org = localStorage.getItem("organization");
+      if (org) {
+        const orgData = JSON.parse(org);
+        setOrganizationId(orgData.id || "");
+        setCompanyName(orgData.name || "");
+        if (orgData.logo) {
+          setCompanyLogo(orgData.logo);
+        }
       }
     }
   }, []);
@@ -2441,5 +2409,23 @@ We offer a competitive salary, comprehensive benefits package, and opportunities
 
       <Toaster />
     </div>
+  );
+}
+
+export default function CreateJob() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="flex items-center gap-2">
+          <svg className="animate-spin h-8 w-8 text-sky-500" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+          </svg>
+          <span className="text-lg text-gray-600">Loading...</span>
+        </div>
+      </div>
+    }>
+      <CreateJobContent />
+    </Suspense>
   );
 }

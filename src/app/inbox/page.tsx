@@ -14,14 +14,12 @@ const sampleChats = [
       { sender: "employee", text: "Great! Let me know the details." }
     ]
   },
-  ,
   { id: 3, name: "Excellent", messages: [
     { sender: "employee", text: "Hi, i have applied for the position of Software developer in your company." },
       { sender: "employer", text: "Greetings, we look into your CV and you didn't match our expectation, thanks." },
       { sender: "employee", text: "Thank you." }
     ]
-  }
-  ,
+  },
   { id: 4, name: "Ethio Telecom", messages: [
       { sender: "employer", text: "We are interested in your profile. Please share your CV" },
       { sender: "employee", text: "Great! Wil share my CV ASAP." },
@@ -36,7 +34,7 @@ export default function Inbox() {
   const [message, setMessage] = useState("");
 
   const sendMessage = () => {
-    if (message.trim() === "") return;
+    if (message.trim() === "" || !selectedChat) return;
     setSelectedChat({
       ...selectedChat,
       messages: [...selectedChat.messages, { sender: "employee", text: message }],

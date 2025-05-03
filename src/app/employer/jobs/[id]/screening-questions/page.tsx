@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast";
 import {
   Card,
@@ -39,7 +39,9 @@ interface ScreeningQuestion {
   score?: number;
 }
 
-export default function ScreeningQuestionsTab({ jobId }: { jobId: string }) {
+export default function ScreeningQuestionsTab() {
+  const params = useParams();
+  const jobId = params.id as string;
   const router = useRouter();
   const { toast } = useToast();
   const [questions, setQuestions] = useState<ScreeningQuestion[]>([]);

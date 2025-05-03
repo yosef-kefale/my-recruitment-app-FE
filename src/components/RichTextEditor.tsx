@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
-import Quill from 'quill';
+import React, { useEffect, useRef, forwardRef, useImperativeHandle, useState } from 'react';
+import dynamic from 'next/dynamic';
 import 'quill/dist/quill.snow.css'; // Import Quill styles
 import './RichTextEditor.css'; // Import custom styles
 
@@ -17,39 +17,48 @@ interface RichTextEditorProps {
 
 const RichTextEditor = forwardRef<RichTextEditorHandle, RichTextEditorProps>(({ onChange, initialValue }, ref) => {
   const editorRef = useRef<HTMLDivElement>(null);
-  const quillRef = useRef<Quill | null>(null);
+  const quillRef = useRef<any>(null);
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    // Only initialize if not already initialized
-    if (editorRef.current && !quillRef.current) {
-      // Create a custom toolbar container
-      const toolbarOptions = [
-        [{ header: [1, 2, 3, false] }],
-        ['bold', 'italic', 'underline', 'strike'],
-        [{ list: 'ordered' }, { list: 'bullet' }],
-        ['link', 'image'],
-        ['clean'],
-      ];
+    setIsClient(true);
+  }, []);
 
-      // Initialize Quill with the custom toolbar
-      quillRef.current = new Quill(editorRef.current, {
-        theme: 'snow',
-        modules: {
-          toolbar: toolbarOptions,
-        },
-        placeholder: 'Write something...',
-      });
+  useEffect(() => {
+    if (isClient && editorRef.current && !quillRef.current) {
+      import('quill').then((Quill) => {
+        // Create a custom toolbar container
+        const toolbarOptions = [
+          [{ header: [1, 2, 3, false] }],
+          ['bold', 'italic', 'underline', 'strike'],
+          [{ list: 'ordered' }, { list: 'bullet' }],
+          ['link', 'image'],
+          ['clean'],
+        ];
 
-      // Set initial value if provided
-      if (initialValue) {
-        quillRef.current.root.innerHTML = initialValue;
-      }
+        const editorElement = editorRef.current;
+        if (!editorElement) return;
 
-      // Listen for text change events and update the parent state
-      quillRef.current.on('text-change', () => {
-        if (quillRef.current && onChange) {
-          onChange(quillRef.current.root.innerHTML);
+        // Initialize Quill with the custom toolbar
+        quillRef.current = new Quill.default(editorElement, {
+          theme: 'snow',
+          modules: {
+            toolbar: toolbarOptions,
+          },
+          placeholder: 'Write something...',
+        });
+
+        // Set initial value if provided
+        if (initialValue) {
+          quillRef.current.root.innerHTML = initialValue;
         }
+
+        // Listen for text change events and update the parent state
+        quillRef.current.on('text-change', () => {
+          if (quillRef.current && onChange) {
+            onChange(quillRef.current.root.innerHTML);
+          }
+        });
       });
     }
 
@@ -59,7 +68,7 @@ const RichTextEditor = forwardRef<RichTextEditorHandle, RichTextEditorProps>(({ 
         quillRef.current = null;
       }
     };
-  }, [onChange, initialValue]);
+  }, [onChange, initialValue, isClient]);
 
   // Expose the getContent function to the parent component
   useImperativeHandle(ref, () => ({
@@ -70,6 +79,10 @@ const RichTextEditor = forwardRef<RichTextEditorHandle, RichTextEditorProps>(({ 
       return '';
     },
   }));
+
+  if (!isClient) {
+    return <div className="rich-text-editor-container" style={{ height: '300px' }} />;
+  }
 
   return (
     <div className="rich-text-editor-container">

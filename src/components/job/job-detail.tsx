@@ -42,16 +42,16 @@ const JobDetail: React.FC<JobDetailProps> = ({ job, onClose }) => {
 
         {/* Job Position & Location */}
         <p className="text-gray-600 mt-2">
-          {job.position} • {job.workLocation}
+          {job.position} • {job.location}
         </p>
 
         {/* Salary & Employment Type */}
         <div className="flex justify-between items-center mt-4 bg-gray-100 p-3 rounded-lg">
           <div>
             <p className="text-lg font-bold text-gray-800">
-              ${job.salary} / year
+              ${job.salaryRange?.minimum} - ${job.salaryRange?.maximum} / year
             </p>
-            <span className="text-gray-500 text-sm">Salary</span>
+            <span className="text-gray-500 text-sm">Salary Range</span>
           </div>
           <div>
             <p className="text-gray-800 font-medium">{job.employmentType}</p>

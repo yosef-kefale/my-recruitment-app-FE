@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -10,10 +10,10 @@ import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
 import { Toaster } from "../../components/ui/toaster";
 import { Label } from "../../components/ui/label";
-import { useSearchParams } from 'next/navigation';
 import { API_URL, loginUser, saveToken, getToken } from "@/lib/api";
+import { Loader2 } from "lucide-react";
 
-export default function LoginPage() {
+function LoginContent() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -118,28 +118,6 @@ export default function LoginPage() {
               <p className="text-gray-500 text-sm">Sign in to your account</p>
             </CardHeader>
             <CardContent>
-              {/* <div className="flex justify-center mb-4">
-                <Button
-                  className={`mr-2 ${
-                    !isEmployee
-                      ? "bg-sky-300 text-white"
-                      : "bg-sky-100 text-muted-foreground"
-                  }`}
-                  onClick={() => setIsEmployee(false)}
-                >
-                  Employer
-                </Button>
-                <Button
-                  className={`${
-                    isEmployee
-                      ? "bg-sky-300 text-white"
-                      : "bg-sky-100 text-muted-foreground"
-                  }`}
-                  onClick={() => setIsEmployee(true)}
-                >
-                  Employee
-                </Button>
-              </div> */}
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid gap-2">
                   <Label htmlFor="email">Email</Label>
@@ -231,5 +209,23 @@ export default function LoginPage() {
       </div>
       <Toaster />
     </div>
+  );
+}
+
+export default function Login() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="flex items-center gap-2">
+          <svg className="animate-spin h-8 w-8 text-sky-500" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+          </svg>
+          <span className="text-lg text-gray-600">Loading...</span>
+        </div>
+      </div>
+    }>
+      <LoginContent />
+    </Suspense>
   );
 }

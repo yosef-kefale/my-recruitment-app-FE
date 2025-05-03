@@ -146,21 +146,12 @@ const ApplicationDetail = ({
                       <p className="text-sm font-medium text-gray-500">CV</p>
                       <div className="flex flex-col gap-2">
                         <a 
-                          href={application.applicationInformation.cv} 
+                          href={application.resumeUrl} 
                           target="_blank" 
                           rel="noopener noreferrer"
                           className="text-blue-600 hover:underline flex items-center"
                         >
-                          <Download className="h-4 w-4 mr-1" />
-                          Download CV
-                        </a>
-                        <a 
-                          href={application.applicationInformation.cv} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="text-blue-600 hover:underline flex items-center"
-                        >
-                          <Eye className="h-4 w-4 mr-1" />
+                          <FileText className="h-4 w-4 mr-2" />
                           View CV
                         </a>
                       </div>
