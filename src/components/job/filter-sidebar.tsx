@@ -53,9 +53,11 @@ interface FilterValues {
 interface FilterSidebarProps {
   filterValues: FilterValues;
   onFilterChange: (values: FilterValues) => void;
+  searchQuery: string;
+  onSearchChange: (value: string) => void;
 }
 
-const FilterSidebar = ({ filterValues, onFilterChange }: FilterSidebarProps) => {
+const FilterSidebar = ({ filterValues, onFilterChange, searchQuery, onSearchChange }: FilterSidebarProps) => {
   const [salary, setSalary] = useState(filterValues.salary || 0);
   const [location, setLocation] = useState(filterValues.location || "");
   const [availability, setAvailability] = useState(filterValues.availability || {

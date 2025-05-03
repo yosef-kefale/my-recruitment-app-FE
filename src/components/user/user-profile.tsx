@@ -169,6 +169,7 @@ const UserProfileUpdate = () => {
   const { toast } = useToast();
   const searchParams = useSearchParams();
   const activeTab = searchParams.get("tab") || "profile";
+  const [isLoading, setIsLoading] = useState(true);
   const {
     register,
     handleSubmit,
@@ -268,6 +269,8 @@ const UserProfileUpdate = () => {
         setProfileCompleteness(completenessResponse.data.score || 0);
       } catch (error) {
         console.error("Error fetching user:", error);
+      } finally {
+        setIsLoading(false);
       }
     }
     fetchUser();
