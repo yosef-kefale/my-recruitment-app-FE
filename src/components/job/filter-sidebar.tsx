@@ -180,24 +180,6 @@ const FilterSidebar = ({ filterValues, onFilterChange, searchQuery, onSearchChan
 
   return (
     <div className="p-2 sm:p-6 bg-white rounded-lg h-full overflow-y-auto">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-4 sm:mb-6">
-        <div className="flex items-center gap-2">
-          <Filter className="h-5 w-5 text-blue-600" />
-          <h3 className="font-semibold text-base sm:text-lg text-gray-800">Filters</h3>
-        </div>
-        <Button 
-          variant="ghost" 
-          size="icon"
-          className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-full"
-          onClick={resetFilters}
-          title="Clear all filters"
-        >
-          <Eraser className="h-4 w-4" />
-        </Button>
-      </div>
-
-      <Separator className="mb-4" />
 
       <div className="space-y-3 sm:space-y-4">
         {/* Industry & Employment Type */}

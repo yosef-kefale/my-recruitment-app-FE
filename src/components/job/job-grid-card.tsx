@@ -194,7 +194,7 @@ const JobGridCard = ({ job, isEmployer, onDelete, onClick }: JobGridCardProps) =
           <span className="line-clamp-1">{timeAgo}</span>
         </div>
       </CardContent>
-
+          <br/>
       <CardFooter className="p-4 pt-0">
         <Button 
           variant="outline" 

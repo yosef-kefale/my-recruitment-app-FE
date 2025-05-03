@@ -7,7 +7,7 @@ import JobCard from "../../../components/job/job-card";
 import JobGridCard from "../../../components/job/job-grid-card";
 import FilterSidebar from "../../../components/job/filter-sidebar";
 import JobDetail from "../../../components/job/job-detail";
-import { Grid, List, RefreshCw, Loader2, Bookmark, Search } from "lucide-react";
+import { Grid, List, RefreshCw, Loader2, Bookmark, Search, Filter, X, ChevronLeft, ChevronRight, ArrowUpDown, Eraser, ArrowUp, ArrowDown } from "lucide-react";
 import { JobPosting } from "../../../models/jobPosting";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/pagination";
 import { useDebounce } from "@/hooks/use-debounce";
 import { Input } from "@/components/ui/input";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 
 const ViewJobs = () => {
   const [filteredJobs, setFilteredJobs] = useState<JobPosting[]>([]);
@@ -35,6 +36,9 @@ const ViewJobs = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
+  const [isSidebarVisible, setIsSidebarVisible] = useState(true);
+  const [sortBy, setSortBy] = useState<"date" | "salary" | "title">("date");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const itemsPerPage = 10;
   const { toast } = useToast();
   const [searchInput, setSearchInput] = useState("");
@@ -348,18 +352,96 @@ const ViewJobs = () => {
     }
   }, [searchQuery, activeTab, filteredJobs]);
 
+  // Update displayed jobs when sort changes
+  useEffect(() => {
+    const filteredJobsBySearch = getFilteredJobsBySearch();
+    const savedJobs = getSavedJobs();
+    const jobsToDisplay = activeTab === "saved" ? savedJobs : filteredJobsBySearch;
+    
+    // Sort the jobs
+    const sortedJobs = [...jobsToDisplay].sort((a, b) => {
+      let result = 0;
+      switch (sortBy) {
+        case "date":
+          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          result = dateB - dateA;
+          break;
+        case "salary":
+          const aSalary = a.salaryRange?.maximum || 0;
+          const bSalary = b.salaryRange?.maximum || 0;
+          result = bSalary - aSalary;
+          break;
+        case "title":
+          result = (a.title || '').localeCompare(b.title || '');
+          break;
+        default:
+          return 0;
+      }
+      return sortDirection === "asc" ? -result : result;
+    });
+    
+    setTotalItems(sortedJobs.length);
+    setTotalPages(Math.ceil(sortedJobs.length / itemsPerPage));
+    
+    if (currentPage > Math.ceil(sortedJobs.length / itemsPerPage)) {
+      setCurrentPage(1);
+    }
+  }, [sortBy, sortDirection, searchQuery, activeTab, filteredJobs]);
+
   // Calculate pagination for displayed jobs
   const filteredJobsBySearch = getFilteredJobsBySearch();
   const savedJobs = getSavedJobs();
   const jobsToDisplay = activeTab === "saved" ? savedJobs : filteredJobsBySearch;
+  const sortedJobs = [...jobsToDisplay].sort((a, b) => {
+    let result = 0;
+    switch (sortBy) {
+      case "date":
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        result = dateB - dateA;
+        break;
+      case "salary":
+        const aSalary = a.salaryRange?.maximum || 0;
+        const bSalary = b.salaryRange?.maximum || 0;
+        result = bSalary - aSalary;
+        break;
+      case "title":
+        result = (a.title || '').localeCompare(b.title || '');
+        break;
+      default:
+        return 0;
+    }
+    return sortDirection === "asc" ? -result : result;
+  });
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const displayedJobs = jobsToDisplay.slice(startIndex, endIndex);
+  const displayedJobs = sortedJobs.slice(startIndex, endIndex);
 
   // Update search query when debounced value changes
   useEffect(() => {
     setSearchQuery(debouncedSearch);
   }, [debouncedSearch]);
+
+  const resetFilters = () => {
+    setFilterValues({
+      salary: 1500,
+      jobType: "All",
+      location: "New York",
+      availability: {
+        freelance: true,
+        fullTime: true,
+        readyWork: true,
+      },
+      specialties: [
+        { name: "Graphic Designer", checked: true },
+        { name: "UI Designer", checked: true },
+        { name: "UX Designer", checked: true },
+        { name: "Web Design", checked: true },
+      ],
+    });
+    setCurrentPage(1);
+  };
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -367,28 +449,69 @@ const ViewJobs = () => {
         <div className="flex flex-col md:flex-row gap-6 h-full">
           {/* Filter Section */}
           {isEmployeeView && (
-            <div className="w-full md:w-1/4 lg:w-1/5 sticky top-6 self-start">
-              <Card className="shadow-md rounded-lg max-h-[calc(100vh-3rem)] overflow-y-auto">
-                <FilterSidebar
-                  filterValues={filterValues}
-                  onFilterChange={handleFilterChange}
-                  searchQuery={searchQuery}
-                  onSearchChange={setSearchQuery}
-                />
-                <div className="p-4 border-t">
-                  <Button 
-                    className="w-full bg-green-600 hover:bg-green-700 text-white" 
-                    onClick={handleApplyFilters}
-                  >
-                    Apply Filters
-                  </Button>
+            <div className={`sticky top-6 self-start transition-all duration-300 ${isSidebarVisible ? 'w-full md:w-1/4 lg:w-1/5' : 'w-12'}`}>
+              <Card className={`shadow-md rounded-lg max-h-[calc(100vh-3rem)] overflow-y-auto transition-all duration-300 ${isSidebarVisible ? 'w-full' : 'w-20'}`}>
+                <div className="flex justify-between items-center p-4 border-b">
+                  {isSidebarVisible ? (
+                    <div className="flex items-center gap-2">
+                      <Filter className="h-5 w-5 text-blue-600" />
+                      <h3 className="font-semibold text-base text-gray-800">Filters</h3>
+                    </div>
+                  ) : (
+                    <div className="w-0" />
+                  )}
+                  <div className="flex items-center gap-2">
+                    {!isSidebarVisible && (
+                      <span className="text-blue-600">
+                        <Filter className="h-5 w-5" />
+                      </span>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setIsSidebarVisible(!isSidebarVisible)}
+                      className="h-8 w-8 rounded-full"
+                      title={isSidebarVisible ? "Hide filters" : "Show filters"}
+                    >
+                      {isSidebarVisible ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                    </Button>
+                    {isSidebarVisible && (
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        onClick={resetFilters}
+                        className="h-8 w-8 rounded-full text-blue-600 hover:text-blue-800 hover:bg-blue-50"
+                        title="Clear all filters"
+                      >
+                        <Eraser className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
                 </div>
+                {isSidebarVisible && (
+                  <>
+                    <FilterSidebar
+                      filterValues={filterValues}
+                      onFilterChange={handleFilterChange}
+                      searchQuery={searchQuery}
+                      onSearchChange={setSearchQuery}
+                    />
+                    <div className="p-4 border-t">
+                      <Button 
+                        className="w-full bg-green-600 hover:bg-green-700 text-white" 
+                        onClick={handleApplyFilters}
+                      >
+                        Apply Filters
+                      </Button>
+                    </div>
+                  </>
+                )}
               </Card>
             </div>
           )}
 
           {/* Job List Section */}
-          <div className={`${isEmployeeView ? "w-full md:w-3/4 lg:w-4/5" : "w-full"} flex flex-col h-[calc(100vh-6rem)]`}>
+          <div className={`flex flex-col h-[calc(100vh-6rem)] ml-4 ${isEmployeeView ? (isSidebarVisible ? 'w-full md:w-3/4 lg:w-4/5' : 'w-full') : 'w-full'}`}>
             {/* Fixed Header with Search, Tabs and Buttons */}
             <div className="sticky top-0 bg-slate-50 z-10 pb-2">
               <div className="flex items-center gap-4">
@@ -403,6 +526,29 @@ const ViewJobs = () => {
                       className="pl-9 h-8 rounded-lg border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
                     />
                   </div>
+                </div>
+
+                {/* Sort Dropdown and Direction */}
+                <div className="flex items-center gap-2">
+                  <Select value={sortBy} onValueChange={(value: "date" | "salary" | "title") => setSortBy(value)}>
+                    <SelectTrigger className="h-8 w-[140px]">
+                      <SelectValue placeholder="Sort by" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="date">Date</SelectItem>
+                      <SelectItem value="salary">Salary</SelectItem>
+                      <SelectItem value="title">Job Title</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setSortDirection(prev => prev === "asc" ? "desc" : "asc")}
+                    className="h-8 w-8"
+                    title={sortDirection === "asc" ? "Sort ascending" : "Sort descending"}
+                  >
+                    {sortDirection === "asc" ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
+                  </Button>
                 </div>
 
                 {/* Tabs for All Jobs and Saved Jobs */}
@@ -506,7 +652,7 @@ const ViewJobs = () => {
                 </Card>
               ) : (
                 <>
-                  <div className={`grid ${isListView ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'} gap-4`}>
+                  <div className={`grid ${isListView ? 'grid-cols-1' : `grid-cols-1 md:grid-cols-2 ${isSidebarVisible ? 'lg:grid-cols-3' : 'lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6'}`} gap-4`}>
                     {(activeTab === "saved" ? savedJobs : displayedJobs).map((job) => (
                       <div key={job.id} className={isListView ? '' : 'h-full'}>
                         {isListView ? (
