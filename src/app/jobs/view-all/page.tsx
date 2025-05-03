@@ -8,7 +8,7 @@ import JobGridCard from "../../../components/job/job-grid-card";
 import FilterSidebar from "../../../components/job/filter-sidebar";
 import JobDetail from "../../../components/job/job-detail";
 import { Grid, List, RefreshCw, Loader2, Bookmark, Search } from "lucide-react";
-import { JobPosting } from "../../models/jobPosting";
+import { JobPosting } from "../../../models/jobPosting";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { API_URL } from "../../../lib/api";
@@ -137,23 +137,52 @@ const ViewJobs = () => {
   }, [currentPage, appliedFilters]);
 
   const validateJobData = (job: any): JobPosting => {
+    if (!job.id) {
+      throw new Error("Job ID is required");
+    }
+    
     return {
-      id: String(job.id || ''),
+      id: String(job.id),
       title: String(job.title || ''),
       description: String(job.description || ''),
       location: String(job.location || ''),
       employmentType: String(job.employmentType || ''),
-      salaryRange: String(job.salaryRange || ''),
-      requiredSkills: Array.isArray(job.requiredSkills) 
-        ? job.requiredSkills.map((skill: any) => String(skill || ''))
+      salaryRange: job.salaryRange ? {
+        minimum: job.salaryRange.minimum || 0,
+        maximum: job.salaryRange.maximum || 0
+      } : undefined,
+      skill: Array.isArray(job.skill) 
+        ? job.skill.map((skill: any) => String(skill || ''))
         : [],
       createdAt: String(job.createdAt || ''),
       isSaved: Boolean(job.isSaved),
-      company: {
-        id: String(job.company?.id || ''),
-        name: String(job.company?.name || ''),
-        logo: String(job.company?.logo || ''),
-      }
+      companyName: String(job.company?.name || ''),
+      companyLogo: job.company?.logo ? {
+        filename: String(job.company.logo.filename || ''),
+        path: String(job.company.logo.path || ''),
+        originalname: String(job.company.logo.originalname || ''),
+        mimetype: String(job.company.logo.mimetype || ''),
+        size: Number(job.company.logo.size || 0),
+        bucketName: String(job.company.logo.bucketName || '')
+      } : undefined,
+      position: String(job.position || ''),
+      industry: String(job.industry || ''),
+      type: String(job.type || ''),
+      city: String(job.city || ''),
+      deadline: String(job.deadline || ''),
+      requirementId: String(job.requirementId || ''),
+      benefits: Array.isArray(job.benefits) ? job.benefits : [],
+      responsibilities: Array.isArray(job.responsibilities) ? job.responsibilities : [],
+      status: String(job.status || ''),
+      gender: String(job.gender || ''),
+      minimumGPA: Number(job.minimumGPA || 0),
+      postedDate: String(job.postedDate || ''),
+      applicationURL: String(job.applicationURL || ''),
+      experienceLevel: String(job.experienceLevel || ''),
+      fieldOfStudy: String(job.fieldOfStudy || ''),
+      educationLevel: String(job.educationLevel || ''),
+      howToApply: String(job.howToApply || ''),
+      remotePolicy: String(job.remotePolicy || '')
     };
   };
 
