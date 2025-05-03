@@ -1179,11 +1179,7 @@ We offer a competitive salary, comprehensive benefits package, and opportunities
               });
             }
           } else if (currentStep === 2) {
-            if (screeningQuestions.length > 0) {
-              handleCreateJob();
-            } else {
-              router.push('/jobs');
-            }
+            handleCreateJob();
           }
         }}>
           {currentStep === 0 && (
