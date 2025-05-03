@@ -49,11 +49,13 @@ const ApplicationsView = ({
         .sort((a, b) => {
           // Sort by date
           if (sortBy === "newest") {
-            return new Date(b.applicationInformation.appliedAt).getTime() - 
-                   new Date(a.applicationInformation.appliedAt).getTime();
+            const dateA = a.applicationInformation?.appliedAt ? new Date(a.applicationInformation.appliedAt).getTime() : 0;
+            const dateB = b.applicationInformation?.appliedAt ? new Date(b.applicationInformation.appliedAt).getTime() : 0;
+            return dateB - dateA;
           } else if (sortBy === "oldest") {
-            return new Date(a.applicationInformation.appliedAt).getTime() - 
-                   new Date(b.applicationInformation.appliedAt).getTime();
+            const dateA = a.applicationInformation?.appliedAt ? new Date(a.applicationInformation.appliedAt).getTime() : 0;
+            const dateB = b.applicationInformation?.appliedAt ? new Date(b.applicationInformation.appliedAt).getTime() : 0;
+            return dateA - dateB;
           } else if (sortBy === "score") {
             // Use optional chaining to handle potential undefined values
             return (b.screeningScore || 0) - (a.screeningScore || 0);
@@ -167,7 +169,9 @@ const ApplicationsView = ({
                       </div>
                       <div className="flex items-center text-sm text-gray-500">
                         <Calendar className="h-4 w-4 mr-1" />
-                        {new Date(application.applicationInformation.appliedAt).toLocaleDateString()}
+                        {application.applicationInformation?.appliedAt 
+                          ? new Date(application.applicationInformation.appliedAt).toLocaleDateString()
+                          : 'No date available'}
                       </div>
                     </div>
                     
