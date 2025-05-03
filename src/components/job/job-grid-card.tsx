@@ -103,7 +103,13 @@ const JobGridCard = ({ job, isEmployer, onDelete, onClick }: JobGridCardProps) =
   return (
     <Card 
       className="group relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-blue-200 cursor-pointer h-[300px] flex flex-col"
-      onClick={onClick}
+      onClick={() => {
+        if (isEmployer) {
+          router.push(`/jobs/employer-job-details/${job.id}`);
+        } else if (onClick) {
+          onClick();
+        }
+      }}
     >
       <div className="absolute top-0 right-0 p-2 z-10">
         {!isEmployer && (
@@ -143,7 +149,11 @@ const JobGridCard = ({ job, isEmployer, onDelete, onClick }: JobGridCardProps) =
               className="font-semibold text-lg line-clamp-2 break-words hover:text-blue-600 cursor-pointer"
               onClick={(e) => {
                 e.stopPropagation();
-                router.push(`/jobs/job-details/${job.id}`);
+                if (isEmployer) {
+                  router.push(`/jobs/employer-job-details/${job.id}`);
+                } else {
+                  router.push(`/jobs/job-details/${job.id}`);
+                }
               }}
             >
               {jobTitle}
@@ -201,7 +211,11 @@ const JobGridCard = ({ job, isEmployer, onDelete, onClick }: JobGridCardProps) =
           className="w-full bg-white hover:bg-gray-50"
           onClick={(e) => {
             e.stopPropagation();
-            router.push(`/jobs/job-details/${job.id}`);
+            if (isEmployer) {
+              router.push(`/jobs/employer-job-details/${job.id}`);
+            } else {
+              router.push(`/jobs/job-details/${job.id}`);
+            }
           }}
         >
           View Details
