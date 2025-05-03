@@ -407,24 +407,6 @@ const FilterSidebar = ({ filterValues, onFilterChange, searchQuery, onSearchChan
           )}
         </div>
 
-        <div className="mt-6 sm:mt-8">
-          <Button 
-            className="w-full bg-green-600 hover:bg-green-700 text-white"
-            onClick={() => onFilterChange({
-              salary,
-              location,
-              availability,
-              jobPreference,
-              specialties,
-              industry,
-              experienceLevel,
-              educationLevel,
-              employmentType
-            })}
-          >
-            Apply Filters
-          </Button>
-        </div>
       </div>
     </div>
   );

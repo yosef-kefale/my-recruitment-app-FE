@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import JobCard from "../../../components/job/job-card";
+import JobGridCard from "../../../components/job/job-grid-card";
 import FilterSidebar from "../../../components/job/filter-sidebar";
 import JobDetail from "../../../components/job/job-detail";
 import { Grid, List, RefreshCw, Loader2, Bookmark, Search } from "lucide-react";
@@ -135,6 +136,27 @@ const ViewJobs = () => {
     fetchJobs();
   }, [currentPage, appliedFilters]);
 
+  const validateJobData = (job: any): JobPosting => {
+    return {
+      id: String(job.id || ''),
+      title: String(job.title || ''),
+      description: String(job.description || ''),
+      location: String(job.location || ''),
+      employmentType: String(job.employmentType || ''),
+      salaryRange: String(job.salaryRange || ''),
+      requiredSkills: Array.isArray(job.requiredSkills) 
+        ? job.requiredSkills.map((skill: any) => String(skill || ''))
+        : [],
+      createdAt: String(job.createdAt || ''),
+      isSaved: Boolean(job.isSaved),
+      company: {
+        id: String(job.company?.id || ''),
+        name: String(job.company?.name || ''),
+        logo: String(job.company?.logo || ''),
+      }
+    };
+  };
+
   const fetchJobs = async () => {
     setIsLoading(true);
     try {
@@ -183,12 +205,15 @@ const ViewJobs = () => {
 
       const data = await res.json();
       
+      // Validate and transform the data
+      const validatedJobs = (data.items || []).map(validateJobData);
+
       // Update total items and calculate total pages
       setTotalItems(data.total || 0);
       setTotalPages(Math.ceil((data.total || 0) / itemsPerPage));
 
       // Sort jobs by createdAt in descending order (newest first)
-      const sortedJobs = data.items.sort(
+      const sortedJobs = validatedJobs.sort(
         (a: { createdAt: string }, b: { createdAt: string }) =>
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
@@ -206,7 +231,7 @@ const ViewJobs = () => {
           
           if (savedJobsRes.ok) {
             const savedJobsData = await savedJobsRes.json();
-            const savedJobIds = savedJobsData.items.map((item: { jobPostId: string }) => item.jobPostId);
+            const savedJobIds = savedJobsData.items.map((item: { jobPostId: string }) => String(item.jobPostId || ''));
             
             const jobsWithSavedStatus = sortedJobs.map((job: JobPosting) => ({
               ...job,
@@ -455,12 +480,21 @@ const ViewJobs = () => {
                   <div className={`grid ${isListView ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'} gap-4`}>
                     {(activeTab === "saved" ? savedJobs : displayedJobs).map((job) => (
                       <div key={job.id} className={isListView ? '' : 'h-full'}>
-                        <JobCard 
-                          job={job} 
-                          isEmployer={!isEmployeeView} 
-                          onDelete={handleDeleteJob}
-                          onClick={() => setSelectedViewJob(job)}
-                        />
+                        {isListView ? (
+                          <JobCard 
+                            job={job} 
+                            isEmployer={!isEmployeeView} 
+                            onDelete={handleDeleteJob}
+                            onClick={() => setSelectedViewJob(job)}
+                          />
+                        ) : (
+                          <JobGridCard
+                            job={job}
+                            isEmployer={!isEmployeeView}
+                            onDelete={handleDeleteJob}
+                            onClick={() => setSelectedViewJob(job)}
+                          />
+                        )}
                       </div>
                     ))}
                   </div>

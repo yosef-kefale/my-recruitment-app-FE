@@ -69,7 +69,7 @@ const JobDetail: React.FC<JobDetailProps> = ({ job, onClose }) => {
         <div className="mt-6">
           <h3 className="text-lg font-semibold">Skills Required</h3>
           <div className="flex flex-wrap gap-2 mt-2">
-            {job.skill.map((skill, index) => (
+            {job?.skill?.map((skill, index) => (
               <span
                 key={index}
                 className="bg-gray-200 text-gray-700 text-sm px-3 py-1 rounded-full"
