@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { MapPin, X, Filter, DollarSign, Briefcase, Clock, Tag, GraduationCap, Building2, UserCog, ChevronDown, ChevronUp, Plus, Trash2, Search } from "lucide-react";
+import { MapPin, X, Filter, DollarSign, Briefcase, Clock, Tag, GraduationCap, Building2, UserCog, ChevronDown, ChevronUp, Plus, Eraser } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -36,7 +36,6 @@ enum EthiopianCity {
 
 interface FilterValues {
   salary?: number;
-  jobType?: string;
   location?: string;
   availability?: {
     freelance?: boolean;
@@ -49,19 +48,15 @@ interface FilterValues {
   experienceLevel?: string;
   educationLevel?: string;
   employmentType?: string;
-  searchQuery?: string;
 }
 
 interface FilterSidebarProps {
   filterValues: FilterValues;
   onFilterChange: (values: FilterValues) => void;
-  searchQuery: string;
-  onSearchChange: (query: string) => void;
 }
 
-const FilterSidebar = ({ filterValues, onFilterChange, searchQuery, onSearchChange }: FilterSidebarProps) => {
+const FilterSidebar = ({ filterValues, onFilterChange }: FilterSidebarProps) => {
   const [salary, setSalary] = useState(filterValues.salary || 0);
-  const [jobType, setJobType] = useState(filterValues.jobType || "");
   const [location, setLocation] = useState(filterValues.location || "");
   const [availability, setAvailability] = useState(filterValues.availability || {
     freelance: false,
@@ -80,7 +75,6 @@ const FilterSidebar = ({ filterValues, onFilterChange, searchQuery, onSearchChan
   // Update state when parent changes the filter values
   useEffect(() => {
     setSalary(filterValues.salary || 0);
-    setJobType(filterValues.jobType || "");
     setLocation(filterValues.location || "");
     setAvailability(filterValues.availability || {
       freelance: false,
@@ -99,11 +93,6 @@ const FilterSidebar = ({ filterValues, onFilterChange, searchQuery, onSearchChan
   const handleSalaryChange = (value: number) => {
     setSalary(value);
     onFilterChange({ salary: value });
-  };
-
-  const handleJobTypeChange = (value: string) => {
-    setJobType(value);
-    onFilterChange({ jobType: value });
   };
 
   const handleLocationChange = (value: string) => {
@@ -166,7 +155,21 @@ const FilterSidebar = ({ filterValues, onFilterChange, searchQuery, onSearchChan
   };
 
   const resetFilters = () => {
-    onFilterChange({});
+    setSalary(0);
+    setLocation("");
+    setAvailability({
+      freelance: false,
+      fullTime: false,
+      readyWork: false
+    });
+    setJobPreference("");
+    setSpecialties([]);
+    setIndustry("");
+    setExperienceLevel("");
+    setEducationLevel("");
+    setEmploymentType("");
+    setNewSpecialty("");
+    setShowAdditionalFilters(false);
   };
 
   const toggleAdditionalFilters = () => {
@@ -188,56 +191,13 @@ const FilterSidebar = ({ filterValues, onFilterChange, searchQuery, onSearchChan
           onClick={resetFilters}
           title="Clear all filters"
         >
-          <Trash2 className="h-4 w-4" />
+          <Eraser className="h-4 w-4" />
         </Button>
       </div>
-
-      {/* Search Input - Only show when Job Type is "All" */}
-      {jobType === "All" && (
-        <>
-          <div className="relative mb-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <Input
-                placeholder="Search jobs..."
-                value={searchQuery}
-                onChange={(e) => onSearchChange(e.target.value)}
-                className="pl-9 py-5 h-10 rounded-lg border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
-              />
-            </div>
-          </div>
-
-          <Separator className="mb-4" />
-        </>
-      )}
 
       <Separator className="mb-4" />
 
       <div className="space-y-3 sm:space-y-4">
-        {/* Job Type */}
-        <div className="space-y-2 sm:space-y-3">
-          <div className="flex items-center gap-2">
-            <Briefcase className="h-4 w-4 text-gray-500" />
-            <h4 className="font-medium text-gray-700">Job Type</h4>
-          </div>
-          <RadioGroup 
-            value={jobType} 
-            onValueChange={handleJobTypeChange}
-            className="space-y-2"
-          >
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="For me" id="for-me" />
-              <Label htmlFor="for-me" className="text-sm">For me</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="All" id="all" />
-              <Label htmlFor="all" className="text-sm">All</Label>
-            </div>
-          </RadioGroup>
-        </div>
-
-        <Separator />
-
         {/* Industry & Employment Type */}
         <div className="space-y-2 sm:space-y-3">
           <div className="flex items-center gap-2">
@@ -257,26 +217,6 @@ const FilterSidebar = ({ filterValues, onFilterChange, searchQuery, onSearchChan
               <SelectItem value="Retail">Retail</SelectItem>
               <SelectItem value="Marketing">Marketing</SelectItem>
               <SelectItem value="Other">Other</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2 sm:space-y-3">
-          <div className="flex items-center gap-2">
-            <Briefcase className="h-4 w-4 text-gray-500" />
-            <h4 className="font-medium text-gray-700">Employment Type</h4>
-          </div>
-          <Select value={employmentType} onValueChange={handleEmploymentTypeChange}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select employment type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Full-Time">Full-Time</SelectItem>
-              <SelectItem value="Part-Time">Part-Time</SelectItem>
-              <SelectItem value="Contract">Contract</SelectItem>
-              <SelectItem value="Freelance">Freelance</SelectItem>
-              <SelectItem value="Internship">Internship</SelectItem>
-              <SelectItem value="Temporary">Temporary</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -356,7 +296,7 @@ const FilterSidebar = ({ filterValues, onFilterChange, searchQuery, onSearchChan
             <Slider
               value={[salary]}
               min={10}
-              max={3500}
+              max={1000000}
               step={10}
               onValueChange={(value) => handleSalaryChange(value[0])}
               className="my-4"
@@ -366,7 +306,7 @@ const FilterSidebar = ({ filterValues, onFilterChange, searchQuery, onSearchChan
               <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
                 ${salary}
               </Badge>
-              <span>$3500</span>
+              <span>$1000000</span>
             </div>
           </div>
         </div>
@@ -464,26 +404,25 @@ const FilterSidebar = ({ filterValues, onFilterChange, searchQuery, onSearchChan
             </div>
           )}
         </div>
-      </div>
 
-      <div className="mt-6 sm:mt-8">
-        <Button 
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-          onClick={() => onFilterChange({
-            salary,
-            jobType,
-            location,
-            availability,
-            jobPreference,
-            specialties,
-            industry,
-            experienceLevel,
-            educationLevel,
-            employmentType
-          })}
-        >
-          Apply Filters
-        </Button>
+        <div className="mt-6 sm:mt-8">
+          <Button 
+            className="w-full bg-green-600 hover:bg-green-700 text-white"
+            onClick={() => onFilterChange({
+              salary,
+              location,
+              availability,
+              jobPreference,
+              specialties,
+              industry,
+              experienceLevel,
+              educationLevel,
+              employmentType
+            })}
+          >
+            Apply Filters
+          </Button>
+        </div>
       </div>
     </div>
   );
