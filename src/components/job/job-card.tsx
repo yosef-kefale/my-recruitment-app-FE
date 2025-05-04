@@ -136,6 +136,7 @@ const JobCard: React.FC<JobCardProps> = ({ job, isEmployer, onDelete }) => {
   return (
     <Card className="group relative overflow-hidden bg-white border border-gray-200 hover:border-sky-200 transition-all duration-300">
       {/* Save Button - Absolute Positioned */}
+      {!isEmployer && (
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -152,6 +153,7 @@ const JobCard: React.FC<JobCardProps> = ({ job, isEmployer, onDelete }) => {
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
+      )}
 
       {/* Main Content */}
       <div className="p-4">

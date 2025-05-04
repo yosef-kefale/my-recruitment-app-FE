@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { API_URL } from "@/lib/api";
+import NavBarNotLogged from "../components/navbar-not-loggedin/navBarNotLogged";
 
 // Job categories data with Ethiopian context
 const jobCategories = [
@@ -119,11 +120,16 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [viewType, setViewType] = useState<'candidate' | 'employer'>('candidate');
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     setIsLoggedIn(!!token);
   }, []);
+
+  const handleViewTypeChange = (type: 'candidate' | 'employer') => {
+    setViewType(type);
+  };
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
@@ -168,124 +174,8 @@ export default function Home() {
 
   return (
     <div className="bg-gray-50 min-h-screen">
-      {/* Navbar */}
-      {!isLoggedIn ? (
-        <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md shadow-sm">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center h-16">
-              {/* Logo */}
-              <Link href="/" className="flex items-center">
-                <h1 className="text-2xl font-bold text-sky-600">TalentHub</h1>
-              </Link>
-
-              {/* Desktop Navigation */}
-              <div className="hidden md:flex items-center space-x-8">
-                <Link href="/" className="text-gray-700 hover:text-sky-600 font-medium">
-                  Home
-                </Link>
-                <Link href="/search" className="text-gray-700 hover:text-sky-600 font-medium">
-                  Find Jobs
-                </Link>
-                <Link
-                  href="/signup-employer"
-                  className="text-gray-700 hover:text-sky-600 font-medium"
-                >
-                  For Employers
-                </Link>
-                <Link href="/contact" className="text-gray-700 hover:text-sky-600 font-medium">
-                  Contact
-                </Link>
-              </div>
-
-              {/* Auth Buttons */}
-              <div className="hidden md:flex items-center space-x-4">
-                <button
-                  onClick={handleLoginClickEmployee}
-                  className="text-gray-700 hover:text-sky-600 font-medium px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors"
-                >
-                  Sign In
-                </button>
-                <button
-                  onClick={handleLoginClickEmployer}
-                  className="bg-sky-600 text-white px-4 py-2 rounded-lg hover:bg-sky-700 transition-colors font-medium shadow-sm"
-                >
-                  Post a Job
-                </button>
-              </div>
-
-              {/* Mobile menu button */}
-              <div className="md:hidden">
-                <button
-                  onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                  className="text-gray-700 hover:text-sky-600 p-2 rounded-lg hover:bg-gray-100 transition-colors"
-                >
-                  <svg
-                    className="h-6 w-6"
-                    fill="none"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    {isMobileMenuOpen ? (
-                      <path d="M6 18L18 6M6 6l12 12" />
-                    ) : (
-                      <path d="M4 6h16M4 12h16M4 18h16" />
-                    )}
-                  </svg>
-                </button>
-              </div>
-            </div>
-
-            {/* Mobile menu */}
-            {isMobileMenuOpen && (
-              <div className="md:hidden py-4 space-y-4">
-                <Link
-                  href="/"
-                  className="block text-gray-700 hover:text-sky-600 font-medium px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors"
-                >
-                  Home
-                </Link>
-                <Link
-                  href="/search"
-                  className="block text-gray-700 hover:text-sky-600 font-medium px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors"
-                >
-                  Find Jobs
-                </Link>
-                <Link
-                  href="/signup-employer"
-                  className="block text-gray-700 hover:text-sky-600 font-medium px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors"
-                >
-                  For Employers
-                </Link>
-                <Link
-                  href="/contact"
-                  className="block text-gray-700 hover:text-sky-600 font-medium px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors"
-                >
-                  Contact
-                </Link>
-                <div className="pt-4 space-y-2">
-                  <button
-                    onClick={handleLoginClickEmployee}
-                    className="w-full text-gray-700 hover:text-sky-600 font-medium px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors"
-                  >
-                    Sign In
-                  </button>
-                  <button
-                    onClick={handleLoginClickEmployer}
-                    className="w-full bg-sky-600 text-white px-4 py-2 rounded-lg hover:bg-sky-700 transition-colors font-medium shadow-sm"
-                  >
-                    Post a Job
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </nav>
-      ) : (
-        <div></div>
-      )}
+      {/* View Type Toggle */}
+      <NavBarNotLogged viewType={viewType} onViewTypeChange={handleViewTypeChange} />
 
       {/* Hero Section */}
       <header className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
@@ -300,17 +190,30 @@ export default function Home() {
           <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/50"></div>
         </div>
         <div className="relative z-10 max-w-4xl mx-auto px-4 text-center">
-          <h1 className="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight">
-            Find Your Dream Job in <span className="text-sky-400">Ethiopia</span>
-          </h1>
-          <p className="text-xl text-gray-200 mb-8">
-            The leading platform connecting Ethiopian talent with top companies
-          </p>
+          {viewType === 'candidate' ? (
+            <>
+              <h1 className="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight">
+                Find Your Dream Job in <span className="text-sky-400">Ethiopia</span>
+              </h1>
+              <p className="text-xl text-gray-200 mb-8">
+                The leading platform connecting Ethiopian talent with top companies
+              </p>
+            </>
+          ) : (
+            <>
+              <h1 className="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight">
+                Find Top Talent in <span className="text-sky-400">Ethiopia</span>
+              </h1>
+              <p className="text-xl text-gray-200 mb-8">
+                Connect with qualified professionals and grow your business
+              </p>
+            </>
+          )}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <div className="flex-1 w-full max-w-md">
               <input
                 type="text"
-                placeholder="Search jobs, skills, or companies..."
+                placeholder={viewType === 'candidate' ? "Search jobs, skills, or companies..." : "Search candidates, skills, or experience..."}
                 className="w-full p-4 rounded-lg border-2 border-white/20 bg-white/10 text-white placeholder-gray-300 backdrop-blur-sm focus:ring-2 focus:ring-sky-400 focus:border-transparent"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -331,7 +234,7 @@ export default function Home() {
                   Searching...
                 </span>
               ) : (
-                'Search Jobs'
+                viewType === 'candidate' ? 'Search Jobs' : 'Search Candidates'
               )}
             </button>
           </div>
@@ -342,129 +245,176 @@ export default function Home() {
           )}
           <div className="mt-8 flex flex-wrap justify-center items-center gap-4">
             <span className="text-gray-300 font-medium">Popular:</span>
-            {["Remote", "Addis Ababa", "Entry Level", "IT"].map((tag) => (
-              <span
-                key={tag}
-                className="px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full text-white hover:bg-white/20 cursor-pointer transition-colors"
-                onClick={() => {
-                  setSearchQuery(tag);
-                  handleSearch();
-                }}
-              >
-                {tag}
-              </span>
-            ))}
+            {viewType === 'candidate' 
+              ? ["Remote", "Addis Ababa", "Entry Level", "IT"].map((tag) => (
+                  <span
+                    key={tag}
+                    className="px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full text-white hover:bg-white/20 cursor-pointer transition-colors"
+                    onClick={() => {
+                      setSearchQuery(tag);
+                      handleSearch();
+                    }}
+                  >
+                    {tag}
+                  </span>
+                ))
+              : ["Software Engineer", "Marketing", "Finance", "Healthcare"].map((tag) => (
+                  <span
+                    key={tag}
+                    className="px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full text-white hover:bg-white/20 cursor-pointer transition-colors"
+                    onClick={() => {
+                      setSearchQuery(tag);
+                      handleSearch();
+                    }}
+                  >
+                    {tag}
+                  </span>
+                ))
+            }
           </div>
         </div>
       </header>
 
-      {/* Job Categories */}
+      {/* Job Categories / Employer Features */}
       <section className="py-16 bg-white">
         <div className="max-w-6xl mx-auto px-4">
           <h2 className="text-3xl font-bold text-center text-gray-800 mb-4">
-            Explore Job Categories
+            {viewType === 'candidate' ? "Explore Job Categories" : "Employer Features"}
           </h2>
           <p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto">
-            Discover opportunities across Ethiopia&apos;s most dynamic sectors
+            {viewType === 'candidate' 
+              ? "Discover opportunities across Ethiopia's most dynamic sectors"
+              : "Powerful tools to help you find and hire the best talent"}
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {jobCategories.map((category) => (
-              <div
-                key={category.name}
-                className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
-              >
-                <div className="relative h-48">
-                  <Image
-                    src={category.image}
-                    alt={category.name}
-                    fill
-                    className="object-cover transition-transform duration-300 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent"></div>
+            {viewType === 'candidate' ? (
+              jobCategories.map((category) => (
+                <div
+                  key={category.name}
+                  className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+                >
+                  <div className="relative h-48">
+                    <Image
+                      src={category.image}
+                      alt={category.name}
+                      fill
+                      className="object-cover transition-transform duration-300 group-hover:scale-110"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent"></div>
+                  </div>
+                  <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+                    <div className="text-2xl mb-2">{category.icon}</div>
+                    <h4 className="font-semibold text-lg mb-1">{category.name}</h4>
+                    <p className="text-sm text-gray-200 mb-2">{category.description}</p>
+                    <p className="text-sm text-sky-300">
+                      {category.count.toLocaleString()} jobs available
+                    </p>
+                  </div>
                 </div>
-                <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                  <div className="text-2xl mb-2">{category.icon}</div>
-                  <h4 className="font-semibold text-lg mb-1">{category.name}</h4>
-                  <p className="text-sm text-gray-200 mb-2">{category.description}</p>
-                  <p className="text-sm text-sky-300">
-                    {category.count.toLocaleString()} jobs available
-                  </p>
+              ))
+            ) : (
+              features.map((feature) => (
+                <div
+                  key={feature.title}
+                  className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+                >
+                  <div className="relative h-48">
+                    <Image
+                      src={feature.image}
+                      alt={feature.title}
+                      fill
+                      className="object-cover transition-transform duration-300 group-hover:scale-110"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent"></div>
+                  </div>
+                  <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+                    <div className="text-2xl mb-2">{feature.icon}</div>
+                    <h4 className="font-semibold text-lg mb-1">{feature.title}</h4>
+                    <p className="text-sm text-gray-200 mb-2">{feature.description}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
+      {/* Features Section / Employer Benefits */}
       <section className="py-16 bg-gray-50">
         <div className="max-w-6xl mx-auto px-4">
           <h2 className="text-3xl font-bold text-center text-gray-800 mb-4">
-            Why Choose TalentHub Ethiopia
+            {viewType === 'candidate' ? "Why Choose TalentHub Ethiopia" : "Benefits for Employers"}
           </h2>
           <p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto">
-            The most effective way to advance your career in Ethiopia
+            {viewType === 'candidate'
+              ? "The most effective way to advance your career in Ethiopia"
+              : "Join leading companies in finding the best talent"}
           </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {features.map((feature) => (
-              <div
-                key={feature.title}
-                className="relative overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group"
-              >
-                <div className="relative h-48">
-                  <Image
-                    src={feature.image}
-                    alt={feature.title}
-                    fill
-                    className="object-cover transition-transform duration-300 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent"></div>
+            {viewType === 'candidate' ? (
+              features.map((feature) => (
+                <div
+                  key={feature.title}
+                  className="relative overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group"
+                >
+                  <div className="relative h-48">
+                    <Image
+                      src={feature.image}
+                      alt={feature.title}
+                      fill
+                      className="object-cover transition-transform duration-300 group-hover:scale-110"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent"></div>
+                  </div>
+                  <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                    <div className="text-3xl mb-3">{feature.icon}</div>
+                    <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
+                    <p className="text-gray-200 text-sm">{feature.description}</p>
+                  </div>
                 </div>
-                <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                  <div className="text-3xl mb-3">{feature.icon}</div>
-                  <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                  <p className="text-gray-200 text-sm">{feature.description}</p>
+              ))
+            ) : (
+              [
+                {
+                  title: "Advanced Candidate Search",
+                  description: "Find the perfect match with our powerful search and filtering tools",
+                  icon: "🔍",
+                  image: "/images/placeholders/feature-search.jpg"
+                },
+                {
+                  title: "Applicant Tracking",
+                  description: "Streamline your hiring process with our comprehensive ATS",
+                  icon: "📊",
+                  image: "/images/placeholders/feature-tracking.jpg"
+                },
+                {
+                  title: "Branded Job Postings",
+                  description: "Showcase your company culture and attract top talent",
+                  icon: "🏢",
+                  image: "/images/placeholders/feature-branding.jpg"
+                }
+              ].map((feature) => (
+                <div
+                  key={feature.title}
+                  className="relative overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group"
+                >
+                  <div className="relative h-48">
+                    <Image
+                      src={feature.image}
+                      alt={feature.title}
+                      fill
+                      className="object-cover transition-transform duration-300 group-hover:scale-110"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent"></div>
+                  </div>
+                  <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                    <div className="text-3xl mb-3">{feature.icon}</div>
+                    <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
+                    <p className="text-gray-200 text-sm">{feature.description}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials */}
-      <section className="py-16 bg-white">
-        <div className="max-w-6xl mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center text-gray-800 mb-4">
-            Success Stories
-          </h2>
-          <p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto">
-            Hear from professionals who found success through TalentHub Ethiopia
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial) => (
-              <div
-                key={testimonial.name}
-                className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
-              >
-                <div className="relative w-20 h-20 mx-auto mb-4">
-                  <Image
-                    src={testimonial.avatar}
-                    alt={testimonial.name}
-                    fill
-                    className="rounded-full object-cover"
-                  />
-                </div>
-                <p className="text-gray-600 mb-4 text-center italic">
-                  &ldquo;{testimonial.testimonial}&rdquo;
-                </p>
-                <div className="text-center">
-                  <p className="font-semibold text-gray-800">{testimonial.name}</p>
-                  <p className="text-sm text-gray-500">
-                    {testimonial.role} at {testimonial.company}
-                  </p>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </section>
@@ -482,24 +432,47 @@ export default function Home() {
         </div>
         <div className="relative z-10 max-w-4xl mx-auto px-4 text-center">
           <h2 className="text-4xl font-bold text-white mb-6">
-            Ready to Advance Your Career in Ethiopia?
+            {viewType === 'candidate'
+              ? "Ready to Advance Your Career in Ethiopia?"
+              : "Ready to Find Your Next Great Hire?"}
           </h2>
           <p className="text-xl mb-8 text-sky-100">
-            Join thousands of professionals who have found their dream jobs through TalentHub Ethiopia
+            {viewType === 'candidate'
+              ? "Join thousands of professionals who have found their dream jobs through TalentHub Ethiopia"
+              : "Join leading companies who trust TalentHub Ethiopia to find their perfect candidates"}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button
-              onClick={handleLoginClickEmployee}
-              className="bg-white text-sky-900 px-8 py-4 rounded-lg hover:bg-sky-50 transition-colors font-medium shadow-lg"
-            >
-              Find Jobs
-            </button>
-            <button
-              onClick={handleLoginClickEmployer}
-              className="bg-sky-700 text-white px-8 py-4 rounded-lg hover:bg-sky-800 transition-colors font-medium shadow-lg border-2 border-white/20"
-            >
-              Post Jobs
-            </button>
+            {viewType === 'candidate' ? (
+              <>
+                <button
+                  onClick={handleLoginClickEmployee}
+                  className="bg-white text-sky-900 px-8 py-4 rounded-lg hover:bg-sky-50 transition-colors font-medium shadow-lg"
+                >
+                  Find Jobs
+                </button>
+                <button
+                  onClick={handleLoginClickEmployer}
+                  className="bg-sky-700 text-white px-8 py-4 rounded-lg hover:bg-sky-800 transition-colors font-medium shadow-lg border-2 border-white/20"
+                >
+                  Post Jobs
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={handleLoginClickEmployer}
+                  className="bg-white text-sky-900 px-8 py-4 rounded-lg hover:bg-sky-50 transition-colors font-medium shadow-lg"
+                >
+                  Post a Job
+                </button>
+                <button
+                  onClick={handleLoginClickEmployer}
+                  className="bg-sky-700 text-white px-8 py-4 rounded-lg hover:bg-sky-800 transition-colors font-medium shadow-lg border-2 border-white/20"
+                >
+                  Browse Candidates
+                </button>
+              </>
+            )}
           </div>
         </div>
       </section>
