@@ -170,6 +170,7 @@ const UserProfileUpdate = () => {
   const searchParams = useSearchParams();
   const activeTab = searchParams.get("tab") || "profile";
   const [isLoading, setIsLoading] = useState(true);
+  const [userData, setUserData] = useState<any>(null);
   const {
     register,
     handleSubmit,
@@ -229,6 +230,7 @@ const UserProfileUpdate = () => {
         if (!user?.id || !token) return;
         const response = await axios.get(`${API_URL}/users/${user.id}`);
         const userData = response.data;
+        setUserData(userData);
         
         console.log(userData);
         
@@ -1126,6 +1128,39 @@ const UserProfileUpdate = () => {
               
               <div className="space-y-2">
                 <h3 className="text-lg font-semibold">Resume</h3>
+                {userData?.resume?.path ? (
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="flex-1 p-4 border rounded-lg bg-gray-50">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
+                          </svg>
+                          <div className="flex flex-col">
+                            <span className="font-medium">Current Resume</span>
+                            <span className="text-sm text-gray-500">{userData.resume.originalname || 'Resume'}</span>
+                          </div>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => window.open(userData.resume.path, '_blank')}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                          </svg>
+                          View Resume
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+                
                 <div className="flex items-center gap-4">
                   <input
                     type="file"

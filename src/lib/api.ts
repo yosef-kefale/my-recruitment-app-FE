@@ -93,7 +93,7 @@ export const createOrganizationAccount = async (data: OrganizationAccountData) =
 };
 
 export const createUser = async (data: UserRegistrationData) => {
-  const res = await fetch(`${API_URL}/users`, {
+  const res = await fetch(`${API_URL}/Organizations/create-account`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),

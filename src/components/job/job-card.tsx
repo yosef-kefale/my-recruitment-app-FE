@@ -102,9 +102,12 @@ const JobCard: React.FC<JobCardProps> = ({ job, isEmployer, onDelete }) => {
     
     try {
       const token = localStorage.getItem("token");
+      const endpoint = isSaved 
+        ? `${API_URL}/save-jobs/unsave-job-post`
+        : `${API_URL}/save-jobs`;
 
-      const response = await fetch(`${API_URL}/save-jobs`, {
-        method: "POST",
+      const response = await fetch(endpoint, {
+        method: isSaved ? "PUT" : "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -116,7 +119,7 @@ const JobCard: React.FC<JobCardProps> = ({ job, isEmployer, onDelete }) => {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to save job");
+        throw new Error(isSaved ? "Failed to unsave job" : "Failed to save job");
       }
 
       setIsSaved(!isSaved);
@@ -124,7 +127,7 @@ const JobCard: React.FC<JobCardProps> = ({ job, isEmployer, onDelete }) => {
       // Update the job object to reflect the new saved state
       job.isSaved = !isSaved;
     } catch (error) {
-      console.error("Error saving job:", error);
+      console.error("Error saving/unsaving job:", error);
     }
   };
 
@@ -136,6 +139,7 @@ const JobCard: React.FC<JobCardProps> = ({ job, isEmployer, onDelete }) => {
   return (
     <Card className="group relative overflow-hidden bg-white border border-gray-200 hover:border-sky-200 transition-all duration-300">
       {/* Save Button - Absolute Positioned */}
+      {!isEmployer && (
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -152,6 +156,7 @@ const JobCard: React.FC<JobCardProps> = ({ job, isEmployer, onDelete }) => {
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
+      )}
 
       {/* Main Content */}
       <div className="p-4">

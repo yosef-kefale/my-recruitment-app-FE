@@ -177,163 +177,211 @@ export default function SignupPage() {
   };
 
   return (
-    <div>
-      <nav className="flex justify-between items-center p-4 shadow-md bg-gray-100 fixed top-0 left-0 w-full z-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <nav className="flex justify-between items-center p-4 shadow-sm bg-white fixed top-0 left-0 w-full z-50">
         <Link href="/">
-          <h1 className="text-2xl font-bold text-sky-600 cursor-pointer">
+          <h1 className="text-2xl font-bold text-sky-600 cursor-pointer hover:text-sky-700 transition-colors">
             TalentHub
           </h1>
         </Link>
       </nav>
 
-      <div className="flex mt-14 items-center justify-center bg-gray-100">
-        <div className="flex flex-col md:flex-row w-full max-w-6xl p-4 bg-white rounded-lg shadow-lg">
-          <Card className="w-full md:min-w-[600px]">
-            <CardHeader>
-              <CardTitle className="text-2xl font-semibold">
-                {userType === "employer"
-                  ? "Employer Sign Up"
-                  : "Candidate Sign Up"}
+      <div className="flex mt-14 items-center justify-center min-h-[calc(100vh-56px)] p-4">
+        <div className="w-full max-w-4xl">
+          <Card className="w-full overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-sky-600 to-blue-600 text-white">
+              <CardTitle className="text-3xl font-bold">
+                {userType === "employer" ? "Employer Sign Up" : "Candidate Sign Up"}
               </CardTitle>
+              <p className="text-sky-100 mt-2">
+                {userType === "employer" 
+                  ? "Join our platform to find the best talent for your organization"
+                  : "Create your profile and start your job search journey"}
+              </p>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-6">
               {userType === "employer" && (
-                <div className="flex items-center justify-between mb-4">
-                  <span></span>
-                  <div className="flex items-center gap-2">
-                    <span
-                      className="text-sm cursor-pointer"
-                      onClick={() => setUseEtrade(false)}
-                    >
-                      Manual Signup
-                    </span>
-                    <Switch
-                      checked={useEtrade}
-                      onCheckedChange={() => setUseEtrade(!useEtrade)}
-                      className="transition-transform scale-110"
-                    />
-                    <span
-                      onClick={() => setUseEtrade(true)}
-                      className="text-sm cursor-pointer"
-                    >
-                      Sign up with e-Trade
-                    </span>
+                <div className="flex items-center justify-between mb-6 p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
+                      <span className={`text-sm ${!useEtrade ? 'text-gray-900' : 'text-gray-500'}`}>
+                        Manual Signup
+                      </span>
+                      <Switch
+                        checked={useEtrade}
+                        onCheckedChange={() => setUseEtrade(!useEtrade)}
+                        className="transition-transform scale-110"
+                      />
+                      <span className={`text-sm ${useEtrade ? 'text-gray-900' : 'text-gray-500'}`}>
+                        Sign up with e-Trade
+                      </span>
+                    </div>
                   </div>
                 </div>
               )}
 
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-6">
                 {userType === "employer" ? (
                   useEtrade ? (
-                    <>
-                      <Input
-                        name="tin"
-                        placeholder="TIN Number"
-                        value={formData.tin}
-                        onChange={handleInputChange}
-                        required
-                      />
-                      <Input
-                        name="licenseNumber"
-                        placeholder="License Number"
-                        value={formData.licenseNumber}
-                        onChange={handleInputChange}
-                        required
-                      />
-                    </>
+                    <div className="grid gap-6">
+                      <div className="space-y-2">
+                        <Label htmlFor="tin" className="text-gray-700">TIN Number</Label>
+                        <Input
+                          id="tin"
+                          name="tin"
+                          placeholder="Enter your TIN number"
+                          value={formData.tin}
+                          onChange={handleInputChange}
+                          required
+                          className="h-12"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="licenseNumber" className="text-gray-700">License Number</Label>
+                        <Input
+                          id="licenseNumber"
+                          name="licenseNumber"
+                          placeholder="Enter your license number"
+                          value={formData.licenseNumber}
+                          onChange={handleInputChange}
+                          required
+                          className="h-12"
+                        />
+                      </div>
+                    </div>
                   ) : (
-                    <>
-                      <Input
-                        name="companyName"
-                        placeholder="Company Name"
-                        value={formData.companyName}
-                        onChange={handleInputChange}
-                        required
-                      />
+                    <div className="grid gap-6">
+                      <div className="space-y-2">
+                        <Label htmlFor="companyName" className="text-gray-700">Company Name</Label>
+                        <Input
+                          id="companyName"
+                          name="companyName"
+                          placeholder="Enter your company name"
+                          value={formData.companyName}
+                          onChange={handleInputChange}
+                          required
+                          className="h-12"
+                        />
+                      </div>
 
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className="w-full justify-between"
-                          >
-                            {selectedIndustries.length > 0
-                              ? selectedIndustries.join(", ")
-                              : "Select Industries"}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="min-w-full left-0 p-2 shadow-lg rounded-md bg-white">
-                          <ScrollArea className="max-h-[200px] min-w-full rounded-md border p-2">
-                            <div className="space-y-2">
-                              {INDUSTRIES.map((industry) => (
-                                <div
-                                  key={industry}
-                                  className="flex items-center space-x-2"
-                                >
-                                  <Checkbox
-                                    id={industry}
-                                    checked={selectedIndustries.includes(
-                                      industry
-                                    )}
-                                    onCheckedChange={() =>
-                                      handleSelect(industry)
-                                    }
-                                  />
-                                  <Label
-                                    htmlFor={industry}
-                                    className="cursor-pointer text-sm"
+                      <div className="space-y-2">
+                        <Label className="text-gray-700">Industries</Label>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              className="w-full justify-between h-12"
+                            >
+                              {selectedIndustries.length > 0
+                                ? selectedIndustries.join(", ")
+                                : "Select Industries"}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-[400px] p-4">
+                            <ScrollArea className="h-[300px]">
+                              <div className="grid grid-cols-2 gap-2">
+                                {INDUSTRIES.map((industry) => (
+                                  <div
+                                    key={industry}
+                                    className="flex items-center space-x-2"
                                   >
-                                    {industry}
-                                  </Label>
-                                </div>
-                              ))}
-                            </div>
-                          </ScrollArea>
-                        </PopoverContent>
-                      </Popover>
+                                    <Checkbox
+                                      id={industry}
+                                      checked={selectedIndustries.includes(industry)}
+                                      onCheckedChange={() => handleSelect(industry)}
+                                    />
+                                    <Label
+                                      htmlFor={industry}
+                                      className="cursor-pointer text-sm"
+                                    >
+                                      {industry}
+                                    </Label>
+                                  </div>
+                                ))}
+                              </div>
+                            </ScrollArea>
+                          </PopoverContent>
+                        </Popover>
+                      </div>
 
-                      <Input
-                        type="email"
-                        name="email"
-                        placeholder="Email"
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        required
-                      />
-                      <Input
-                        type="tel"
-                        name="phone"
-                        placeholder="Phone"
-                        value={formData.phone}
-                        onChange={handleInputChange}
-                        required
-                      />
-                      <Input
-                        name="companySize"
-                        placeholder="Company Size"
-                        value={formData.companySize}
-                        onChange={handleInputChange}
-                      />
-                      <Input
-                        name="website"
-                        placeholder="Website"
-                        value={formData.website}
-                        onChange={handleInputChange}
-                      />
-                      <textarea
-                        name="description"
-                        placeholder="Company Description"
-                        value={formData.description}
-                        onChange={handleInputChange}
-                        className="w-full p-3 border rounded"
-                      ></textarea>
-                      <Input
-                        name="address"
-                        placeholder="Address"
-                        value={formData.address}
-                        onChange={handleInputChange}
-                      />
-                    </>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <Label htmlFor="email" className="text-gray-700">Email</Label>
+                          <Input
+                            id="email"
+                            type="email"
+                            name="email"
+                            placeholder="Enter your email"
+                            value={formData.email}
+                            onChange={handleInputChange}
+                            required
+                            className="h-12"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="phone" className="text-gray-700">Phone</Label>
+                          <Input
+                            id="phone"
+                            type="tel"
+                            name="phone"
+                            placeholder="Enter your phone number"
+                            value={formData.phone}
+                            onChange={handleInputChange}
+                            required
+                            className="h-12"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <Label htmlFor="companySize" className="text-gray-700">Company Size</Label>
+                          <Input
+                            id="companySize"
+                            name="companySize"
+                            placeholder="Enter company size"
+                            value={formData.companySize}
+                            onChange={handleInputChange}
+                            className="h-12"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="website" className="text-gray-700">Website</Label>
+                          <Input
+                            id="website"
+                            name="website"
+                            placeholder="Enter company website"
+                            value={formData.website}
+                            onChange={handleInputChange}
+                            className="h-12"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="description" className="text-gray-700">Company Description</Label>
+                        <textarea
+                          id="description"
+                          name="description"
+                          placeholder="Tell us about your company"
+                          value={formData.description}
+                          onChange={handleInputChange}
+                          className="w-full p-3 border rounded-md min-h-[120px] focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="address" className="text-gray-700">Address</Label>
+                        <Input
+                          id="address"
+                          name="address"
+                          placeholder="Enter company address"
+                          value={formData.address}
+                          onChange={handleInputChange}
+                          className="h-12"
+                        />
+                      </div>
+                    </div>
                   )
                 ) : (
                   <>
@@ -417,20 +465,22 @@ export default function SignupPage() {
                   </>
                 )}
 
-                <Button
-                  className="w-full p-3 bg-gray-600 text-white"
-                  onClick={()=> testData()}
-                >
-                  TEST
-                </Button>
-
-                <Button
-                  type="submit"
-                  className="w-full p-3 bg-blue-600 text-white"
-                  disabled={loading}
-                >
-                  {loading ? "Signing up..." : "Sign Up"}
-                </Button>
+                <div className="flex flex-col gap-4 pt-4">
+                  <Button
+                    type="submit"
+                    className="w-full h-12 bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-700 hover:to-blue-700 text-white font-semibold transition-all duration-200"
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <div className="flex items-center justify-center gap-2">
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        <span>Signing up...</span>
+                      </div>
+                    ) : (
+                      "Sign Up"
+                    )}
+                  </Button>
+                </div>
               </form>
             </CardContent>
           </Card>

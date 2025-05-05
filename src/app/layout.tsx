@@ -28,7 +28,7 @@ export default function RootLayout({
       setRole(userRole);
 
       // Redirect if not logged in and trying to access a protected route
-      if (!token && pathname !== "/login" && pathname !== "/" && pathname !== "/signup" && pathname !== "/signup-employer") {
+      if (!token && pathname !== "/login" && pathname !== "/" && pathname !== "/signup" && pathname !== "/signup-employer" && pathname !== "/about" && pathname !== "/contact") {
         router.push("/login");
       }
     }
