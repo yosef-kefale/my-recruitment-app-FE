@@ -5,7 +5,7 @@ import NavBarNotLogged from "../../components/navbar-not-loggedin/navBarNotLogge
 export default function AboutPage() {
   return (
     <div className="min-h-screen bg-gray-50">
-      <NavBarNotLogged />
+      <NavBarNotLogged viewType="employer" onViewTypeChange={() => {}} />
       {/* Hero Section */}
       <section className="relative py-20 bg-sky-600">
         <div className="absolute inset-0">

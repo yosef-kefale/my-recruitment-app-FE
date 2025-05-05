@@ -1363,6 +1363,7 @@ We offer a competitive salary, comprehensive benefits package, and opportunities
                       value={deadline}
                       onChange={(e) => setDeadline(e.target.value)}
                       type="date"
+                      min={new Date().toISOString().split('T')[0]}
                     />
                   </div>
                   <div className="space-y-2">

@@ -3,13 +3,17 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { API_URL } from "../../lib/api";
+import { Separator } from "../ui/separator";
 
 interface NavBarNotLoggedProps {
-  viewType: 'candidate' | 'employer';
-  onViewTypeChange: (type: 'candidate' | 'employer') => void;
+  viewType: "candidate" | "employer";
+  onViewTypeChange: (type: "candidate" | "employer") => void;
 }
 
-export default function NavBarNotLogged({ viewType, onViewTypeChange }: NavBarNotLoggedProps) {
+export default function NavBarNotLogged({
+  viewType,
+  onViewTypeChange,
+}: NavBarNotLoggedProps) {
   const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -29,7 +33,9 @@ export default function NavBarNotLogged({ viewType, onViewTypeChange }: NavBarNo
 
     try {
       const response = await fetch(
-        `${API_URL}/jobs/get-all-job-postings?q=${encodeURIComponent(searchQuery)}`
+        `${API_URL}/jobs/get-all-job-postings?q=${encodeURIComponent(
+          searchQuery
+        )}`
       );
 
       if (!response.ok) {
@@ -69,36 +75,14 @@ export default function NavBarNotLogged({ viewType, onViewTypeChange }: NavBarNo
           {/* Logo */}
           <div className="flex items-center">
             <Link href="/" className="flex items-center">
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-sky-600 to-blue-600 bg-clip-text text-transparent">TalentHub</h1>
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-sky-600 to-blue-600 bg-clip-text text-transparent">
+                TalentHub
+              </h1>
             </Link>
           </div>
 
           {/* Right-aligned content */}
           <div className="flex items-center space-x-6">
-            {/* View Type Toggle - Desktop */}
-            <div className="hidden md:flex items-center space-x-1 bg-gray-50 p-1 rounded-full">
-              <button
-                onClick={() => onViewTypeChange("candidate")}
-                className={`px-4 py-1.5 text-sm rounded-full transition-all duration-200 ${
-                  viewType === "candidate"
-                    ? "bg-white text-sky-600 shadow-sm font-medium"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}
-              >
-                Job Seeker
-              </button>
-              <button
-                onClick={() => onViewTypeChange("employer")}
-                className={`px-4 py-1.5 text-sm rounded-full transition-all duration-200 ${
-                  viewType === "employer"
-                    ? "bg-white text-sky-600 shadow-sm font-medium"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}
-              >
-                Employer
-              </button>
-            </div>
-
             {/* Primary Navigation - Desktop */}
             <div className="hidden md:flex items-center space-x-6">
               <Link
@@ -128,6 +112,32 @@ export default function NavBarNotLogged({ viewType, onViewTypeChange }: NavBarNo
                 className="bg-gradient-to-r from-sky-600 to-blue-600 text-white px-4 py-2 rounded-lg hover:from-sky-700 hover:to-blue-700 transition-all duration-200 font-medium shadow-sm"
               >
                 Post a Job
+              </button>
+            </div>
+
+            <Separator orientation="vertical" className="h-8" />
+
+            {/* View Type Toggle - Desktop */}
+            <div className="hidden md:flex items-center space-x-1 bg-gray-50 p-1 rounded-full">
+              <button
+                onClick={() => onViewTypeChange("candidate")}
+                className={`px-4 py-1.5 text-sm rounded-full transition-all duration-200 ${
+                  viewType === "candidate"
+                    ? "bg-white text-sky-600 shadow-sm font-medium"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                Job Seeker
+              </button>
+              <button
+                onClick={() => onViewTypeChange("employer")}
+                className={`px-4 py-1.5 text-sm rounded-full transition-all duration-200 ${
+                  viewType === "employer"
+                    ? "bg-white text-sky-600 shadow-sm font-medium"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                Employer
               </button>
             </div>
 

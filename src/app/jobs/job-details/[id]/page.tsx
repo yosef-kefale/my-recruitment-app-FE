@@ -269,7 +269,7 @@ const JobDetail = () => {
       
       // Redirect to applications page after successful submission
       setTimeout(() => {
-        router.push("/jobs/applications");
+        router.push("/applications");
       }, 1500); // Short delay to show success message
     } catch (error) {
       console.error("Error submitting application:", error);
