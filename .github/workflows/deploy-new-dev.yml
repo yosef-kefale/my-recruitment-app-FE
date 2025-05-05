@@ -31,15 +31,15 @@ jobs:
         run: npm run build            # → dist/main.js
 
       # ─── 4. copy artefacts to the server ─────────────────────────────────────
-      - name: Copy files to server
-        uses: appleboy/scp-action@v0.1.4
-        with:
-          host:       ${{ secrets.SSH_HOST }}
-          username:   ${{ secrets.SSH_USER }}   # root
-          key:        ${{ secrets.SSH_KEY }}
-          port:       ${{ secrets.SSH_PORT }}   # usually 22
-          overwrite:  true
-          target:     ${{ env.APP_DIR }}
+      # - name: Copy files to server
+      #   uses: appleboy/scp-action@v0.1.4
+      #   with:
+      #     host:       ${{ secrets.SSH_HOST }}
+      #     username:   ${{ secrets.SSH_USER }}   # root
+      #     key:        ${{ secrets.SSH_KEY }}
+      #     port:       ${{ secrets.SSH_PORT }}   # usually 22
+      #     overwrite:  true
+      #     target:     ${{ env.APP_DIR }}
           # IMPORTANT → one comma-separated string (no newlines)
           # source: "dist/**,package.json,package-lock.json,.env,templates/**"
       # (optional) quick listing
