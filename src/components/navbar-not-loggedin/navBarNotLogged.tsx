@@ -123,7 +123,7 @@ export default function NavBarNotLogged({
                 onClick={() => onViewTypeChange("candidate")}
                 className={`px-4 py-1.5 text-sm rounded-full transition-all duration-200 ${
                   viewType === "candidate"
-                    ? "bg-white text-sky-600 shadow-sm font-medium"
+                    ? "text-white bg-sky-600 shadow-sm font-medium"
                     : "text-gray-500 hover:text-gray-700"
                 }`}
               >
@@ -133,7 +133,7 @@ export default function NavBarNotLogged({
                 onClick={() => onViewTypeChange("employer")}
                 className={`px-4 py-1.5 text-sm rounded-full transition-all duration-200 ${
                   viewType === "employer"
-                    ? "bg-white text-sky-600 shadow-sm font-medium"
+                    ? "text-white bg-sky-600 shadow-sm font-medium"
                     : "text-gray-500 hover:text-gray-700"
                 }`}
               >
