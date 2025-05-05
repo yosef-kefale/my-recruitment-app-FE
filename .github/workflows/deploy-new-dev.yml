@@ -25,7 +25,7 @@ jobs:
 
       # ─── 3. install & build ──────────────────────────────────────────────────
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --legacy-peer-deps
 
       - name: Build NestJS
         run: npm run build            # → dist/main.js
