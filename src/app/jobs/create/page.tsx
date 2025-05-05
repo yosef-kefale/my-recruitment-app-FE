@@ -43,6 +43,7 @@ import {
   JobPostingStatusEnums, 
   PaymentTypeEnums 
 } from "@/types/job";
+import { generateJobDescription } from '@/lib/ai-service';
 
 interface SalaryRange {
   minimum?: number;
@@ -788,7 +789,7 @@ We offer a competitive salary, comprehensive benefits package, and opportunities
     return [...new Set([...levelResponsibilities, ...positionResponsibilities])];
   };
 
-  const handleUseAI = () => {
+  const handleUseAI = async () => {
     // Check if required fields are filled
     if (!title || !position || !industry || !employmentType || !experienceLevel) {
       toast({
@@ -807,41 +808,29 @@ We offer a competitive salary, comprehensive benefits package, and opportunities
     setIsEditing(false);
     setCopied(false);
     
-    // Simulate AI generation (in a real app, this would call an API)
-    setTimeout(() => {
-      const generatedDescription = generateJobDescription();
+    try {
+      const generatedDescription = await generateJobDescription(
+        title,
+        position,
+        industry,
+        employmentType,
+        experienceLevel,
+        skill,
+        jobPostRequirement,
+        responsibilities
+      );
+      
       setAiGeneratedDescription(generatedDescription);
       setEditedDescription(generatedDescription);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to generate job description. Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
       setIsGeneratingDescription(false);
-    }, 2000);
-  };
-  
-  const generateJobDescription = () => {
-    // This is a mock implementation. In a real app, this would call an AI service
-    return `We are seeking a ${experienceLevel} ${position} to join our ${industry} team. The ideal candidate will be responsible for developing and maintaining high-quality software solutions, collaborating with cross-functional teams, and contributing to all phases of the development lifecycle.
-
-Key Responsibilities:
-• Design, develop, and maintain software applications
-• Collaborate with product managers, designers, and other engineers
-• Write clean, maintainable, and efficient code
-• Participate in code reviews and provide constructive feedback
-• Troubleshoot, debug, and upgrade existing systems
-• Stay up-to-date with emerging technologies and industry trends
-
-Required Skills:
-• Strong proficiency in programming languages relevant to the position
-• Experience with modern development frameworks and tools
-• Excellent problem-solving and analytical skills
-• Strong communication and teamwork abilities
-• Attention to detail and a commitment to quality
-
-Education and Experience:
-• ${experienceLevel === "Entry-Level" ? "Bachelor's degree in Computer Science or related field" : 
-    experienceLevel === "Mid-Level" ? "Bachelor's degree with 3+ years of experience" : 
-    "Bachelor's degree with 5+ years of experience"}
-• Experience in ${industry} industry is a plus
-
-We offer a competitive salary, comprehensive benefits package, and opportunities for professional growth and development. If you are passionate about technology and looking for a challenging and rewarding career, we encourage you to apply.`;
+    }
   };
   
   const handleCopyDescription = () => {
