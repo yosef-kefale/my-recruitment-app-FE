@@ -13,37 +13,50 @@ export async function generateJobDescription(
   experienceLevel: string,
   skills: string[],
   requirements: string[],
-  responsibilities: string[]
+  responsibilities: string[],
+  additionalContext?: string
 ): Promise<string> {
   try {
-    const prompt = `Generate a professional job description for a ${experienceLevel} ${position} position in the ${industry} industry.
-    
+    console.log('AI Service - Additional Context:', additionalContext);
+
+    if (!additionalContext || additionalContext.trim() === '') {
+      throw new Error('Please provide job details in the additional context field');
+    }
+
+    const prompt = `Based on the following job details, generate a professional job description. Use the provided information as the primary source and incorporate the supplementary details where relevant.
+
+Primary Job Details:
+${additionalContext}
+
+Supplementary Information:
 Job Title: ${title}
+Position: ${position}
+Industry: ${industry}
 Employment Type: ${employmentType}
 Experience Level: ${experienceLevel}
-Industry: ${industry}
+${skills.length > 0 ? `Key Skills: ${skills.join(', ')}` : ''}
+${requirements.length > 0 ? `Requirements: ${requirements.join(', ')}` : ''}
+${responsibilities.length > 0 ? `Responsibilities: ${responsibilities.join(', ')}` : ''}
 
-Key Skills: ${skills.join(', ')}
-Requirements: ${requirements.join(', ')}
-Responsibilities: ${responsibilities.join(', ')}
-
-Please generate a comprehensive job description that includes:
-1. An engaging introduction
-2. Key responsibilities
-3. Required qualifications and skills
-4. Preferred qualifications
-5. Company benefits and culture (if applicable)
-
-Format the description in a professional and engaging way.`;
+Please generate a comprehensive job description that:
+1. Uses the primary job details as the main content
+2. Incorporates relevant supplementary information
+3. Maintains a professional and engaging tone
+4. Includes all necessary sections (introduction, responsibilities, requirements, etc.)
+5. Presents the information in a clear and structured format`;
 
     const response = await cohere.generate({
       prompt,
-      max_tokens: 1000,
+      maxTokens: 1000,
       temperature: 0.7,
       k: 0,
-      stop_sequences: [],
-      return_likelihoods: 'NONE',
+      stopSequences: [],
+      returnLikelihoods: 'NONE',
     });
+
+    if (!response.generations || response.generations.length === 0) {
+      throw new Error('No response generated from AI');
+    }
 
     return response.generations[0].text;
   } catch (error) {

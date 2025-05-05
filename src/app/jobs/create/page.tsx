@@ -123,6 +123,8 @@ function CreateJobContent() {
   const [editedDescription, setEditedDescription] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [additionalContext, setAdditionalContext] = useState("");
+  const [showGenerateButton, setShowGenerateButton] = useState(true);
   
   // New state for requirements and responsibilities AI generation
   const [showRequirementsDialog, setShowRequirementsDialog] = useState(false);
@@ -789,7 +791,7 @@ We offer a competitive salary, comprehensive benefits package, and opportunities
     return [...new Set([...levelResponsibilities, ...positionResponsibilities])];
   };
 
-  const handleUseAI = async () => {
+  const handleUseAI = () => {
     // Check if required fields are filled
     if (!title || !position || !industry || !employmentType || !experienceLevel) {
       toast({
@@ -800,15 +802,32 @@ We offer a competitive salary, comprehensive benefits package, and opportunities
       return;
     }
     
-    // Show the AI dialog and start generating
+    // Show the AI dialog
     setShowAIDialog(true);
-    setIsGeneratingDescription(true);
+    setShowGenerateButton(true); // Show the generate button
     setEditedDescription("");
     setAiGeneratedDescription("");
     setIsEditing(false);
     setCopied(false);
-    
+    setAdditionalContext("");
+  };
+
+  const handleGenerateDescription = async () => {
     try {
+      setIsGeneratingDescription(true);
+      
+      console.log('Generating description with context:', {
+        title,
+        position,
+        industry,
+        employmentType,
+        experienceLevel,
+        skill,
+        jobPostRequirement,
+        responsibilities,
+        additionalContext
+      });
+
       const generatedDescription = await generateJobDescription(
         title,
         position,
@@ -817,17 +836,23 @@ We offer a competitive salary, comprehensive benefits package, and opportunities
         experienceLevel,
         skill,
         jobPostRequirement,
-        responsibilities
+        responsibilities,
+        additionalContext || '' // Ensure it's not undefined
       );
+      
+      console.log('Generated description:', generatedDescription);
       
       setAiGeneratedDescription(generatedDescription);
       setEditedDescription(generatedDescription);
+      setShowGenerateButton(false);
     } catch (error) {
+      console.error('Error generating description:', error);
       toast({
         title: "Error",
         description: "Failed to generate job description. Please try again later.",
         variant: "destructive",
       });
+      setShowGenerateButton(true);
     } finally {
       setIsGeneratingDescription(false);
     }
@@ -2196,76 +2221,131 @@ We offer a competitive salary, comprehensive benefits package, and opportunities
       <Dialog open={showAIDialog} onOpenChange={setShowAIDialog}>
         <DialogContent className="sm:max-w-3xl max-h-[80vh] overflow-hidden flex flex-col">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-blue-900">AI-Generated Job Description</DialogTitle>
+            <DialogTitle className="text-2xl font-bold text-blue-900">AI Job Description Generator</DialogTitle>
             <DialogDescription className="text-gray-600">
-              Based on the job details you&apos;ve provided, here is a suggested description. You can edit it, copy it, or apply it directly to your form.
+              Enter the job details below to generate a professional description. The AI will use this as the primary content and incorporate relevant information from the form.
             </DialogDescription>
           </DialogHeader>
           
-          {isGeneratingDescription ? (
-            <div className="flex flex-col items-center justify-center py-12 space-y-4">
-              <Loader2 className="h-12 w-12 animate-spin text-blue-500" />
-              <p className="text-gray-600 font-medium">Generating your job description...</p>
-              <p className="text-sm text-gray-500">This may take a few moments</p>
+          {showGenerateButton ? (
+            <div className="flex-1 overflow-hidden flex flex-col space-y-4">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="additionalContext" className="text-sm font-medium">
+                    Job Details *
+                  </Label>
+                  <Textarea
+                    id="additionalContext"
+                    value={additionalContext}
+                    onChange={(e) => setAdditionalContext(e.target.value)}
+                    placeholder="Enter the job details here. For example:
+• Job title and position
+• Key responsibilities and duties
+• Required skills and qualifications
+• Experience level and requirements
+• Company culture and values
+• Specific project details
+• Team structure and collaboration
+• Growth opportunities
+• Benefits and perks
+
+The more details you provide, the better the generated description will be."
+                    className="min-h-[300px] resize-none"
+                  />
+                  <p className="text-sm text-gray-500">
+                    This will be used as the primary content for generating the job description. The AI will incorporate relevant information from the form fields as supplementary details.
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex justify-end pt-4 border-t">
+                <Button 
+                  onClick={handleGenerateDescription}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-6"
+                  disabled={isGeneratingDescription || !additionalContext.trim()}
+                >
+                  {isGeneratingDescription ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Wand2 className="mr-2 h-4 w-4" />
+                      Generate Description
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
           ) : (
             <div className="flex-1 overflow-hidden flex flex-col space-y-4">
-              <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
-                {isEditing ? (
-                  <div className="space-y-2">
-                    <Textarea
-                      value={editedDescription}
-                      onChange={(e) => setEditedDescription(e.target.value)}
-                      className="min-h-[400px] resize-none"
-                    />
-                    <div className="flex justify-end">
-                      <Button onClick={handleSaveEdit} variant="outline" className="bg-white">
-                        Save Edit
+              {isGeneratingDescription ? (
+                <div className="flex flex-col items-center justify-center py-12 space-y-4">
+                  <Loader2 className="h-12 w-12 animate-spin text-blue-500" />
+                  <p className="text-gray-600 font-medium">Generating your job description...</p>
+                  <p className="text-sm text-gray-500">This may take a few moments</p>
+                </div>
+              ) : (
+                <>
+                  <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
+                    {isEditing ? (
+                      <div className="space-y-2">
+                        <Textarea
+                          value={editedDescription}
+                          onChange={(e) => setEditedDescription(e.target.value)}
+                          className="min-h-[400px] resize-none"
+                        />
+                        <div className="flex justify-end">
+                          <Button onClick={handleSaveEdit} variant="outline" className="bg-white">
+                            Save Edit
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="bg-gray-50 p-6 rounded-lg min-h-[400px] whitespace-pre-line text-gray-700 leading-relaxed">
+                        {aiGeneratedDescription}
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="flex justify-between items-center pt-4 border-t">
+                    <div className="flex gap-2">
+                      <Button 
+                        onClick={handleCopyDescription} 
+                        variant="outline"
+                        className="flex items-center gap-2 bg-white hover:bg-gray-50"
+                      >
+                        {copied ? (
+                          <>
+                            <CheckCircle className="h-4 w-4 text-green-500" />
+                            <span className="text-green-600">Copied!</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="h-4 w-4" />
+                            Copy
+                          </>
+                        )}
+                      </Button>
+                      <Button 
+                        onClick={handleEditDescription} 
+                        variant="outline"
+                        className="flex items-center gap-2 bg-white hover:bg-gray-50"
+                      >
+                        <Edit className="h-4 w-4" />
+                        Edit
                       </Button>
                     </div>
+                    <Button 
+                      onClick={handleApplyDescription} 
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-6"
+                    >
+                      Apply to Form
+                    </Button>
                   </div>
-                ) : (
-                  <div className="bg-gray-50 p-6 rounded-lg min-h-[400px] whitespace-pre-line text-gray-700 leading-relaxed">
-                    {aiGeneratedDescription}
-                  </div>
-                )}
-              </div>
-              
-              <div className="flex justify-between items-center pt-4 border-t">
-                <div className="flex gap-2">
-                  <Button 
-                    onClick={handleCopyDescription} 
-                    variant="outline"
-                    className="flex items-center gap-2 bg-white hover:bg-gray-50"
-                  >
-                    {copied ? (
-                      <>
-                        <CheckCircle className="h-4 w-4 text-green-500" />
-                        <span className="text-green-600">Copied!</span>
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="h-4 w-4" />
-                        Copy
-                      </>
-                    )}
-                  </Button>
-                  <Button 
-                    onClick={handleEditDescription} 
-                    variant="outline"
-                    className="flex items-center gap-2 bg-white hover:bg-gray-50"
-                  >
-                    <Edit className="h-4 w-4" />
-                    Edit
-                  </Button>
-                </div>
-                <Button 
-                  onClick={handleApplyDescription} 
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-6"
-                >
-                  Apply to Form
-                </Button>
-              </div>
+                </>
+              )}
             </div>
           )}
         </DialogContent>
