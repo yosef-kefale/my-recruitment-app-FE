@@ -1,0 +1,66 @@
+# .github/workflows/deploy-new-dev.yml
+name: Build & Deploy (master → talent-hub-fe)
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      APP_DIR: /projects/talenthub/my-recruitment-app-FE   # folder on the server
+
+    steps:
+      # ─── 1. checkout ─────────────────────────────────────────────────────────
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      # ─── 2. Node tool-chain ──────────────────────────────────────────────────
+      - name: Use Node v20.15.1
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.15.1'
+
+      # ─── 3. install & build ──────────────────────────────────────────────────
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build NestJS
+        run: npm run build            # → dist/main.js
+
+      # ─── 4. copy artefacts to the server ─────────────────────────────────────
+      - name: Copy files to server
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host:       ${{ secrets.SSH_HOST }}
+          username:   ${{ secrets.SSH_USER }}   # root
+          key:        ${{ secrets.SSH_KEY }}
+          port:       ${{ secrets.SSH_PORT }}   # usually 22
+          overwrite:  true
+          target:     ${{ env.APP_DIR }}
+          # IMPORTANT → one comma-separated string (no newlines)
+          # source: "dist/**,package.json,package-lock.json,.env,templates/**"
+      # (optional) quick listing
+      - name: Show workspace tree (debug)
+        run: |
+          echo "── Workspace after build ──"
+          find . -maxdepth 2 -type f | sort
+      # ─── 5. SSH + PM2 reload/start ───────────────────────────────────────────
+      - name: Remote deploy commands
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host:       ${{ secrets.SSH_HOST }}
+          username:   ${{ secrets.SSH_USER }}
+          key:        ${{ secrets.SSH_KEY }}
+          port:       ${{ secrets.SSH_PORT }}
+          script: |
+            set -e
+            cd /projects/talenthub/my-recruitment-app-FE 
+            echo "pm2 reload talent-hub-fe || pm2 start "npm run start" --name talent-hub-fe
+            pm2 saveInstalling production dependencies…"
+            npm ci
+            echo "Reloading (or starting) PM2 process…"
+            pm2 reload talent-hub-fe || pm2 start "npm run start" --name talent-hub-fe
+            pm2 save
