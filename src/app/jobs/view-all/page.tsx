@@ -182,6 +182,7 @@ const ViewJobs = () => {
       minimumGPA: Number(job.minimumGPA || 0),
       postedDate: String(job.postedDate || ''),
       applicationURL: String(job.applicationURL || ''),
+      applicationCount: Number(job.applicationCount || 0),
       experienceLevel: String(job.experienceLevel || ''),
       fieldOfStudy: String(job.fieldOfStudy || ''),
       educationLevel: String(job.educationLevel || ''),

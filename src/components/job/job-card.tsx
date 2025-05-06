@@ -227,49 +227,22 @@ const JobCard: React.FC<JobCardProps> = ({ job, isEmployer, onDelete }) => {
                   </Tooltip>
                 </TooltipProvider>
               )}
-              {job.applicationCount !== undefined && (job.location || job.city || job.companyName) && (
+              {(job.location || job.city || job.companyName) && (
                 <span className="text-gray-300">•</span>
               )}
-              {job.applicationCount !== undefined && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="flex items-center gap-1">
-                        <Users className="w-3.5 h-3.5" />
-                        <span>{job.applicationCount}</span>
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Number of applicants</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
-              {job.salaryRange && (job.salaryRange.minimum || job.salaryRange.maximum) && 
-                (job.applicationCount !== undefined || job.location || job.city || job.companyName) && (
-                <span className="text-gray-300">•</span>
-              )}
-              {job.salaryRange && (job.salaryRange.minimum || job.salaryRange.maximum) && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="flex items-center gap-1">
-                        <DollarSign className="w-3.5 h-3.5" />
-                        <span>
-                          {job.salaryRange.minimum && job.salaryRange.maximum 
-                            ? `$${job.salaryRange.minimum}K-${job.salaryRange.maximum}K`
-                            : job.salaryRange.minimum 
-                            ? `$${job.salaryRange.minimum}K+`
-                            : `Up to $${job.salaryRange.maximum}K`}
-                        </span>
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Salary range</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-1">
+                      <Users className="w-3.5 h-3.5" />
+                      <span>{job.applicationCount || 0}</span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Number of applicants</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           </div>
         </div>

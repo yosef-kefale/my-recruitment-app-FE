@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { MapPin, Briefcase, Clock, DollarSign, Bookmark, Building2 } from "lucide-react";
+import { MapPin, Briefcase, Clock, DollarSign, Bookmark, Building2, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -95,9 +95,10 @@ const JobGridCard = ({ job, isEmployer, onDelete, onClick }: JobGridCardProps) =
   const location = typeof job.location === 'string' ? job.location : "Remote";
   const employmentType = typeof job.employmentType === 'string' ? job.employmentType : "Full-time";
   const salaryRange = job.salaryRange 
-    ? `${job.salaryRange.minimum || 'N/A'} - ${job.salaryRange.maximum || 'N/A'}`
+    ? `${job.salaryRange.minimum ? `$${job.salaryRange.minimum}K` : ''}${job.salaryRange.minimum && job.salaryRange.maximum ? ' - ' : ''}${job.salaryRange.maximum ? `$${job.salaryRange.maximum}K` : ''}`
     : undefined;
   const requiredSkills = Array.isArray(job.skill) ? job.skill.filter(skill => typeof skill === 'string') : [];
+  const applicationCount = job?.applicationCount || 0;
   const createdAt = typeof job.createdAt === 'string' ? job.createdAt : undefined;
 
   return (
@@ -172,10 +173,14 @@ const JobGridCard = ({ job, isEmployer, onDelete, onClick }: JobGridCardProps) =
             <Briefcase className="h-4 w-4 flex-shrink-0" />
             <span className="line-clamp-1">{employmentType}</span>
           </div>
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <Users className="h-4 w-4 flex-shrink-0" />
+            <span className="line-clamp-1">{applicationCount} applicants</span>
+          </div>
           {salaryRange && (
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <DollarSign className="h-4 w-4 flex-shrink-0" />
-              <span className="line-clamp-1">{salaryRange}</span>
+              <span className="line-clamp-1">{salaryRange} per year</span>
             </div>
           )}
         </div>
