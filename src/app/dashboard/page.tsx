@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/chart";
 import { CartesianGrid, XAxis, Bar, BarChart, PieChart, Pie, Cell } from "recharts";
 import { CalendarIcon, Download, Briefcase, Users, Calendar as CalendarIcon2, CheckCircle } from "lucide-react";
+import Link from "next/link";
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
@@ -262,6 +263,12 @@ export default function Dashboard() {
             </ChartContainer>
           </CardContent>
         </Card>
+      </div>
+
+      <div className="mt-8">
+        <Link href="/dashboard/email-test" className="text-sky-600 underline font-medium">
+          Send Test Email (Admin)
+        </Link>
       </div>
     </div>
   );
