@@ -33,3 +33,20 @@ export const JOB_LOCATIONS = [
 ];
 
 export const STATUSES = ["Active", "Inactive"];
+
+export enum JobPostingStatusEnums {
+  DRAFT = 'Draft',
+  PENDING = 'Pending',
+  POSTED = 'Posted',
+  EXPIRED = 'Expired',
+  ON_HOLD = 'On Hold',
+  WITHDRAWN = 'Withdrawn',
+  CLOSED = 'Closed',
+}
+
+export enum ApplicationStatusEnums {
+  PENDING = 'Pending',
+  SELECTED = 'Selected',
+  REJECTED = 'Rejected',
+  HIRED = 'Hired',
+}

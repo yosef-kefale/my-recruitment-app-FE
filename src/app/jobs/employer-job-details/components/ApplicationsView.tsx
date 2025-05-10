@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import ApplicationDetail from "./ApplicationDetail";
 import { Eye, Download, FileText, Calendar, CheckCircle, XCircle, Clock, AlertCircle, ExternalLink, CheckSquare } from "lucide-react";
+import { ApplicationStatusEnums } from "@/lib/enums";
 
 interface ApplicationsViewProps {
   applications: Application[];
@@ -66,22 +67,20 @@ const ApplicationsView = ({
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'pending': return 'bg-yellow-500';
-      case 'reviewed': return 'bg-blue-500';
-      case 'shortlisted': return 'bg-green-500';
-      case 'rejected': return 'bg-red-500';
-      case 'hired': return 'bg-purple-500';
+      case ApplicationStatusEnums.PENDING: return 'bg-yellow-500';
+      case ApplicationStatusEnums.SELECTED: return 'bg-green-500';
+      case ApplicationStatusEnums.REJECTED: return 'bg-red-500';
+      case ApplicationStatusEnums.HIRED: return 'bg-purple-500';
       default: return 'bg-gray-500';
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'pending': return <Clock className="h-4 w-4 mr-1" />;
-      case 'reviewed': return <Eye className="h-4 w-4 mr-1" />;
-      case 'shortlisted': return <CheckCircle className="h-4 w-4 mr-1" />;
-      case 'rejected': return <XCircle className="h-4 w-4 mr-1" />;
-      case 'hired': return <AlertCircle className="h-4 w-4 mr-1" />;
+      case ApplicationStatusEnums.PENDING: return <Clock className="h-4 w-4 mr-1" />;
+      case ApplicationStatusEnums.SELECTED: return <CheckCircle className="h-4 w-4 mr-1" />;
+      case ApplicationStatusEnums.REJECTED: return <XCircle className="h-4 w-4 mr-1" />;
+      case ApplicationStatusEnums.HIRED: return <AlertCircle className="h-4 w-4 mr-1" />;
       default: return null;
     }
   };
@@ -99,11 +98,10 @@ const ApplicationsView = ({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Applications</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="reviewed">Reviewed</SelectItem>
-                <SelectItem value="shortlisted">Shortlisted</SelectItem>
-                <SelectItem value="rejected">Rejected</SelectItem>
-                <SelectItem value="hired">Hired</SelectItem>
+                <SelectItem value={ApplicationStatusEnums.PENDING}>Pending</SelectItem>
+                <SelectItem value={ApplicationStatusEnums.SELECTED}>Selected</SelectItem>
+                <SelectItem value={ApplicationStatusEnums.REJECTED}>Rejected</SelectItem>
+                <SelectItem value={ApplicationStatusEnums.HIRED}>Hired</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -231,11 +229,10 @@ const ApplicationsView = ({
                           <SelectValue placeholder="Update status" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="pending">Pending</SelectItem>
-                          <SelectItem value="reviewed">Reviewed</SelectItem>
-                          <SelectItem value="shortlisted">Shortlisted</SelectItem>
-                          <SelectItem value="rejected">Rejected</SelectItem>
-                          <SelectItem value="hired">Hired</SelectItem>
+                          <SelectItem value={ApplicationStatusEnums.PENDING}>Pending</SelectItem>
+                          <SelectItem value={ApplicationStatusEnums.SELECTED}>Selected</SelectItem>
+                          <SelectItem value={ApplicationStatusEnums.REJECTED}>Rejected</SelectItem>
+                          <SelectItem value={ApplicationStatusEnums.HIRED}>Hired</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>

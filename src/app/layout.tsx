@@ -7,6 +7,11 @@ import { Toaster } from "@/components/ui/toaster";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import Navbar from "../components/navbar/navBar";
+import axios from "axios";
+import { setupAxiosInterceptors, getAccessToken } from "@/lib/token";
+
+// Setup axios interceptors
+setupAxiosInterceptors(axios);
 
 export default function RootLayout({
   children,
@@ -21,7 +26,7 @@ export default function RootLayout({
   useEffect(() => {
     // Check login status only on the client side
     if (typeof window !== "undefined") {
-      const token = localStorage.getItem("token");
+      const token = getAccessToken();
       const userRole = localStorage.getItem("role"); // Assuming role is stored in localStorage
 
       setIsLoggedIn(!!token);

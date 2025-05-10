@@ -10,7 +10,8 @@ import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
 import { Toaster } from "../../components/ui/toaster";
 import { Label } from "../../components/ui/label";
-import { API_URL, loginUser, saveToken, getToken } from "@/lib/api";
+import { API_URL, loginUser } from "@/lib/api";
+import { saveTokens, getAccessToken } from "@/lib/token";
 import { Loader2, Eye, EyeOff } from "lucide-react";
 
 function LoginContent() {
@@ -27,7 +28,7 @@ function LoginContent() {
 
   // Redirect if already logged in
   useEffect(() => {
-    const token = getToken();
+    const token = getAccessToken();
     setIsEmployee(!isEmployer);
 
     if (token) {
@@ -55,8 +56,8 @@ function LoginContent() {
         data = await loginUser(username, password);
       }
 
-      saveToken(data.accessToken);
-      localStorage.setItem("refreshToken", data.refreshToken);
+
+      saveTokens(data.accessToken, data.refreshToken);
       localStorage.setItem("organization", JSON.stringify(data.organization));
       localStorage.setItem("role", isEmployee ? "employee" : "employer");
 

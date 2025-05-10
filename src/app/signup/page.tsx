@@ -94,11 +94,6 @@ export default function SignupPage() {
       return updatedIndustries;
     });
   };
-  
-  const testData = () => {
-    console.log(formData);
-    console.log(selectedIndustries);
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

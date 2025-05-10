@@ -243,6 +243,26 @@ const JobCard: React.FC<JobCardProps> = ({ job, isEmployer, onDelete }) => {
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
+              <span className="text-gray-300">•</span>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Badge 
+                      className={`px-2 py-0.5 text-xs ${
+                        job.status === 'active' ? 'bg-green-50 text-green-600' :
+                        job.status === 'closed' ? 'bg-red-50 text-red-600' :
+                        job.status === 'draft' ? 'bg-gray-50 text-gray-600' :
+                        'bg-blue-50 text-blue-600'
+                      }`}
+                    >
+                      {job.status.charAt(0).toUpperCase() + job.status.slice(1)}
+                    </Badge>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Job status</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           </div>
         </div>
@@ -316,7 +336,7 @@ const JobCard: React.FC<JobCardProps> = ({ job, isEmployer, onDelete }) => {
                 <TooltipProvider key={skill}>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Badge className="bg-sky-50 text-sky-600 px-2 py-0.5 text-xs">
+                      <Badge className="bg-sky-50 text-sky-600 hover:bg-sky-100 cursor-default px-2 py-0.5 text-xs">
                         {skill}
                       </Badge>
                     </TooltipTrigger>
@@ -327,7 +347,7 @@ const JobCard: React.FC<JobCardProps> = ({ job, isEmployer, onDelete }) => {
                 </TooltipProvider>
               ))}
               {job.skill.length > 2 && (
-                <Badge className="bg-gray-50 text-gray-600 px-2 py-0.5 text-xs">
+                <Badge className="bg-gray-50 text-gray-600 hover:bg-sky-100 cursor-default px-2 py-0.5 text-xs">
                   +{job.skill.length - 2}
                 </Badge>
               )}

@@ -255,9 +255,6 @@ export function AppSidebar() {
 
         {/* Navigation Menu */}
         <SidebarGroup>
-          <SidebarGroupLabel className="text-gray-400 px-4 py-2">
-            Application
-          </SidebarGroupLabel>
           <SidebarMenu className="group-data-[collapsible=icon]:mt-20">
             {menuItems.map((item) => (
               <div key={item.title}>

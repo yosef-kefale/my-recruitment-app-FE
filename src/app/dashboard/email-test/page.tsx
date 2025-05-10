@@ -39,7 +39,8 @@ const templates = [
     variables: {
       candidateName: "John Doe",
       positionName: "Senior Developer",
-      companyName: "Tech Corp"
+      companyName: "Tech Corp",
+      baseUrl: "http://138.197.105.31:3000"
     }
   },
   { 

@@ -9,20 +9,22 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { CheckCircle, XCircle, AlertCircle, Filter, Users, CheckSquare, Square, GraduationCap, Briefcase, DollarSign, Code, Heart, Building, Clock } from "lucide-react";
+import { CheckCircle, XCircle, AlertCircle, Filter, Users, CheckSquare, Square, GraduationCap, Briefcase, DollarSign, Code, Heart, Building, Clock, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { INDUSTRIES } from "@/lib/enums";
+import { INDUSTRIES, ApplicationStatusEnums } from "@/lib/enums";
 
 interface BulkEvaluationProps {
   applications: Application[];
   screeningQuestions: ScreeningQuestion[];
   onUpdateApplicationStatus: (applicationId: string, newStatus: string) => void;
+  onBack: () => void;
 }
 
 const BulkEvaluation = ({ 
   applications, 
   screeningQuestions,
-  onUpdateApplicationStatus 
+  onUpdateApplicationStatus,
+  onBack
 }: BulkEvaluationProps) => {
   const { toast } = useToast();
   
@@ -212,11 +214,10 @@ const BulkEvaluation = ({
   // Get status badge color
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'pending': return 'bg-yellow-500';
-      case 'reviewed': return 'bg-blue-500';
-      case 'shortlisted': return 'bg-green-500';
-      case 'rejected': return 'bg-red-500';
-      case 'hired': return 'bg-purple-500';
+      case ApplicationStatusEnums.PENDING: return 'bg-yellow-500';
+      case ApplicationStatusEnums.SELECTED: return 'bg-green-500';
+      case ApplicationStatusEnums.REJECTED: return 'bg-red-500';
+      case ApplicationStatusEnums.HIRED: return 'bg-purple-500';
       default: return 'bg-gray-500';
     }
   };
@@ -224,11 +225,10 @@ const BulkEvaluation = ({
   // Get status icon
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'pending': return <AlertCircle className="h-4 w-4 mr-1" />;
-      case 'reviewed': return <AlertCircle className="h-4 w-4 mr-1" />;
-      case 'shortlisted': return <CheckCircle className="h-4 w-4 mr-1" />;
-      case 'rejected': return <XCircle className="h-4 w-4 mr-1" />;
-      case 'hired': return <CheckCircle className="h-4 w-4 mr-1" />;
+      case ApplicationStatusEnums.PENDING: return <AlertCircle className="h-4 w-4 mr-1" />;
+      case ApplicationStatusEnums.SELECTED: return <CheckCircle className="h-4 w-4 mr-1" />;
+      case ApplicationStatusEnums.REJECTED: return <XCircle className="h-4 w-4 mr-1" />;
+      case ApplicationStatusEnums.HIRED: return <CheckCircle className="h-4 w-4 mr-1" />;
       default: return null;
     }
   };
@@ -236,8 +236,20 @@ const BulkEvaluation = ({
   return (
     <Card className="overflow-hidden">
       <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b">
-        <CardTitle className="text-2xl text-blue-800">Bulk Evaluation</CardTitle>
-        <CardDescription>Evaluate multiple applications at once based on criteria</CardDescription>
+        <div className="flex justify-between items-center">
+          <div>
+            <CardTitle className="text-2xl text-blue-800">Bulk Evaluation</CardTitle>
+            <CardDescription>Evaluate multiple applications at once based on criteria</CardDescription>
+          </div>
+          <Button 
+            variant="outline" 
+            onClick={onBack}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Regular View
+          </Button>
+        </div>
       </CardHeader>
       <CardContent className="p-6">
         {/* Filters */}
@@ -255,11 +267,10 @@ const BulkEvaluation = ({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Applications</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="reviewed">Reviewed</SelectItem>
-                  <SelectItem value="shortlisted">Shortlisted</SelectItem>
-                  <SelectItem value="rejected">Rejected</SelectItem>
-                  <SelectItem value="hired">Hired</SelectItem>
+                  <SelectItem value={ApplicationStatusEnums.PENDING}>Pending</SelectItem>
+                  <SelectItem value={ApplicationStatusEnums.SELECTED}>Selected</SelectItem>
+                  <SelectItem value={ApplicationStatusEnums.REJECTED}>Rejected</SelectItem>
+                  <SelectItem value={ApplicationStatusEnums.HIRED}>Hired</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -436,10 +447,9 @@ const BulkEvaluation = ({
                   <SelectValue placeholder="Select action" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="shortlisted">Shortlist</SelectItem>
-                  <SelectItem value="rejected">Reject</SelectItem>
-                  <SelectItem value="reviewed">Mark as Reviewed</SelectItem>
-                  <SelectItem value="hired">Hire</SelectItem>
+                  <SelectItem value={ApplicationStatusEnums.SELECTED}>Select</SelectItem>
+                  <SelectItem value={ApplicationStatusEnums.REJECTED}>Reject</SelectItem>
+                  <SelectItem value={ApplicationStatusEnums.HIRED}>Hire</SelectItem>
                 </SelectContent>
               </Select>
             </div>

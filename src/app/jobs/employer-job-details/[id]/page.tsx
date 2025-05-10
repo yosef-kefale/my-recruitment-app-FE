@@ -38,6 +38,7 @@ import {
 } from "lucide-react";
 import { API_URL } from "@/lib/api";
 import { ScreeningQuestionsForm } from "@/components/jobs/screening-questions/ScreeningQuestionsForm";
+import { JobPostingStatusEnums, ApplicationStatusEnums } from "@/lib/enums";
 
 const EmployerJobDetail = () => {
   const params = useParams();
@@ -206,11 +207,13 @@ const EmployerJobDetail = () => {
   
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'pending': return 'bg-yellow-500';
-      case 'reviewed': return 'bg-blue-500';
-      case 'shortlisted': return 'bg-green-500';
-      case 'rejected': return 'bg-red-500';
-      case 'hired': return 'bg-purple-500';
+      case JobPostingStatusEnums.DRAFT: return 'bg-gray-500';
+      case JobPostingStatusEnums.PENDING: return 'bg-yellow-500';
+      case JobPostingStatusEnums.POSTED: return 'bg-green-500';
+      case JobPostingStatusEnums.EXPIRED: return 'bg-red-500';
+      case JobPostingStatusEnums.ON_HOLD: return 'bg-orange-500';
+      case JobPostingStatusEnums.WITHDRAWN: return 'bg-red-500';
+      case JobPostingStatusEnums.CLOSED: return 'bg-gray-500';
       default: return 'bg-gray-500';
     }
   };
@@ -269,6 +272,28 @@ const EmployerJobDetail = () => {
   
   return (
     <div className="container mx-auto py-8 px-4">
+      <Button
+        variant="ghost"
+        className="mb-6 flex items-center gap-2"
+        onClick={() => router.back()}
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="h-4 w-4"
+        >
+          <path d="m15 18-6-6 6-6" />
+        </svg>
+        Back
+      </Button>
+
       {applications.length === 0 && (
         <div className="mb-8 p-8 rounded-xl border border-blue-100 shadow-sm">
           <div className="flex flex-col md:flex-row justify-between items-start gap-6">
@@ -499,6 +524,7 @@ const EmployerJobDetail = () => {
               applications={applications} 
               screeningQuestions={screeningQuestions}
               onUpdateApplicationStatus={handleUpdateApplicationStatus}
+              onBack={() => setShowBulkEvaluation(false)}
             />
           ) : (
             <ApplicationsView 
@@ -657,9 +683,13 @@ const EmployerJobDetail = () => {
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="paused">Paused</SelectItem>
-                    <SelectItem value="closed">Closed</SelectItem>
+                    <SelectItem value={JobPostingStatusEnums.DRAFT}>Draft</SelectItem>
+                    <SelectItem value={JobPostingStatusEnums.PENDING}>Pending</SelectItem>
+                    <SelectItem value={JobPostingStatusEnums.POSTED}>Posted</SelectItem>
+                    <SelectItem value={JobPostingStatusEnums.EXPIRED}>Expired</SelectItem>
+                    <SelectItem value={JobPostingStatusEnums.ON_HOLD}>On Hold</SelectItem>
+                    <SelectItem value={JobPostingStatusEnums.WITHDRAWN}>Withdrawn</SelectItem>
+                    <SelectItem value={JobPostingStatusEnums.CLOSED}>Closed</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

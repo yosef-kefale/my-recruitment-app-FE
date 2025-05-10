@@ -101,18 +101,23 @@ export default function NavBarNotLogged({
 
             {/* Auth Buttons - Desktop */}
             <div className="hidden md:flex items-center space-x-3">
+              {viewType === "candidate" && (
               <button
-                onClick={handleLoginClickEmployee}
-                className="text-gray-600 hover:text-sky-600 font-medium px-4 py-2 rounded-lg hover:bg-gray-50 transition-all duration-200"
-              >
-                Sign In
-              </button>
+              onClick={handleLoginClickEmployee}
+              className="text-gray-600 hover:text-sky-600 font-medium px-4 py-2 rounded-lg hover:bg-gray-50 transition-all duration-200"
+            >
+              Sign In
+            </button>
+              )}
+
+              {viewType === "employer" && (
               <button
-                onClick={handleLoginClickEmployer}
-                className="bg-gradient-to-r from-sky-600 to-blue-600 text-white px-4 py-2 rounded-lg hover:from-sky-700 hover:to-blue-700 transition-all duration-200 font-medium shadow-sm"
+              onClick={handleLoginClickEmployer}
+              className="bg-gradient-to-r from-sky-600 to-blue-600 text-white px-4 py-2 rounded-lg hover:from-sky-700 hover:to-blue-700 transition-all duration-200 font-medium shadow-sm"
               >
                 Post a Job
               </button>
+              )}
             </div>
 
             <Separator orientation="vertical" className="h-8" />
