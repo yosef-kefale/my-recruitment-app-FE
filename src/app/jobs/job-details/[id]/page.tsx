@@ -14,6 +14,7 @@ import axios from "axios";
 import { CVUploadSection } from "@/components/job/cv-upload-section";
 import { format, parseISO } from "date-fns";
 import { API_URL } from "@/lib/api";
+import { toast } from "@/components/ui/use-toast";
 
 interface UserData {
   id: string;
@@ -129,26 +130,18 @@ const JobDetail = () => {
 
   const fetchJob = async () => {
     try {
-      const token = localStorage.getItem("token");
-
-      const apiUrl = `${API_URL}/jobs/${id}`;
-
-      const res = await fetch(apiUrl, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!res.ok) throw new Error("Failed to fetch jobs");
-
-      const data = await res.json();
-      console.log(data);
-
-      setJob(data);
+      setLoading(true);
+      const response = await axios.get(`${API_URL}/jobs/${id}`);
+      setJob(response.data);
     } catch (error) {
-      console.error("Error fetching job:", error);
+      console.error("Error fetching job details:", error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch job details. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 

@@ -24,6 +24,7 @@ import {
 import { JobPosting } from "../../models/jobPosting";
 import { Application } from "../../models/application";
 import { API_URL } from "@/lib/api";
+import axios from "axios";
 
 export default function AllCandidates() {
   const router = useRouter();
@@ -60,36 +61,11 @@ export default function AllCandidates() {
   const fetchJobs = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem("token");
-      if (!token) {
-        toast({
-          title: "Error",
-          description: "No authentication token found. Please log in again.",
-          variant: "destructive",
-        });
-        setJobs([]);
-        return;
-      }
-
-      console.log("Fetching jobs with token:", token.substring(0, 10) + "...");
-
-      const response = await fetch(`${API_URL}/jobs`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch jobs: ${response.status} ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      console.log("Jobs API response:", data);
+      const response = await axios.get(`${API_URL}/jobs`);
+      console.log("Jobs API response:", response.data);
       
       // Check if data has an items property (like in view-all page)
-      const jobsData = data.items || data;
+      const jobsData = response.data.items || response.data;
       console.log("Processed jobs data:", jobsData);
       
       // Ensure jobsData is an array
@@ -118,39 +94,15 @@ export default function AllCandidates() {
     try {
       setLoading(true);
       console.log(`Starting to fetch candidates for job ID: ${jobId}`);
-      
-      const token = localStorage.getItem("token");
-      if (!token) {
-        console.log("No token found");
-        toast({
-          title: "Error",
-          description: "No authentication token found. Please log in again.",
-          variant: "destructive",
-        });
-        setCandidates([]);
-        return;
-      }
 
-      console.log(`Fetching candidates for job ID: ${jobId}`);
+      const response = await axios.get(
+        `${API_URL}/applications?q=i=JobPost%26%26w=JobPostId:=:${jobId}`
+      );
 
-      const response = await fetch(`${API_URL}/applications?q=i=JobPost%26%26w=JobPostId:=:${jobId}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        console.log(`API returned error status: ${response.status} ${response.statusText}`);
-        throw new Error(`Failed to fetch candidates: ${response.status} ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      console.log("Candidates API response:", data);
+      console.log("Candidates API response:", response.data);
       
       // Check if data has an items property
-      const candidatesData = data.items || [];
+      const candidatesData = response.data.items || [];
       console.log(`Found ${candidatesData.length} candidates from API for job ID: ${jobId}`);
       setCandidates(candidatesData);
       

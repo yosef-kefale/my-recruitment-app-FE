@@ -24,6 +24,7 @@ import {
 import { useDebounce } from "@/hooks/use-debounce";
 import { Input } from "@/components/ui/input";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import axios from "axios";
 
 const ViewJobs = () => {
   const [filteredJobs, setFilteredJobs] = useState<JobPosting[]>([]);
@@ -192,52 +193,10 @@ const ViewJobs = () => {
   };
 
   const fetchJobs = async () => {
-    setIsLoading(true);
     try {
-      const token = localStorage.getItem("token");
-      if (!token) throw new Error("No authentication token found");
-
-      const role = localStorage.getItem("role");
-      const isEmployee = role === "employee" ? true : false;
-      setIsEmployeeView(isEmployee);
-
-      // Calculate skip value for pagination
-      const skip = (currentPage - 1) * itemsPerPage;
-
-      // Build filter query
-      const filterQuery = buildFilterQuery();
-
-      // Determine the correct API endpoint with pagination and filter parameters
-      const baseUrl = filterValues.jobType === "For me"
-        ? `${API_URL}/jobs/get-all-job-postings-by-skills`
-        : `${API_URL}/jobs/get-all-job-postings`;
-
-      // Construct the complete URL with proper parameter encoding
-      const queryParams = new URLSearchParams();
-      if (filterQuery) {
-        queryParams.append('q', filterQuery);
-      }
-      queryParams.append('t', itemsPerPage.toString());
-      queryParams.append('sk', skip.toString());
-
-      const apiUrl = `${baseUrl}?${queryParams.toString()}`;
-
-      console.log('Fetching jobs with URL:', apiUrl); // For debugging
-
-      const res = await fetch(apiUrl, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || "Failed to fetch jobs");
-      }
-
-      const data = await res.json();
+      setIsLoading(true);
+      const response = await axios.get(`${API_URL}/jobs`);
+      const data = response.data;
       
       // Validate and transform the data
       const validatedJobs = (data.items || []).map(validateJobData);
@@ -252,42 +211,12 @@ const ViewJobs = () => {
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
 
-      // If user is an employee, fetch saved jobs to update the isSaved property
-      if (isEmployee) {
-        try {
-          const savedJobsRes = await fetch(`${API_URL}/save-jobs`, {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          });
-          
-          if (savedJobsRes.ok) {
-            const savedJobsData = await savedJobsRes.json();
-            const savedJobIds = savedJobsData.items.map((item: { jobPostId: string }) => String(item.jobPostId || ''));
-            
-            const jobsWithSavedStatus = sortedJobs.map((job: JobPosting) => ({
-              ...job,
-              isSaved: savedJobIds.includes(job.id)
-            }));
-            
-            setFilteredJobs(jobsWithSavedStatus);
-          } else {
-            setFilteredJobs(sortedJobs);
-          }
-        } catch (error) {
-          console.error("Error fetching saved jobs:", error);
-          setFilteredJobs(sortedJobs);
-        }
-      } else {
-        setFilteredJobs(sortedJobs);
-      }
-    } catch (err) {
-      console.error("Error fetching jobs:", err);
+      setFilteredJobs(sortedJobs);
+    } catch (error) {
+      console.error("Error fetching jobs:", error);
       toast({
         title: "Error",
-        description: err instanceof Error ? err.message : "Failed to fetch job postings",
+        description: "Failed to fetch jobs. Please try again.",
         variant: "destructive",
       });
     } finally {

@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 import { Application } from "../../../models/application";
 import { API_URL } from "@/lib/api";
+import axios from "axios";
 
 export default function CandidateDetails() {
   const params = useParams();
@@ -50,33 +51,10 @@ export default function CandidateDetails() {
   const fetchCandidateDetails = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem("token");
-
-      if (!token) {
-        toast({
-          title: "Error",
-          description: "No authentication token found. Please log in again.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      const response = await fetch(`${API_URL}/applications/${id}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch candidate details: ${response.status} ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      console.log("Candidate details API response:", data);
+      const response = await axios.get(`${API_URL}/applications/${id}`);
+      console.log("Candidate details API response:", response.data);
       
-      if (!data) {
+      if (!response.data) {
         console.log("No data received from API");
         toast({
           title: "Error",
@@ -86,7 +64,7 @@ export default function CandidateDetails() {
         return;
       }
 
-      setCandidate(data);
+      setCandidate(response.data);
     } catch (error) {
       console.error("Error fetching candidate details:", error);
       toast({

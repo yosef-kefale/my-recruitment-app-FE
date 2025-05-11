@@ -65,6 +65,18 @@ const userSchema = z.object({
 
 type FormValues = z.infer<typeof userSchema>;
 
+// Add password change schema
+const passwordChangeSchema = z.object({
+  currentPassword: z.string().min(1, "Current password is required"),
+  newPassword: z.string().min(8, "Password must be at least 8 characters"),
+  confirmPassword: z.string().min(8, "Password must be at least 8 characters"),
+}).refine((data) => data.newPassword === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
+});
+
+type PasswordChangeFormValues = z.infer<typeof passwordChangeSchema>;
+
 // Add these interfaces for the resume generation
 interface Profile {
   fullName: string;
@@ -236,6 +248,16 @@ const UserProfileUpdate = () => {
   const [uploadingProfilePic, setUploadingProfilePic] = useState(false);
   const [profilePicUrl, setProfilePicUrl] = useState<string | null>(null);
   const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  
+  const {
+    register: registerPassword,
+    handleSubmit: handlePasswordSubmit,
+    formState: { errors: passwordErrors },
+    reset: resetPasswordForm,
+  } = useForm<PasswordChangeFormValues>({
+    resolver: zodResolver(passwordChangeSchema),
+  });
 
   // Add this array of questions for the wizard
   const resumeQuestions: Array<{
@@ -388,15 +410,13 @@ const UserProfileUpdate = () => {
         }
         return acc;
       }, {} as Record<string, unknown>);
-
-      const config = {
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-      };
       
       const response = await axios.put(
         `${API_URL}/users/${user.id}`,
         formattedData,
-        config
+        {
+          headers: { "Content-Type": "application/json" }
+        }
       );
       
       if (response.data) {
@@ -556,10 +576,7 @@ const UserProfileUpdate = () => {
         `${API_URL}/users/generate-cv-in-pdf/EuroPass`,
         resumePayload,
         {
-          headers: { 
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           responseType: 'blob'
         }
       );
@@ -592,7 +609,6 @@ const UserProfileUpdate = () => {
       });
     } finally {
       setIsGeneratingResume(false);
-      setResumeGenerationProgress(0);
     }
   };
   
@@ -649,6 +665,33 @@ const UserProfileUpdate = () => {
       });
     } finally {
       setUploadingProfilePic(false);
+    }
+  };
+
+  const onPasswordChange = async (data: PasswordChangeFormValues) => {
+    try {
+      setIsChangingPassword(true);
+      await axios.put(`${API_URL}/users/change-user-password`, {
+        id: user?.id,
+        oldPassword: data.currentPassword,
+        newPassword: data.newPassword,
+        confirmNewPassword: data.confirmPassword
+      });
+      
+      toast({
+        title: "Success",
+        description: "Password changed successfully",
+      });
+      
+      resetPasswordForm();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Failed to change password",
+        variant: "destructive",
+      });
+    } finally {
+      setIsChangingPassword(false);
     }
   };
 
@@ -830,7 +873,7 @@ const UserProfileUpdate = () => {
             </TabsTrigger>
             <TabsTrigger value="contacts" className="data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:border-b-2 data-[state=active]:border-blue-500 rounded-t-lg px-6 py-3">
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
-                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
               </svg>
               Contacts
             </TabsTrigger>
@@ -841,6 +884,13 @@ const UserProfileUpdate = () => {
                 <line x1="6" y1="20" x2="6" y2="14"></line>
               </svg>
               Statistics
+            </TabsTrigger>
+            <TabsTrigger value="password" className="data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:border-b-2 data-[state=active]:border-blue-500 rounded-t-lg px-6 py-3">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+              Password
             </TabsTrigger>
           </TabsList>
           
@@ -1513,6 +1563,64 @@ const UserProfileUpdate = () => {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          <TabsContent value="password" className="p-6">
+            <form onSubmit={handlePasswordSubmit(onPasswordChange)} className="space-y-6 max-w-md">
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">Current Password</label>
+                <Input 
+                  type="password"
+                  className="w-full border-gray-300 focus:border-blue-500 focus:ring-blue-500" 
+                  {...registerPassword("currentPassword")} 
+                />
+                {passwordErrors.currentPassword && (
+                  <p className="text-sm text-red-500 mt-1">{passwordErrors.currentPassword.message}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">New Password</label>
+                <Input 
+                  type="password"
+                  className="w-full border-gray-300 focus:border-blue-500 focus:ring-blue-500" 
+                  {...registerPassword("newPassword")} 
+                />
+                {passwordErrors.newPassword && (
+                  <p className="text-sm text-red-500 mt-1">{passwordErrors.newPassword.message}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">Confirm New Password</label>
+                <Input 
+                  type="password"
+                  className="w-full border-gray-300 focus:border-blue-500 focus:ring-blue-500" 
+                  {...registerPassword("confirmPassword")} 
+                />
+                {passwordErrors.confirmPassword && (
+                  <p className="text-sm text-red-500 mt-1">{passwordErrors.confirmPassword.message}</p>
+                )}
+              </div>
+
+              <Button 
+                type="submit" 
+                className="w-full"
+                disabled={isChangingPassword}
+              >
+                {isChangingPassword ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Changing Password...
+                  </>
+                ) : (
+                  "Change Password"
+                )}
+              </Button>
+            </form>
           </TabsContent>
         </Tabs>
       </div>

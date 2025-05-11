@@ -44,6 +44,7 @@ import {
   PaymentTypeEnums 
 } from "@/types/job";
 import { generateJobDescription } from '@/lib/ai-service';
+import axios from "axios";
 
 interface SalaryRange {
   minimum?: number;
@@ -1154,6 +1155,65 @@ We offer a competitive salary, comprehensive benefits package, and opportunities
     setDescription(content);
   };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      setIsSubmitting(true);
+      const response = await axios.post(`${API_URL}/jobs`, {
+        title,
+        description,
+        position,
+        industry,
+        type,
+        city,
+        location,
+        employmentType,
+        salaryRange,
+        organizationId,
+        deadline,
+        requirementId: "default-requirement",
+        skill,
+        benefits,
+        responsibilities,
+        status,
+        gender,
+        minimumGPA,
+        companyName,
+        companyLogo,
+        postedDate,
+        applicationURL,
+        experienceLevel,
+        fieldOfStudy,
+        educationLevel,
+        howToApply,
+        onHoldDate,
+        jobPostRequirement,
+        positionNumbers: positions,
+        paymentType,
+        screeningQuestions,
+      }, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      
+      toast({
+        title: "Success",
+        description: "Job created successfully!",
+      });
+      router.push("/jobs");
+    } catch (error) {
+      console.error("Error creating job:", error);
+      toast({
+        title: "Error",
+        description: "Failed to create job. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="container mx-auto py-4 px-4">
       <div className="flex justify-between items-center mb-2">
@@ -1178,24 +1238,7 @@ We offer a competitive salary, comprehensive benefits package, and opportunities
 
       {/* Scrollable Form Content with adjusted max height */}
       <div className="mt-2 max-h-[calc(100vh-180px)] overflow-y-auto pb-20">
-        <form onSubmit={(e) => {
-          e.preventDefault();
-          if (currentStep === 0) {
-            handleCreateJob();
-          } else if (currentStep === 1) {
-            if (validateCurrentStep()) {
-              setCurrentStep(2);
-            } else {
-              toast({
-                title: "Validation Error",
-                description: "Please fix the errors before proceeding.",
-                variant: "destructive",
-              });
-            }
-          } else if (currentStep === 2) {
-            handleCreateJob();
-          }
-        }}>
+        <form onSubmit={handleSubmit}>
           {currentStep === 0 && (
             <Card className="mb-2">
               <CardHeader className="pb-2">

@@ -26,6 +26,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { useRouter } from "next/navigation";
+import axios from "axios";
 
 interface FileObject {
   filename: string;
@@ -179,9 +180,6 @@ const ApplicationsPage = () => {
   const fetchApplications = async () => {
     setIsLoading(true);
     try {
-      const token = localStorage.getItem("token");
-      if (!token) throw new Error("No authentication token found");
-
       const org = localStorage.getItem("organization");
       if (!org) throw new Error("No organization found");
       
@@ -200,19 +198,8 @@ const ApplicationsPage = () => {
         queryParams.append("status", statusFilter);
       }
 
-      const res = await fetch(`${API_URL}/applications?${queryParams.toString()}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!res.ok) {
-        throw new Error("Failed to fetch applications");
-      }
-
-      const data: JobApplicationResponse = await res.json();
+      const response = await axios.get(`${API_URL}/applications?${queryParams.toString()}`);
+      const data: JobApplicationResponse = response.data;
       const mappedApplications = data.items.map(mapBackendToFrontend);
       setApplications(mappedApplications);
       setTotalItems(data.total || 0);

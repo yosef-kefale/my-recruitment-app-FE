@@ -75,12 +75,7 @@ const EmployerJobDetail = () => {
   
   const fetchJobDetails = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await axios.get(`${API_URL}/jobs/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+      const response = await axios.get(`${API_URL}/jobs/${id}`);
       setJob(response.data);
     } catch (error) {
       console.error("Error fetching job details:", error);
@@ -89,14 +84,8 @@ const EmployerJobDetail = () => {
   
   const fetchApplications = async () => {
     try {
-      const token = localStorage.getItem("token");
       const response = await axios.get(
-        `${API_URL}/applications?q=i=JobPost%26%26w=JobPostId:=:${id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
+        `${API_URL}/applications?q=i=JobPost%26%26w=JobPostId:=:${id}`
       );
       console.log("Applications response:", response.data);
       setApplications(response.data.items || []);
@@ -121,22 +110,11 @@ const EmployerJobDetail = () => {
   
   const fetchScreeningQuestions = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(
-        `${API_URL}/pre-screening-questions?q=w=jobPostId:=:${id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+      const response = await axios.get(
+        `${API_URL}/pre-screening-questions?q=w=jobPostId:=:${id}`
       );
       
-      if (!response.ok) {
-        throw new Error("Failed to fetch screening questions");
-      }
-      
-      const data = await response.json();
-      setScreeningQuestions(data.items || []);
+      setScreeningQuestions(response.data.items || []);
     } catch (error) {
       console.error("Error fetching screening questions:", error);
       toast({
@@ -182,15 +160,9 @@ const EmployerJobDetail = () => {
   
   const handleUpdateApplicationStatus = async (applicationId: string, newStatus: string) => {
     try {
-      const token = localStorage.getItem("token");
       await axios.patch(
         `${API_URL}/applications/${applicationId}`,
-        { status: newStatus },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
+        { status: newStatus }
       );
       
       // Refresh applications
@@ -229,14 +201,8 @@ const EmployerJobDetail = () => {
     if (!questionId) return;
     
     try {
-      const token = localStorage.getItem("token");
       await axios.delete(
-        `${API_URL}/pre-screening-questions/${questionId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        `${API_URL}/pre-screening-questions/${questionId}`
       );
       
       // Refresh questions

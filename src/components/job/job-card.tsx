@@ -12,6 +12,8 @@ import "react-confirm-alert/src/react-confirm-alert.css";
 import { JobPosting } from "../../app/models/jobPosting";
 import { Organization } from "../../app/models/organization";
 import { API_URL } from "@/lib/api";
+import axios from "axios";
+import { useToast } from "@/components/ui/use-toast";
 
 interface JobCardProps {
   job: JobPosting;
@@ -21,6 +23,7 @@ interface JobCardProps {
 }
 
 const JobCard: React.FC<JobCardProps> = ({ job, isEmployer, onDelete }) => {
+  const { toast } = useToast();
   const [mounted, setMounted] = useState(false);
   const [organization, setOrganization] = useState<Organization | null>(null);
   const [isSaved, setIsSaved] = useState(job.isSaved || false);
@@ -97,37 +100,26 @@ const JobCard: React.FC<JobCardProps> = ({ job, isEmployer, onDelete }) => {
     });
   };
 
-  const handleSaveJob = async (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent card click event
-    
+  const handleSaveJob = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const endpoint = isSaved 
-        ? `${API_URL}/save-jobs/unsave-job-post`
-        : `${API_URL}/save-jobs`;
-
-      const response = await fetch(endpoint, {
-        method: isSaved ? "PUT" : "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          jobPostId: job?.id,
-          userId: organization?.id,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(isSaved ? "Failed to unsave job" : "Failed to save job");
+      if (isSaved) {
+        await axios.delete(`${API_URL}/save-jobs/${job.id}`);
+      } else {
+        await axios.post(`${API_URL}/save-jobs`, { jobId: job.id });
       }
-
-      setIsSaved(!isSaved);
       
-      // Update the job object to reflect the new saved state
-      job.isSaved = !isSaved;
+      setIsSaved(!isSaved);
+      toast({
+        title: "Success",
+        description: isSaved ? "Job removed from saved jobs" : "Job saved successfully",
+      });
     } catch (error) {
-      console.error("Error saving/unsaving job:", error);
+      console.error("Error saving job:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save job. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 

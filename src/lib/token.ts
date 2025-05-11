@@ -58,6 +58,21 @@ export const refreshToken = async () => {
 
 // Create an axios interceptor to handle token refresh
 export const setupAxiosInterceptors = (axios: any) => {
+  // Request interceptor to add token to all requests
+  axios.interceptors.request.use(
+    (config: any) => {
+      const token = getAccessToken();
+      if (token) {
+        config.headers['Authorization'] = `Bearer ${token}`;
+      }
+      return config;
+    },
+    (error: any) => {
+      return Promise.reject(error);
+    }
+  );
+
+  // Response interceptor to handle token refresh
   axios.interceptors.response.use(
     (response: any) => response,
     async (error: any) => {

@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { API_URL } from "@/lib/api";
 import { formatDistanceToNow } from "date-fns";
 import { useRouter } from "next/navigation";
+import axios from "axios";
 
 interface JobGridCardProps {
   job: JobPosting;
@@ -49,28 +50,12 @@ const JobGridCard = ({ job, isEmployer, onDelete, onClick }: JobGridCardProps) =
 
   const handleSaveJob = async () => {
     try {
-      setIsLoading(true);
-      const token = localStorage.getItem("token");
-      if (!token) {
-        toast({
-          title: "Error",
-          description: "Please login to save jobs",
-          variant: "destructive",
-        });
-        return;
+      if (isSaved) {
+        await axios.delete(`${API_URL}/save-jobs/${job.id}`);
+      } else {
+        await axios.post(`${API_URL}/save-jobs`, { jobId: job.id });
       }
-
-      const response = await fetch(`${API_URL}/save-jobs`, {
-        method: isSaved ? "DELETE" : "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ jobPostId: job.id }),
-      });
-
-      if (!response.ok) throw new Error("Failed to save job");
-
+      
       setIsSaved(!isSaved);
       toast({
         title: "Success",
@@ -83,8 +68,6 @@ const JobGridCard = ({ job, isEmployer, onDelete, onClick }: JobGridCardProps) =
         description: "Failed to save job. Please try again.",
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 

@@ -23,6 +23,7 @@ import { Badge } from "../ui/badge";
 import ReactSlider from "react-slider";
 import { useRouter } from "next/navigation";
 import { API_URL } from "@/lib/api";
+import axios from "axios";
 
 const JobPostingForm = () => {
   const { register, handleSubmit, setValue } = useForm();
@@ -117,79 +118,37 @@ const JobPostingForm = () => {
     setBenefits(benefits.filter((b) => b !== benefitToRemove));
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const onSubmit = async (data: any) => {
-    const token = localStorage.getItem("token"); // Retrieve token from localStorage
-    if (!token) throw new Error("No authentication token found");
-
-    handleGetContent();
-    setLoading(true);
-     // Get the latest content from the editor before submitting
-    const latestEditorContent = editorRef.current?.getContent() || "";
-
-    setTimeout(async () => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
       setLoading(true);
-      try {
-        data.description = latestEditorContent; // Assign content after ensuring state update
-        data.skill = skills;
-        data.salaryRange = {
-          minimum: salaryRange[0],
-          maximum: salaryRange[1],
-        };
-
-        data.responsibilities = responsibilities;
-        data.benefits = benefits;
-
-        const formattedDeadline = data?.deadline
-          ? new Date(data?.deadline).toISOString()
-          : "";
-        data.deadline = formattedDeadline;
-
-        setTest(data);
-        delete data.requiredSkills;
-        const res = await fetch(
-          `${API_URL}/jobs/create-job-posting`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`, // Attach token to the request
-            },
-            body: JSON.stringify({
-              ...data,
-              positions: 4,
-              jobPostRequirement: ['test'],
-              organizationId: "2b004c6d-9af9-4586-bbdb-1d4abcd239fa",
-            }),
-          }
-        );
-
-        if (!res.ok) throw new Error("Failed to create job posting");
-
-        toast({
-          title: "Job Posted Successfully",
-          description: "Your job posting is live!",
-        });
-        router.push("/jobs/view-all");
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } catch (error: any) {
-        toast({
-          title: "Error",
-          description: error.message,
-          variant: "destructive",
-        });
-      }
+      const response = await axios.post(`${API_URL}/jobs`, formData, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      
+      toast({
+        title: "Success",
+        description: "Job posted successfully!",
+      });
+      router.push("/jobs");
+    } catch (error) {
+      console.error("Error posting job:", error);
+      toast({
+        title: "Error",
+        description: "Failed to post job. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
       setLoading(false);
-    }, 100);
-
-    setLoading(false);
+    }
   };
 
   return (
     <div className="max-w-4xl mx-auto py-2 bg-white rounded-lg">
       <h2 className="text-2xl font-bold mb-6 text-center">Post a New Job</h2>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6">
         {/* Job Details Section */}
         <div className="grid grid-cols-2 gap-6">
           <div>
