@@ -33,7 +33,6 @@ const ViewJobs = () => {
   const [selectedViewJob, setSelectedViewJob] = useState<JobPosting | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isListView, setIsListView] = useState(true);
-  const [isEmployeeView, setIsEmployeeView] = useState(true);
   const [activeTab, setActiveTab] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -375,6 +374,15 @@ const ViewJobs = () => {
     setCurrentPage(1);
   };
 
+  // Get user role directly from localStorage
+  const [isEmployeeView, setIsEmployeeView] = useState(false);
+  
+  useEffect(() => {
+    // Check localStorage for role on component mount
+    const userRole = localStorage.getItem("role");
+    setIsEmployeeView(userRole === "employee");
+  }, []);
+  
   return (
     <div className="min-h-screen bg-slate-50">
       <div className="container mx-auto py-6">
@@ -454,10 +462,10 @@ const ViewJobs = () => {
           <div className={`flex flex-col h-[calc(100vh-6rem)] ${isEmployeeView ? (isSidebarVisible ? 'md:ml-4' : '') : ''} w-full`}>
             {/* Fixed Header with Search, Tabs and Buttons */}
             <div className="sticky top-0 bg-slate-50 z-10 pb-2">
-              <div className="flex flex-wrap md:flex-nowrap gap-2 md:gap-4 w-full items-stretch md:items-center">
+              <div className="flex flex-wrap pl-4 md:flex-nowrap gap-2 md:gap-4 w-full items-stretch md:items-center">
                 {/* Search + Filter Button */}
                 <div className="flex flex-row gap-2 w-full md:w-auto order-1">
-                  <div className="flex-1">
+                  <div className="flex-1 w-full">
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                       <Input
@@ -526,7 +534,7 @@ const ViewJobs = () => {
 
                 {/* Tabs (always full width, next row on mobile) */}
                 {isEmployeeView && (
-                  <div className="w-full order-2">
+                  <div className="order-2">
                     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full md:w-auto">
                       <TabsList className="flex space-x-1 h-8 w-full md:w-auto">
                         <TabsTrigger value="all" className="flex items-center gap-1 text-sm px-3">

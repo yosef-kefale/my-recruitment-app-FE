@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import Navbar from "../components/navbar/navBar";
 import axios from "axios";
 import { setupAxiosInterceptors, getAccessToken } from "@/lib/token";
+import { UserProvider } from "../contexts/UserContext";
 
 // Setup axios interceptors
 setupAxiosInterceptors(axios);
@@ -42,27 +43,29 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        {isLoggedIn ? (
-          role === "employer" ? ( // Employer layout with sidebar
-            <SidebarProvider>
-              <AppSidebar />
-              <main className="flex-1 overflow-y-auto">
-                {children}
-              </main>
-            </SidebarProvider>
-          ) : role === "employee" ? ( // Employee layout with navbar
-            <div>
-              <Navbar />
-              <main className="mt-12 py-6 w-full">{children}</main>
-              <Toaster />
-            </div>
+        <UserProvider>
+          {isLoggedIn ? (
+            role === "employer" ? ( // Employer layout with sidebar
+              <SidebarProvider>
+                <AppSidebar />
+                <main className="flex-1 overflow-y-auto">
+                  {children}
+                </main>
+              </SidebarProvider>
+            ) : role === "employee" ? ( // Employee layout with navbar
+              <div>
+                <Navbar />
+                <main className="mt-12 py-6 w-full">{children}</main>
+                <Toaster />
+              </div>
+            ) : (
+              <main>{children}</main>
+            )
           ) : (
-            <main>{children}</main>
-          )
-        ) : (
-          <main>{children}</main> // Show login/signup page without sidebar or navbar
-        )}
-        <Toaster />
+            <main>{children}</main> // Show login/signup page without sidebar or navbar
+          )}
+          <Toaster />
+        </UserProvider>
       </body>
     </html>
   );
