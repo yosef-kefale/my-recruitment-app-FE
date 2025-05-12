@@ -179,20 +179,19 @@ const FilterSidebar = ({ filterValues, onFilterChange, searchQuery, onSearchChan
   };
 
   return (
-    <div className="p-2 sm:p-6 bg-white rounded-lg h-full overflow-y-auto">
-
-      <div className="space-y-3 sm:space-y-4">
+    <div className="p-2 sm:p-4 bg-white rounded-lg h-full overflow-y-auto">
+      <div className="space-y-4">
         {/* Industry & Employment Type */}
-        <div className="space-y-2 sm:space-y-3">
+        <div className="space-y-2">
           <div className="flex items-center gap-2">
             <Building2 className="h-4 w-4 text-gray-500" />
-            <h4 className="font-medium text-gray-700">Industry</h4>
+            <h4 className="font-medium text-gray-700 text-sm sm:text-base">Industry</h4>
           </div>
           <Select value={industry} onValueChange={handleIndustryChange}>
-            <SelectTrigger className="w-full">
+            <SelectTrigger className="w-full h-9 sm:h-10 text-sm">
               <SelectValue placeholder="Select industry" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent position="popper" className="w-[--radix-select-trigger-width]">
               <SelectItem value="InformationTechnology">Information Technology</SelectItem>
               <SelectItem value="Finance">Finance</SelectItem>
               <SelectItem value="Healthcare">Healthcare</SelectItem>
@@ -205,19 +204,19 @@ const FilterSidebar = ({ filterValues, onFilterChange, searchQuery, onSearchChan
           </Select>
         </div>
 
-        <Separator />
+        <Separator className="my-2" />
 
         {/* Location */}
-        <div className="space-y-2 sm:space-y-3">
+        <div className="space-y-2">
           <div className="flex items-center gap-2">
             <MapPin className="h-4 w-4 text-gray-500" />
-            <h4 className="font-medium text-gray-700">Location</h4>
+            <h4 className="font-medium text-gray-700 text-sm sm:text-base">Location</h4>
           </div>
           <Select value={location} onValueChange={handleLocationChange}>
-            <SelectTrigger className="w-full">
+            <SelectTrigger className="w-full h-9 sm:h-10 text-sm">
               <SelectValue placeholder="Select location" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent position="popper" className="w-[--radix-select-trigger-width]">
               {Object.values(EthiopianCity).map((city) => (
                 <SelectItem key={city} value={city}>
                   {city}
@@ -227,19 +226,19 @@ const FilterSidebar = ({ filterValues, onFilterChange, searchQuery, onSearchChan
           </Select>
         </div>
 
-        <Separator />
+        <Separator className="my-2" />
 
         {/* Experience & Education */}
-        <div className="space-y-2 sm:space-y-3">
+        <div className="space-y-2">
           <div className="flex items-center gap-2">
             <UserCog className="h-4 w-4 text-gray-500" />
-            <h4 className="font-medium text-gray-700">Experience Level</h4>
+            <h4 className="font-medium text-gray-700 text-sm sm:text-base">Experience Level</h4>
           </div>
           <Select value={experienceLevel} onValueChange={handleExperienceLevelChange}>
-            <SelectTrigger className="w-full">
+            <SelectTrigger className="w-full h-9 sm:h-10 text-sm">
               <SelectValue placeholder="Select experience level" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent position="popper" className="w-[--radix-select-trigger-width]">
               <SelectItem value="Entry-Level">Entry-Level</SelectItem>
               <SelectItem value="Mid-Level">Mid-Level</SelectItem>
               <SelectItem value="Senior">Senior</SelectItem>
@@ -249,16 +248,16 @@ const FilterSidebar = ({ filterValues, onFilterChange, searchQuery, onSearchChan
           </Select>
         </div>
 
-        <div className="space-y-2 sm:space-y-3">
+        <div className="space-y-2">
           <div className="flex items-center gap-2">
             <GraduationCap className="h-4 w-4 text-gray-500" />
-            <h4 className="font-medium text-gray-700">Education Level</h4>
+            <h4 className="font-medium text-gray-700 text-sm sm:text-base">Education Level</h4>
           </div>
           <Select value={educationLevel} onValueChange={handleEducationLevelChange}>
-            <SelectTrigger className="w-full">
+            <SelectTrigger className="w-full h-9 sm:h-10 text-sm">
               <SelectValue placeholder="Select education level" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent position="popper" className="w-[--radix-select-trigger-width]">
               <SelectItem value="High School">High School</SelectItem>
               <SelectItem value="Associate">Associate</SelectItem>
               <SelectItem value="Bachelor">Bachelor</SelectItem>
@@ -268,13 +267,13 @@ const FilterSidebar = ({ filterValues, onFilterChange, searchQuery, onSearchChan
           </Select>
         </div>
 
-        <Separator />
+        <Separator className="my-2" />
 
         {/* Salary Slider */}
-        <div className="space-y-2 sm:space-y-3">
+        <div className="space-y-2">
           <div className="flex items-center gap-2">
             <DollarSign className="h-4 w-4 text-gray-500" />
-            <h4 className="font-medium text-gray-700">Salary</h4>
+            <h4 className="font-medium text-gray-700 text-sm sm:text-base">Salary</h4>
           </div>
           <div className="px-1">
             <Slider
@@ -285,9 +284,9 @@ const FilterSidebar = ({ filterValues, onFilterChange, searchQuery, onSearchChan
               onValueChange={(value) => handleSalaryChange(value[0])}
               className="my-4"
             />
-            <div className="flex justify-between text-sm text-gray-500">
+            <div className="flex justify-between text-xs sm:text-sm text-gray-500">
               <span>$10</span>
-              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs sm:text-sm">
                 ${salary}
               </Badge>
               <span>$1000000</span>
@@ -295,10 +294,10 @@ const FilterSidebar = ({ filterValues, onFilterChange, searchQuery, onSearchChan
           </div>
         </div>
 
-        <Separator />
+        <Separator className="my-2" />
 
         {/* Additional Filters Toggle */}
-        <div className="space-y-2 sm:space-y-3">
+        <div className="space-y-2">
           <button 
             className="flex items-center justify-between w-full text-sm font-medium text-gray-700 hover:text-blue-600"
             onClick={toggleAdditionalFilters}
@@ -308,12 +307,12 @@ const FilterSidebar = ({ filterValues, onFilterChange, searchQuery, onSearchChan
           </button>
           
           {showAdditionalFilters && (
-            <div className="space-y-3 sm:space-y-4 pt-4">
+            <div className="space-y-4 pt-2">
               {/* Availability */}
-              <div className="space-y-2 sm:space-y-3">
+              <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4 text-gray-500" />
-                  <h4 className="font-medium text-gray-700">Availability</h4>
+                  <h4 className="font-medium text-gray-700 text-sm sm:text-base">Availability</h4>
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center space-x-2">
@@ -322,7 +321,7 @@ const FilterSidebar = ({ filterValues, onFilterChange, searchQuery, onSearchChan
                       checked={availability.freelance}
                       onCheckedChange={() => handleAvailabilityChange("freelance")}
                     />
-                    <Label htmlFor="freelance" className="text-sm">Freelance / Contract</Label>
+                    <Label htmlFor="freelance" className="text-xs sm:text-sm">Freelance / Contract</Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Checkbox 
@@ -330,7 +329,7 @@ const FilterSidebar = ({ filterValues, onFilterChange, searchQuery, onSearchChan
                       checked={availability.fullTime}
                       onCheckedChange={() => handleAvailabilityChange("fullTime")}
                     />
-                    <Label htmlFor="fullTime" className="text-sm">Full Time</Label>
+                    <Label htmlFor="fullTime" className="text-xs sm:text-sm">Full Time</Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Checkbox 
@@ -338,16 +337,16 @@ const FilterSidebar = ({ filterValues, onFilterChange, searchQuery, onSearchChan
                       checked={availability.readyWork}
                       onCheckedChange={() => handleAvailabilityChange("readyWork")}
                     />
-                    <Label htmlFor="readyWork" className="text-sm">Ready to Work</Label>
+                    <Label htmlFor="readyWork" className="text-xs sm:text-sm">Ready to Work</Label>
                   </div>
                 </div>
               </div>
 
               {/* Specialties */}
-              <div className="space-y-2 sm:space-y-3">
+              <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <Tag className="h-4 w-4 text-gray-500" />
-                  <h4 className="font-medium text-gray-700">Specialties</h4>
+                  <h4 className="font-medium text-gray-700 text-sm sm:text-base">Specialties</h4>
                 </div>
                 <div className="flex gap-2">
                   <Input
@@ -355,14 +354,14 @@ const FilterSidebar = ({ filterValues, onFilterChange, searchQuery, onSearchChan
                     onChange={(e) => setNewSpecialty(e.target.value)}
                     onKeyDown={handleSpecialtyKeyDown}
                     placeholder="Add specialty (press Enter)"
-                    className="flex-1"
+                    className="flex-1 h-9 sm:h-10 text-sm"
                   />
                   <Button 
                     type="button" 
                     size="icon" 
                     variant="outline"
                     onClick={handleAddSpecialty}
-                    className="shrink-0"
+                    className="shrink-0 h-9 sm:h-10 w-9 sm:w-10"
                   >
                     <Plus className="h-4 w-4" />
                   </Button>
@@ -372,7 +371,7 @@ const FilterSidebar = ({ filterValues, onFilterChange, searchQuery, onSearchChan
                     <Badge
                       key={spec.name}
                       variant={spec.checked ? "default" : "outline"}
-                      className="flex items-center gap-1 px-3 py-1"
+                      className="flex items-center gap-1 px-2 py-0.5 text-xs sm:text-sm"
                     >
                       {spec.name}
                       <button
@@ -388,7 +387,6 @@ const FilterSidebar = ({ filterValues, onFilterChange, searchQuery, onSearchChan
             </div>
           )}
         </div>
-
       </div>
     </div>
   );

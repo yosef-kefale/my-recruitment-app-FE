@@ -240,10 +240,10 @@ const JobCard: React.FC<JobCardProps> = ({ job, isEmployer, onDelete }) => {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Badge 
-                      className={`px-2 py-0.5 text-xs ${
-                        job.status === 'active' ? 'bg-green-50 text-green-600' :
-                        job.status === 'closed' ? 'bg-red-50 text-red-600' :
-                        job.status === 'draft' ? 'bg-gray-50 text-gray-600' :
+                      className={`px-2 py-0.5 text-xs cursor-default ${
+                        job.status === 'active' ? 'bg-green-50 hover:bg-green-100 text-green-600' :
+                        job.status === 'closed' ? 'bg-red-50 hover:bg-red-100 text-red-600' :
+                        job.status === 'draft' ? 'bg-gray-50 hover:bg-gray-100 text-gray-600' :
                         'bg-blue-50 text-blue-600'
                       }`}
                     >

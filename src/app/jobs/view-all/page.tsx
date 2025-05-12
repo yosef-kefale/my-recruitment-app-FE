@@ -25,6 +25,7 @@ import { useDebounce } from "@/hooks/use-debounce";
 import { Input } from "@/components/ui/input";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import axios from "axios";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 const ViewJobs = () => {
   const [filteredJobs, setFilteredJobs] = useState<JobPosting[]>([]);
@@ -44,6 +45,7 @@ const ViewJobs = () => {
   const { toast } = useToast();
   const [searchInput, setSearchInput] = useState("");
   const debouncedSearch = useDebounce(searchInput, 500);
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
   const [filterValues, setFilterValues] = useState<{
     salary?: number;
@@ -377,15 +379,23 @@ const ViewJobs = () => {
     <div className="min-h-screen bg-slate-50">
       <div className="container mx-auto py-6">
         <div className="flex flex-col md:flex-row gap-6 h-full">
-          {/* Filter Section */}
+          {/* Filter Section - Desktop */}
           {isEmployeeView && (
-            <div className={`sticky top-6 self-start transition-all duration-300 ${isSidebarVisible ? 'w-full md:w-1/4 lg:w-1/5' : 'w-12'}`}>
-              <Card className={`shadow-md rounded-lg max-h-[calc(100vh-3rem)] overflow-y-auto transition-all duration-300 ${isSidebarVisible ? 'w-full' : 'w-20'}`}>
-                <div className="flex justify-between items-center p-4 border-b">
+            <div className={`hidden md:block sticky top-6 self-start transition-all duration-300 ${
+              isSidebarVisible 
+                ? 'w-1/4 lg:w-1/5' 
+                : 'w-12'
+            }`}>
+              <Card className={`shadow-md rounded-lg max-h-[calc(100vh-3rem)] overflow-y-auto transition-all duration-300 ${
+                isSidebarVisible 
+                  ? 'w-full' 
+                  : 'w-20'
+              }`}>
+                <div className="flex justify-between items-center p-2 sm:p-4 border-b">
                   {isSidebarVisible ? (
                     <div className="flex items-center gap-2">
-                      <Filter className="h-5 w-5 text-blue-600" />
-                      <h3 className="font-semibold text-base text-gray-800">Filters</h3>
+                      <Filter className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
+                      <h3 className="font-semibold text-sm sm:text-base text-gray-800">Filters</h3>
                     </div>
                   ) : (
                     <div className="w-0" />
@@ -393,27 +403,27 @@ const ViewJobs = () => {
                   <div className="flex items-center gap-2">
                     {!isSidebarVisible && (
                       <span className="text-blue-600">
-                        <Filter className="h-5 w-5" />
+                        <Filter className="h-4 w-4 sm:h-5 sm:w-5" />
                       </span>
                     )}
                     <Button
                       variant="ghost"
                       size="icon"
                       onClick={() => setIsSidebarVisible(!isSidebarVisible)}
-                      className="h-8 w-8 rounded-full"
+                      className="h-7 w-7 sm:h-8 sm:w-8 rounded-full"
                       title={isSidebarVisible ? "Hide filters" : "Show filters"}
                     >
-                      {isSidebarVisible ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                      {isSidebarVisible ? <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4" /> : <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />}
                     </Button>
                     {isSidebarVisible && (
                       <Button 
                         variant="ghost" 
                         size="icon"
                         onClick={resetFilters}
-                        className="h-8 w-8 rounded-full text-blue-600 hover:text-blue-800 hover:bg-blue-50"
+                        className="h-7 w-7 sm:h-8 sm:w-8 rounded-full text-blue-600 hover:text-blue-800 hover:bg-blue-50"
                         title="Clear all filters"
                       >
-                        <Eraser className="h-4 w-4" />
+                        <Eraser className="h-3 w-3 sm:h-4 sm:w-4" />
                       </Button>
                     )}
                   </div>
@@ -426,9 +436,9 @@ const ViewJobs = () => {
                       searchQuery={searchQuery}
                       onSearchChange={setSearchQuery}
                     />
-                    <div className="p-4 border-t">
+                    <div className="p-2 sm:p-4 border-t">
                       <Button 
-                        className="w-full bg-green-600 hover:bg-green-700 text-white" 
+                        className="w-full bg-green-600 hover:bg-green-700 text-white text-sm sm:text-base" 
                         onClick={handleApplyFilters}
                       >
                         Apply Filters
@@ -441,78 +451,134 @@ const ViewJobs = () => {
           )}
 
           {/* Job List Section */}
-          <div className={`flex flex-col h-[calc(100vh-6rem)] ml-4 ${isEmployeeView ? (isSidebarVisible ? 'w-full md:w-3/4 lg:w-4/5' : 'w-full') : 'w-full'}`}>
+          <div className={`flex flex-col h-[calc(100vh-6rem)] ${isEmployeeView ? (isSidebarVisible ? 'md:ml-4' : '') : ''} w-full`}>
             {/* Fixed Header with Search, Tabs and Buttons */}
             <div className="sticky top-0 bg-slate-50 z-10 pb-2">
-              <div className="flex items-center gap-4">
-                {/* Search Bar */}
-                <div className="flex-1">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                    <Input
-                      placeholder="Search jobs by title..."
-                      value={searchInput}
-                      onChange={(e) => setSearchInput(e.target.value)}
-                      className="pl-9 h-8 rounded-lg border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
-                    />
+              <div className="flex flex-wrap md:flex-nowrap gap-2 md:gap-4 w-full items-stretch md:items-center">
+                {/* Search + Filter Button */}
+                <div className="flex flex-row gap-2 w-full md:w-auto order-1">
+                  <div className="flex-1">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                      <Input
+                        placeholder="Search jobs by title..."
+                        value={searchInput}
+                        onChange={(e) => setSearchInput(e.target.value)}
+                        className="pl-9 h-8 rounded-lg border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
+                      />
+                    </div>
                   </div>
+                  {isEmployeeView && (
+                    <div className="w-auto flex items-center">
+                      <Sheet open={isMobileFilterOpen} onOpenChange={setIsMobileFilterOpen}>
+                        <SheetTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="md:hidden flex items-center gap-2"
+                          >
+                            <Filter className="h-4 w-4" />
+                            <span>Filters</span>
+                          </Button>
+                        </SheetTrigger>
+                        <SheetContent side="left" className="w-full sm:w-[400px] p-0">
+                          <div className="flex flex-col h-full">
+                            <div className="flex justify-between items-center p-4 border-b">
+                              <div className="flex items-center gap-2">
+                                <Filter className="h-5 w-5 text-blue-600" />
+                                <h3 className="font-semibold text-base text-gray-800">Filters</h3>
+                              </div>
+                              <Button 
+                                variant="ghost" 
+                                size="icon"
+                                onClick={resetFilters}
+                                className="h-8 w-8 rounded-full text-blue-600 hover:text-blue-800 hover:bg-blue-50"
+                                title="Clear all filters"
+                              >
+                                <Eraser className="h-4 w-4" />
+                              </Button>
+                            </div>
+                            <div className="flex-1 overflow-y-auto">
+                              <FilterSidebar
+                                filterValues={filterValues}
+                                onFilterChange={handleFilterChange}
+                                searchQuery={searchQuery}
+                                onSearchChange={setSearchQuery}
+                              />
+                            </div>
+                            <div className="p-4 border-t">
+                              <Button 
+                                className="w-full bg-green-600 hover:bg-green-700 text-white" 
+                                onClick={() => {
+                                  handleApplyFilters();
+                                  setIsMobileFilterOpen(false);
+                                }}
+                              >
+                                Apply Filters
+                              </Button>
+                            </div>
+                          </div>
+                        </SheetContent>
+                      </Sheet>
+                    </div>
+                  )}
                 </div>
 
-                {/* Sort Dropdown and Direction */}
-                <div className="flex items-center gap-2">
-                  <Select value={sortBy} onValueChange={(value: "date" | "salary" | "title") => setSortBy(value)}>
-                    <SelectTrigger className="h-8 w-[140px]">
-                      <SelectValue placeholder="Sort by" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="date">Date</SelectItem>
-                      <SelectItem value="salary">Salary</SelectItem>
-                      <SelectItem value="title">Job Title</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setSortDirection(prev => prev === "asc" ? "desc" : "asc")}
-                    className="h-8 w-8"
-                    title={sortDirection === "asc" ? "Sort ascending" : "Sort descending"}
-                  >
-                    {sortDirection === "asc" ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
-                  </Button>
-                </div>
-
-                {/* Tabs for All Jobs and Saved Jobs */}
+                {/* Tabs (always full width, next row on mobile) */}
                 {isEmployeeView && (
-                  <Tabs value={activeTab} onValueChange={setActiveTab} className="w-auto">
-                    <TabsList className="flex space-x-1 h-8">
-                      <TabsTrigger value="all" className="flex items-center gap-1 text-sm px-3">
-                        <List className="h-3 w-3" />
-                        All Jobs
-                      </TabsTrigger>
-                      <TabsTrigger value="saved" className="flex items-center gap-1 text-sm px-3">
-                        <Bookmark className="h-3 w-3" />
-                        Saved Jobs
-                        {savedJobs.length > 0 && (
-                          <span className="ml-1 bg-blue-100 text-blue-800 text-xs font-medium px-1.5 py-0.5 rounded-full">
-                            {savedJobs.length}
-                          </span>
-                        )}
-                      </TabsTrigger>
-                    </TabsList>
-                  </Tabs>
+                  <div className="w-full order-2">
+                    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full md:w-auto">
+                      <TabsList className="flex space-x-1 h-8 w-full md:w-auto">
+                        <TabsTrigger value="all" className="flex items-center gap-1 text-sm px-3">
+                          <List className="h-3 w-3" />
+                          All Jobs
+                        </TabsTrigger>
+                        <TabsTrigger value="saved" className="flex items-center gap-1 text-sm px-3">
+                          <Bookmark className="h-3 w-3" />
+                          Saved Jobs
+                          {savedJobs.length > 0 && (
+                            <span className="ml-1 bg-blue-100 text-blue-800 text-xs font-medium px-1.5 py-0.5 rounded-full">
+                              {savedJobs.length}
+                            </span>
+                          )}
+                        </TabsTrigger>
+                      </TabsList>
+                    </Tabs>
+                  </div>
                 )}
-                
-                <div className="flex items-center gap-2">
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    onClick={fetchJobs}
-                    className="h-8 w-8 rounded-full"
-                    title="Refresh jobs"
-                  >
-                    <RefreshCw className="h-4 w-4" />
-                  </Button>
-                  
+
+                {/* Sort, Sort Direction, Refresh, View Toggles (compact row) */}
+                <div className="flex flex-row gap-1 w-full md:w-auto order-3 items-center justify-between md:justify-start">
+                  <div className="flex items-center gap-1">
+                    <Select value={sortBy} onValueChange={(value: "date" | "salary" | "title") => setSortBy(value)}>
+                      <SelectTrigger className="h-8 w-[90px] md:w-[140px] text-xs md:text-sm">
+                        <SelectValue placeholder="Sort by" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="date">Date</SelectItem>
+                        <SelectItem value="salary">Salary</SelectItem>
+                        <SelectItem value="title">Job Title</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setSortDirection(prev => prev === "asc" ? "desc" : "asc")}
+                      className="h-8 w-8"
+                      title={sortDirection === "asc" ? "Sort ascending" : "Sort descending"}
+                    >
+                      {sortDirection === "asc" ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      onClick={fetchJobs}
+                      className="h-8 w-8 rounded-full"
+                      title="Refresh jobs"
+                    >
+                      <RefreshCw className="h-4 w-4" />
+                    </Button>
+                  </div>
                   <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
                     <button
                       onClick={() => setIsListView(true)}
@@ -538,7 +604,7 @@ const ViewJobs = () => {
             </div>
 
             {/* Job Listings with Pagination */}
-            <div className="flex-1 overflow-y-auto px-4">
+            <div className="flex-1 overflow-y-auto px-0 md:px-4">
               {isLoading ? (
                 <div className="flex justify-center items-center h-64">
                   <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
@@ -582,7 +648,7 @@ const ViewJobs = () => {
                 </Card>
               ) : (
                 <>
-                  <div className={`grid ${isListView ? 'grid-cols-1' : `grid-cols-1 md:grid-cols-2 ${isSidebarVisible ? 'lg:grid-cols-3' : 'lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6'}`} gap-4`}>
+                  <div className={`grid w-full ${isListView ? 'grid-cols-1' : `grid-cols-1 md:grid-cols-2 ${isSidebarVisible ? 'lg:grid-cols-3' : 'lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6'}`} gap-4`}>
                     {(activeTab === "saved" ? savedJobs : displayedJobs).map((job) => (
                       <div key={job.id} className={isListView ? '' : 'h-full'}>
                         {isListView ? (

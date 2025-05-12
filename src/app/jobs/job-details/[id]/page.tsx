@@ -14,7 +14,7 @@ import axios from "axios";
 import { CVUploadSection } from "@/components/job/cv-upload-section";
 import { format, parseISO } from "date-fns";
 import { API_URL } from "@/lib/api";
-import { toast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 interface UserData {
   id: string;
@@ -50,6 +50,7 @@ const JobDetail = () => {
   const id = params.id as string;
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
+  const { toast } = useToast();
 
   if (!id) return notFound();
 
